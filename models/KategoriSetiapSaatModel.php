@@ -375,5 +375,106 @@ class KategoriSetiapSaatModel {
             return [];
         }
     }
+
+    public function getAllDokumenSetiapSaatAllStatus($limit = null, $offset = null) {
+        if (!$this->conn) {
+            return [];
+        }
+
+        $query = "SELECT d.*, k.nama_kategori, dp.nama_jenis as nama_dokumen_pemda
+                  FROM " . $this->table_name . " d
+                  LEFT JOIN kategori k ON d.id_kategori = k.id_kategori
+                  LEFT JOIN dokumen_pemda dp ON d.id_dokumen_pemda = dp.id_dokumen_pemda
+                  WHERE d.id_kategori = :kategori_id
+                  ORDER BY d.created_at DESC";
+
+        if ($limit) {
+            $query .= " LIMIT :limit";
+            if ($offset) {
+                $query .= " OFFSET :offset";
+            }
+        }
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':kategori_id', $this->kategori_id, PDO::PARAM_INT);
+
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+                if ($offset) {
+                    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+                }
+            }
+
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getting dokumen setiap saat all status: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getTotalCountAllStatus() {
+        if (!$this->conn) {
+            return 0;
+        }
+
+        $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " WHERE id_kategori = :kategori_id";
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':kategori_id', $this->kategori_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error getting total count all status: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function searchDokumenSetiapSaatAllStatus($keyword, $limit = null, $offset = null) {
+        if (!$this->conn) {
+            return [];
+        }
+
+        $query = "SELECT d.*, k.nama_kategori, dp.nama_jenis as nama_dokumen_pemda
+                  FROM " . $this->table_name . " d
+                  LEFT JOIN kategori k ON d.id_kategori = k.id_kategori
+                  LEFT JOIN dokumen_pemda dp ON d.id_dokumen_pemda = dp.id_dokumen_pemda
+                  WHERE d.id_kategori = :kategori_id
+                  AND (d.judul LIKE :keyword
+                       OR d.kandungan_informasi LIKE :keyword
+                       OR d.terbitkan_sebagai LIKE :keyword
+                       OR dp.nama_jenis LIKE :keyword)
+                  ORDER BY d.created_at DESC";
+
+        if ($limit) {
+            $query .= " LIMIT :limit";
+            if ($offset) {
+                $query .= " OFFSET :offset";
+            }
+        }
+
+        try {
+            $stmt = $this->conn->prepare($query);
+            $searchKeyword = "%$keyword%";
+            $stmt->bindParam(':kategori_id', $this->kategori_id, PDO::PARAM_INT);
+            $stmt->bindParam(':keyword', $searchKeyword);
+
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+                if ($offset) {
+                    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+                }
+            }
+
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error searching dokumen setiap saat all status: " . $e->getMessage());
+            return [];
+        }
+    }
 }
 ?>
