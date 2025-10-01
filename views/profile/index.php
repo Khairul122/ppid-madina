@@ -138,16 +138,43 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                   <input type="hidden" name="id_profile" value="<?php echo $profile['id_profile']; ?>">
                                   <input type="hidden" name="keterangan" value="<?php echo htmlspecialchars($profile['keterangan']); ?>">
 
-                                  <div class="mb-3">
-                                    <label class="form-label fw-bold">Text</label>
+                                  <?php 
+                                  // Check if the profile content is a PDF file or image
+                                  $extension = pathinfo($profile['isi'], PATHINFO_EXTENSION);
+                                  $is_pdf = (strtolower($extension) === 'pdf' && file_exists($profile['isi'])); 
+                                  $is_image = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']) && file_exists($profile['isi']);
+                                  ?>
+                                  
+                                  <?php if ($is_pdf || $is_image): ?>
+                                    <div class="mb-3">
+                                      <label class="form-label fw-bold">File Saat Ini</label>
+                                      <div class="alert alert-info">
+                                        <?php if ($is_pdf): ?>
+                                          <i class="mdi mdi-file-pdf text-danger me-2" style="font-size: 1.5em;"></i>
+                                          <span>File PDF: <?php echo basename($profile['isi']); ?></span>
+                                          <a href="<?php echo $profile['isi']; ?>" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Lihat PDF</a>
+                                        <?php elseif ($is_image): ?>
+                                          <i class="mdi mdi-file-image text-primary me-2" style="font-size: 1.5em;"></i>
+                                          <span>File Gambar: <?php echo basename($profile['isi']); ?></span>
+                                          <a href="<?php echo $profile['isi']; ?>" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Lihat Gambar</a>
+                                        <?php endif; ?>
+                                      </div>
+                                      <label class="form-label fw-bold mt-3">Upload File Baru (PDF atau Gambar)</label>
+                                      <input type="file" name="isi" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp" />
+                                      <small class="text-muted">Kosongkan jika tidak ingin mengganti file</small>
+                                    </div>
+                                  <?php else: ?>
+                                    <div class="mb-3">
+                                      <label class="form-label fw-bold">Text</label>
 
-                                    <!-- TinyMCE Editor -->
-                                    <textarea
-                                      name="isi_text"
-                                      id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>"
-                                      class="form-control tinymce-editor"
-                                      rows="15"><?php echo htmlspecialchars_decode($profile['isi']); ?></textarea>
-                                  </div>
+                                      <!-- TinyMCE Editor -->
+                                      <textarea
+                                        name="isi_text"
+                                        id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>"
+                                        class="form-control tinymce-editor"
+                                        rows="15"><?php echo htmlspecialchars_decode($profile['isi']); ?></textarea>
+                                    </div>
+                                  <?php endif; ?>
 
                                   <!-- Action Buttons -->
                                   <div class="d-flex justify-content-end gap-2 mt-4">
@@ -208,15 +235,30 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 </div>
               </div>
             </div>
-            <div class="mb-3">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Jenis Konten</label>
+                <select class="form-select" name="content_type" id="contentTypeSelect" onchange="toggleContentFields()">
+                  <option value="text">Teks (Menggunakan Editor)</option>
+                  <option value="pdf">File (PDF atau Gambar)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="textContentField">
               <label class="form-label fw-bold">Isi Konten</label>
-
               <!-- TinyMCE Editor -->
               <textarea
                 name="isi_text"
                 id="newEditor"
                 class="form-control"
                 rows="15"></textarea>
+            </div>
+            
+            <div id="fileContentField" style="display: none;">
+              <label class="form-label fw-bold">Upload File</label>
+              <input type="file" name="isi" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp" />
+              <small class="text-muted">Pilih file PDF atau gambar</small>
             </div>
           </div>
           <div class="modal-footer">
@@ -233,7 +275,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   <!-- TinyMCE Editor -->
   <script src="https://cdn.tiny.cloud/1/z0t4wwtn9a2wpsk59ee400jsup9j2wusunqyvvezelo6imd8/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
   <script>
-    // Initialize TinyMCE for all textareas with tinymce-editor class with image upload capability
+    // Function to toggle content fields based on content type
+    function toggleContentFields() {
+      const contentType = document.getElementById('contentTypeSelect').value;
+      const textContentField = document.getElementById('textContentField');
+      const fileContentField = document.getElementById('fileContentField');
+      
+      if (contentType === 'text') {
+        textContentField.style.display = 'block';
+        fileContentField.style.display = 'none';
+      } else if (contentType === 'pdf') {
+        textContentField.style.display = 'none';
+        fileContentField.style.display = 'block';
+      }
+    }
+    
+    // Initialize TinyMCE for all textareas with tinymce-editor class with file picker
     function initializeTinyMCE() {
       tinymce.init({
         selector: '.tinymce-editor',
@@ -241,22 +298,26 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
         toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
         file_picker_types: 'file image media',
-        automatic_uploads: true,
-        images_upload_url: 'index.php?controller=profile&action=upload_image',
-        /* Enable image upload */
-        images_upload_handler: function(blobInfo, progress) {
-          return new Promise(function(resolve, reject) {
+        file_picker_callback: function(cb, value, meta) {
+          var input = document.createElement('input');
+          input.setAttribute('type', 'file');
+
+          // Set accept attribute based on file type
+          if (meta.filetype === 'image') {
+            input.setAttribute('accept', 'image/*');
+          } else if (meta.filetype === 'media') {
+            input.setAttribute('accept', 'video/*,audio/*');
+          } else {
+            input.setAttribute('accept', '.pdf,.doc,.docx');
+          }
+
+          input.onchange = function() {
+            var file = this.files[0];
             var formData = new FormData();
-            formData.append('file', blobInfo.blob(), blobInfo.filename());
+            formData.append('file', file);
 
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-            xhr.upload.onprogress = function(e) {
-              if (typeof progress === 'function') {
-                progress((e.loaded / e.total) * 100);
-              }
-            };
 
             xhr.onload = function() {
               if (xhr.status === 200) {
@@ -268,38 +329,40 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                   if (response && response.success === true) {
                     if (response.url) {
                       console.log('Upload success, URL:', response.url);
-                      resolve(response.url);
+                      cb(response.url, { title: file.name });
                     } else if (response.location) {
                       console.log('Upload success, location:', response.location);
-                      resolve(response.location);
+                      cb(response.location, { title: file.name });
                     } else {
                       console.error('No URL in response');
-                      reject('No URL returned from server');
+                      alert('No URL returned from server');
                     }
                   } else {
                     var errorMsg = response && response.message ? response.message : 'Upload failed';
                     console.error('Upload failed:', errorMsg);
-                    reject(errorMsg);
+                    alert(errorMsg);
                   }
                 } catch (e) {
                   console.error('JSON parse error:', e, 'Response:', xhr.responseText);
-                  reject('Invalid response from server: ' + e.message);
+                  alert('Invalid response from server: ' + e.message);
                 }
               } else if (xhr.status === 403) {
-                reject('Session expired or unauthorized. Please refresh the page.');
+                alert('Session expired or unauthorized. Please refresh the page.');
               } else {
                 console.error('HTTP Error:', xhr.status);
-                reject('HTTP Error: ' + xhr.status);
+                alert('HTTP Error: ' + xhr.status);
               }
             };
 
             xhr.onerror = function() {
-              console.error('Network error during image upload');
-              reject('Image upload failed due to a network error.');
+              console.error('Network error during file upload');
+              alert('File upload failed due to a network error.');
             };
 
             xhr.send(formData);
-          });
+          };
+
+          input.click();
         }
       });
     }
@@ -317,21 +380,26 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             file_picker_types: 'file image media',
-            automatic_uploads: true,
-            images_upload_url: 'index.php?controller=profile&action=upload_image',
-            images_upload_handler: function(blobInfo, progress) {
-              return new Promise(function(resolve, reject) {
+            file_picker_callback: function(cb, value, meta) {
+              var input = document.createElement('input');
+              input.setAttribute('type', 'file');
+
+              // Set accept attribute based on file type
+              if (meta.filetype === 'image') {
+                input.setAttribute('accept', 'image/*');
+              } else if (meta.filetype === 'media') {
+                input.setAttribute('accept', 'video/*,audio/*');
+              } else {
+                input.setAttribute('accept', '.pdf,.doc,.docx');
+              }
+
+              input.onchange = function() {
+                var file = this.files[0];
                 var formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                formData.append('file', file);
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-                xhr.upload.onprogress = function(e) {
-                  if (typeof progress === 'function') {
-                    progress((e.loaded / e.total) * 100);
-                  }
-                };
 
                 xhr.onload = function() {
                   if (xhr.status === 200) {
@@ -343,38 +411,40 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       if (response && response.success === true) {
                         if (response.url) {
                           console.log('Upload success, URL:', response.url);
-                          resolve(response.url);
+                          cb(response.url, { title: file.name });
                         } else if (response.location) {
                           console.log('Upload success, location:', response.location);
-                          resolve(response.location);
+                          cb(response.location, { title: file.name });
                         } else {
                           console.error('No URL in response');
-                          reject('No URL returned from server');
+                          alert('No URL returned from server');
                         }
                       } else {
                         var errorMsg = response && response.message ? response.message : 'Upload failed';
                         console.error('Upload failed:', errorMsg);
-                        reject(errorMsg);
+                        alert(errorMsg);
                       }
                     } catch (e) {
                       console.error('JSON parse error:', e, 'Response:', xhr.responseText);
-                      reject('Invalid response from server: ' + e.message);
+                      alert('Invalid response from server: ' + e.message);
                     }
                   } else if (xhr.status === 403) {
-                    reject('Session expired or unauthorized. Please refresh the page.');
+                    alert('Session expired or unauthorized. Please refresh the page.');
                   } else {
                     console.error('HTTP Error:', xhr.status);
-                    reject('HTTP Error: ' + xhr.status);
+                    alert('HTTP Error: ' + xhr.status);
                   }
                 };
 
                 xhr.onerror = function() {
-                  console.error('Network error during image upload');
-                  reject('Image upload failed due to a network error.');
+                  console.error('Network error during file upload');
+                  alert('File upload failed due to a network error.');
                 };
 
                 xhr.send(formData);
-              });
+              };
+
+              input.click();
             }
           });
         }
@@ -402,21 +472,26 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             file_picker_types: 'file image media',
-            automatic_uploads: true,
-            images_upload_url: 'index.php?controller=profile&action=upload_image',
-            images_upload_handler: function(blobInfo, progress) {
-              return new Promise(function(resolve, reject) {
+            file_picker_callback: function(cb, value, meta) {
+              var input = document.createElement('input');
+              input.setAttribute('type', 'file');
+
+              // Set accept attribute based on file type
+              if (meta.filetype === 'image') {
+                input.setAttribute('accept', 'image/*');
+              } else if (meta.filetype === 'media') {
+                input.setAttribute('accept', 'video/*,audio/*');
+              } else {
+                input.setAttribute('accept', '.pdf,.doc,.docx');
+              }
+
+              input.onchange = function() {
+                var file = this.files[0];
                 var formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                formData.append('file', file);
 
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-                xhr.upload.onprogress = function(e) {
-                  if (typeof progress === 'function') {
-                    progress((e.loaded / e.total) * 100);
-                  }
-                };
 
                 xhr.onload = function() {
                   if (xhr.status === 200) {
@@ -428,38 +503,40 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       if (response && response.success === true) {
                         if (response.url) {
                           console.log('Upload success, URL:', response.url);
-                          resolve(response.url);
+                          cb(response.url, { title: file.name });
                         } else if (response.location) {
                           console.log('Upload success, location:', response.location);
-                          resolve(response.location);
+                          cb(response.location, { title: file.name });
                         } else {
                           console.error('No URL in response');
-                          reject('No URL returned from server');
+                          alert('No URL returned from server');
                         }
                       } else {
                         var errorMsg = response && response.message ? response.message : 'Upload failed';
                         console.error('Upload failed:', errorMsg);
-                        reject(errorMsg);
+                        alert(errorMsg);
                       }
                     } catch (e) {
                       console.error('JSON parse error:', e, 'Response:', xhr.responseText);
-                      reject('Invalid response from server: ' + e.message);
+                      alert('Invalid response from server: ' + e.message);
                     }
                   } else if (xhr.status === 403) {
-                    reject('Session expired or unauthorized. Please refresh the page.');
+                    alert('Session expired or unauthorized. Please refresh the page.');
                   } else {
                     console.error('HTTP Error:', xhr.status);
-                    reject('HTTP Error: ' + xhr.status);
+                    alert('HTTP Error: ' + xhr.status);
                   }
                 };
 
                 xhr.onerror = function() {
-                  console.error('Network error during image upload');
-                  reject('Image upload failed due to a network error.');
+                  console.error('Network error during file upload');
+                  alert('File upload failed due to a network error.');
                 };
 
                 xhr.send(formData);
-              });
+              };
+
+              input.click();
             }
           });
         }

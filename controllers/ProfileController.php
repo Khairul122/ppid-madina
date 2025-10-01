@@ -55,22 +55,24 @@ class ProfileController {
             $updateSuccess = false;
 
             if (!empty($_FILES['isi']['name'])) {
-                // Handle file upload
+                // Handle PDF file upload
                 $uploadResult = $this->profileModel->handleFileUpload($_FILES['isi'], $keterangan);
                 
                 if ($uploadResult['success']) {
-                    // Update with new file
+                    // Update with new file path
                     $updateSuccess = $this->profileModel->updateProfileImage($id, $uploadResult['filepath']);
                     
                     // Delete old file if exists
-                    if (!empty($profile['isi']) && file_exists($profile['isi'])) {
+                    if (!empty($profile['isi']) && file_exists($profile['isi']) && $profile['isi'] !== $uploadResult['filepath']) {
                         unlink($profile['isi']);
                     }
                 } else {
                     $_SESSION['error'] = $uploadResult['message'];
+                    header('Location: index.php?controller=profile');
+                    exit();
                 }
             } else {
-                // Update with text
+                // Update with text content
                 $isiText = $_POST['isi_text'] ?? '';
                 $updateSuccess = $this->profileModel->updateProfileText($id, $isiText);
             }
@@ -96,7 +98,8 @@ class ProfileController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nama_kategori = trim($_POST['keterangan'] ?? ''); // Kategori yang dipilih (PPID/DAERAH)
             $keterangan = trim($_POST['keterangan_baru'] ?? ''); // Nama keterangan baru
-            $isi = trim($_POST['isi_text'] ?? '');
+            $content_type = $_POST['content_type'] ?? 'text'; // Default to text
+            $isi = '';
 
             // Validasi input
             if (empty($nama_kategori)) {
@@ -111,10 +114,32 @@ class ProfileController {
                 exit();
             }
 
-            if (empty($isi)) {
-                $_SESSION['error'] = 'Isi konten harus diisi!';
-                header('Location: index.php?controller=profile');
-                exit();
+            // Handle content based on type
+            if ($content_type === 'pdf') {
+                // Handle PDF upload
+                if (!empty($_FILES['isi']['name'])) {
+                    $uploadResult = $this->profileModel->handleFileUpload($_FILES['isi'], $keterangan);
+                    
+                    if ($uploadResult['success']) {
+                        $isi = $uploadResult['filepath'];
+                    } else {
+                        $_SESSION['error'] = $uploadResult['message'];
+                        header('Location: index.php?controller=profile');
+                        exit();
+                    }
+                } else {
+                    $_SESSION['error'] = 'File PDF harus diupload!';
+                    header('Location: index.php?controller=profile');
+                    exit();
+                }
+            } else {
+                // Handle text content
+                $isi = trim($_POST['isi_text'] ?? '');
+                if (empty($isi)) {
+                    $_SESSION['error'] = 'Isi konten harus diisi!';
+                    header('Location: index.php?controller=profile');
+                    exit();
+                }
             }
 
             // Simpan data profile baru
@@ -240,23 +265,40 @@ class ProfileController {
                 throw new Exception($errorMsg);
             }
 
-            // Validasi file type
-            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            // Get file info
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mimeType = finfo_file($finfo, $file['tmp_name']);
             finfo_close($finfo);
 
-            if (!in_array($mimeType, $allowedTypes) && !in_array($file['type'], $allowedTypes)) {
-                throw new Exception('Invalid file type: ' . $mimeType . '. Only JPG, PNG, GIF, and WEBP allowed.');
+            // Validasi file type berdasarkan MIME type
+            $allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            $allowedDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            $allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/x-flv', 'video/webm'];
+            $allowedAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/webm'];
+
+            $allAllowedTypes = array_merge($allowedImageTypes, $allowedDocTypes, $allowedVideoTypes, $allowedAudioTypes);
+
+            if (!in_array($mimeType, $allAllowedTypes) && !in_array($file['type'], $allAllowedTypes)) {
+                throw new Exception('Invalid file type: ' . $mimeType . '. Allowed: images (JPG, PNG, GIF, WEBP), documents (PDF, DOC, DOCX), videos (MP4, MPEG, MOV, AVI, FLV, WEBM), audio (MP3, WAV, OGG, M4A, WEBM).');
             }
 
-            // Validasi ukuran file (maksimal 5MB)
-            if ($file['size'] > 5 * 1024 * 1024) {
-                throw new Exception('File size too large: ' . round($file['size'] / 1024 / 1024, 2) . 'MB. Maximum 5MB allowed.');
+            // Validasi ukuran file (maksimal 10MB untuk dokumen/video, 5MB untuk gambar/audio)
+            $maxSize = in_array($mimeType, array_merge($allowedDocTypes, $allowedVideoTypes)) ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+            if ($file['size'] > $maxSize) {
+                throw new Exception('File size too large: ' . round($file['size'] / 1024 / 1024, 2) . 'MB. Maximum ' . ($maxSize / 1024 / 1024) . 'MB allowed.');
             }
 
-            // Setup direktori upload
-            $uploadDir = 'uploads/profile_images/';
+            // Setup direktori upload berdasarkan tipe file
+            if (in_array($mimeType, $allowedImageTypes)) {
+                $uploadDir = 'uploads/profile_images/';
+            } elseif (in_array($mimeType, $allowedDocTypes)) {
+                $uploadDir = 'uploads/profile_documents/';
+            } elseif (in_array($mimeType, $allowedVideoTypes)) {
+                $uploadDir = 'uploads/profile_videos/';
+            } else {
+                $uploadDir = 'uploads/profile_media/';
+            }
+
             if (!is_dir($uploadDir)) {
                 if (!mkdir($uploadDir, 0755, true)) {
                     throw new Exception('Failed to create upload directory');
@@ -266,7 +308,21 @@ class ProfileController {
             // Generate nama file unik
             $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             if (empty($extension)) {
-                $extension = 'jpg';
+                // Determine extension based on MIME type
+                $mimeToExt = [
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif',
+                    'image/webp' => 'webp',
+                    'application/pdf' => 'pdf',
+                    'application/msword' => 'doc',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+                    'video/mp4' => 'mp4',
+                    'video/mpeg' => 'mpeg',
+                    'audio/mpeg' => 'mp3',
+                    'audio/wav' => 'wav'
+                ];
+                $extension = $mimeToExt[$mimeType] ?? 'bin';
             }
             $filename = time() . '_' . uniqid() . '.' . $extension;
             $filepath = $uploadDir . $filename;
@@ -295,7 +351,7 @@ class ProfileController {
             $response = [
                 'success' => true,
                 'url' => $baseUrl . $filepath,
-                'message' => 'Image uploaded successfully',
+                'message' => 'File uploaded successfully',
                 'filename' => $filename,
                 'location' => $baseUrl . $filepath  // TinyMCE juga mendukung 'location'
             ];

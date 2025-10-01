@@ -559,163 +559,185 @@
                             $content = $data['profile']['isi'];
                             $category = strtolower($data['profile']['nama_kategori']);
                             
-                            // Clean and professional content display
-                            switch($category) {
-                                case 'sejarah':
-                                case 'profil':
-                                    echo '<div class="profile-content">';
-                                    echo '<div class="row align-items-center mb-5">';
-                                    echo '<div class="col-lg-5 mb-4 mb-lg-0">';
-                                    echo '<div class="bg-light p-4 rounded">';
-                                    echo '<img src="ppid_assets/images/profil-kabupaten.jpg" alt="Profile" class="img-fluid rounded shadow-sm">';
-                                    echo '</div>';
-                                    echo '</div>';
-                                    echo '<div class="col-lg-7">';
-                                    echo '<h3 class="text-primary mb-4">Tentang Kabupaten Mandailing Natal</h3>';
-                                    echo htmlspecialchars_decode($content);
-                                    echo '</div>';
-                                    echo '</div>';
-                                    echo '</div>';
-                                    break;
-                                    
-                                case 'visi dan misi':
-                                    // Parse content for vision and mission
-                                    $lines = explode("\n", $content);
-                                    $visi = '';
-                                    $missions = [];
-                                    
-                                    foreach($lines as $line) {
-                                        $line = trim($line);
-                                        if(stripos($line, 'visi:') === 0) {
-                                            $visi = substr($line, 5);
-                                        } elseif(stripos($line, 'misi:') === 0) {
-                                            $missions[] = substr($line, 5);
-                                        } elseif(!empty($line)) {
-                                            $missions[] = $line;
-                                        }
-                                    }
-                                    
-                                    echo '<div class="vision-mission-content">';
-                                    if(!empty($visi)) {
-                                        echo '<div class="mb-5">';
-                                        echo '<h3 class="text-primary mb-4"><i class="fas fa-eye me-2"></i>Visi</h3>';
+                            // Check if content is a PDF file
+                            $is_pdf = (pathinfo($content, PATHINFO_EXTENSION) === 'pdf' && file_exists($content));
+                            
+                            if ($is_pdf) {
+                                // Display PDF preview link
+                                echo '<div class="pdf-content text-center py-5">';
+                                echo '<div class="pdf-icon mb-4">';
+                                echo '<i class="fas fa-file-pdf fa-5x text-danger"></i>';
+                                echo '</div>';
+                                echo '<h4 class="text-primary mb-3">Dokumen PDF</h4>';
+                                echo '<p class="text-muted">Klik tombol di bawah untuk melihat atau mengunduh file PDF</p>';
+                                echo '<a href="' . $content . '" target="_blank" class="btn btn-primary btn-lg">';
+                                echo '<i class="fas fa-file-pdf me-2"></i>klik disini';
+                                echo '</a>';
+                                echo '<div class="mt-3">';
+                                echo '<a href="' . $content . '" class="btn btn-outline-secondary" download>';
+                                echo '<i class="fas fa-download me-2"></i>Unduh File';
+                                echo '</a>';
+                                echo '</div>';
+                                echo '</div>';
+                            } else {
+                                // Clean and professional content display for text content
+                                switch($category) {
+                                    case 'sejarah':
+                                    case 'profil':
+                                        echo '<div class="profile-content">';
+                                        echo '<div class="row align-items-center mb-5">';
+                                        echo '<div class="col-lg-5 mb-4 mb-lg-0">';
                                         echo '<div class="bg-light p-4 rounded">';
-                                        echo '<p class="lead text-center mb-0">' . htmlspecialchars($visi) . '</p>';
+                                        echo '<img src="ppid_assets/images/profil-kabupaten.jpg" alt="Profile" class="img-fluid rounded shadow-sm">';
                                         echo '</div>';
                                         echo '</div>';
-                                    }
-                                    
-                                    if(!empty($missions)) {
-                                        echo '<div>';
-                                        echo '<h3 class="text-primary mb-4"><i class="fas fa-bullseye me-2"></i>Misi</h3>';
-                                        echo '<ul class="list-group list-group-flush">';
-                                        foreach($missions as $index => $mission) {
-                                            if(!empty(trim($mission))) {
-                                                echo '<li class="list-group-item border-0 px-0 pb-3">';
-                                                echo '<div class="d-flex align-items-start">';
-                                                echo '<span class="badge bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="min-width: 30px; height: 30px;">' . ($index + 1) . '</span>';
-                                                echo '<div>' . htmlspecialchars($mission) . '</div>';
-                                                echo '</div>';
-                                                echo '</li>';
+                                        echo '<div class="col-lg-7">';
+                                        echo '<h3 class="text-primary mb-4">Tentang Kabupaten Mandailing Natal</h3>';
+                                        echo htmlspecialchars_decode($content);
+                                        echo '</div>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        break;
+                                        
+                                    case 'visi dan misi':
+                                        // Parse content for vision and mission
+                                        $lines = explode("\n", $content);
+                                        $visi = '';
+                                        $missions = [];
+                                        
+                                        foreach($lines as $line) {
+                                            $line = trim($line);
+                                            if(stripos($line, 'visi:') === 0) {
+                                                $visi = substr($line, 5);
+                                            } elseif(stripos($line, 'misi:') === 0) {
+                                                $missions[] = substr($line, 5);
+                                            } elseif(!empty($line)) {
+                                                $missions[] = $line;
                                             }
                                         }
-                                        echo '</ul>';
-                                        echo '</div>';
-                                    }
-                                    echo '</div>';
-                                    break;
-                                    
-                                case 'struktur organisasi':
-                                    echo '<div class="org-structure-content text-center mb-5">';
-                                    echo '<img src="ppid_assets/images/struktur-organisasi.png" alt="Struktur Organisasi" class="img-fluid rounded border shadow-sm" style="max-width: 100%; height: auto;">';
-                                    echo '</div>';
-                                    echo '<div class="org-description">';
-                                    echo '<h3 class="text-primary mb-4">Deskripsi Struktur Organisasi</h3>';
-                                    echo htmlspecialchars_decode($content);
-                                    echo '</div>';
-                                    break;
-                                    
-                                case 'tugas dan fungsi':
-                                    $items = preg_split('/\n\s*\n|\r\s*\r|\n\r\s*\n\r/', $content);
-                                    echo '<div class="duties-functions-content">';
-                                    echo '<div class="row g-4">';
-                                    
-                                    $item_count = 0;
-                                    foreach($items as $item) {
-                                        $item = trim($item);
-                                        if(!empty($item)) {
-                                            echo '<div class="col-md-6 mb-4">';
-                                            echo '<div class="d-flex">';
-                                            echo '<div class="me-3 mt-1">';
-                                            echo '<span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="min-width: 30px; height: 30px;">' . ($item_count + 1) . '</span>';
+                                        
+                                        echo '<div class="vision-mission-content">';
+                                        if(!empty($visi)) {
+                                            echo '<div class="mb-5">';
+                                            echo '<h3 class="text-primary mb-4"><i class="fas fa-eye me-2"></i>Visi</h3>';
+                                            echo '<div class="bg-light p-4 rounded">';
+                                            echo '<p class="lead text-center mb-0">' . htmlspecialchars($visi) . '</p>';
                                             echo '</div>';
+                                            echo '</div>';
+                                        }
+                                        
+                                        if(!empty($missions)) {
                                             echo '<div>';
-                                            echo '<h5 class="text-primary">Tugas dan Fungsi ' . ($item_count + 1) . '</h5>';
-                                            echo '<p>' . htmlspecialchars($item) . '</p>';
+                                            echo '<h3 class="text-primary mb-4"><i class="fas fa-bullseye me-2"></i>Misi</h3>';
+                                            echo '<ul class="list-group list-group-flush">';
+                                            foreach($missions as $index => $mission) {
+                                                if(!empty(trim($mission))) {
+                                                    echo '<li class="list-group-item border-0 px-0 pb-3">';
+                                                    echo '<div class="d-flex align-items-start">';
+                                                    echo '<span class="badge bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="min-width: 30px; height: 30px;">' . ($index + 1) . '</span>';
+                                                    echo '<div>' . htmlspecialchars($mission) . '</div>';
+                                                    echo '</div>';
+                                                    echo '</li>';
+                                                }
+                                            }
+                                            echo '</ul>';
                                             echo '</div>';
-                                            echo '</div>';
-                                            echo '</div>';
-                                            $item_count++;
                                         }
-                                    }
-                                    echo '</div>';
-                                    echo '</div>';
-                                    break;
-                                    
-                                case 'dasar hukum':
-                                    $items = explode("\n", $content);
-                                    echo '<div class="legal-basis-content">';
-                                    echo '<h3 class="text-primary mb-4">Dasar Hukum</h3>';
-                                    echo '<div class="table-responsive">';
-                                    echo '<table class="table table-hover">';
-                                    echo '<tbody>';
-                                    $item_count = 0;
-                                    foreach($items as $item) {
-                                        $item = trim($item);
-                                        if(!empty($item)) {
-                                            echo '<tr>';
-                                            echo '<td class="border-0 pb-3 ps-0">' . ($item_count + 1) . '.</td>';
-                                            echo '<td class="border-0 pb-3">' . htmlspecialchars($item) . '</td>';
-                                            echo '</tr>';
-                                            $item_count++;
+                                        echo '</div>';
+                                        break;
+                                        
+                                    case 'struktur organisasi':
+                                        echo '<div class="org-structure-content text-center mb-5">';
+                                        echo '<img src="ppid_assets/images/struktur-organisasi.png" alt="Struktur Organisasi" class="img-fluid rounded border shadow-sm" style="max-width: 100%; height: auto;">';
+                                        echo '</div>';
+                                        echo '<div class="org-description">';
+                                        echo '<h3 class="text-primary mb-4">Deskripsi Struktur Organisasi</h3>';
+                                        echo htmlspecialchars_decode($content);
+                                        echo '</div>';
+                                        break;
+                                        
+                                    case 'tugas dan fungsi':
+                                        $items = preg_split('/\n\s*\n|\r\s*\r|\n\r\s*\n\r/', $content);
+                                        echo '<div class="duties-functions-content">';
+                                        echo '<div class="row g-4">';
+                                        
+                                        $item_count = 0;
+                                        foreach($items as $item) {
+                                            $item = trim($item);
+                                            if(!empty($item)) {
+                                                echo '<div class="col-md-6 mb-4">';
+                                                echo '<div class="d-flex">';
+                                                echo '<div class="me-3 mt-1">';
+                                                echo '<span class="badge bg-primary rounded-circle d-flex align-items-center justify-content-center" style="min-width: 30px; height: 30px;">' . ($item_count + 1) . '</span>';
+                                                echo '</div>';
+                                                echo '<div>';
+                                                echo '<h5 class="text-primary">Tugas dan Fungsi ' . ($item_count + 1) . '</h5>';
+                                                echo '<p>' . htmlspecialchars($item) . '</p>';
+                                                echo '</div>';
+                                                echo '</div>';
+                                                echo '</div>';
+                                                $item_count++;
+                                            }
                                         }
-                                    }
-                                    echo '</tbody>';
-                                    echo '</table>';
-                                    echo '</div>';
-                                    echo '</div>';
-                                    break;
-                                    
-                                case 'alamat kantor':
-                                    $lines = explode("\n", $content);
-                                    echo '<div class="office-info-content">';
-                                    echo '<div class="row g-4">';
-                                    echo '<div class="col-md-8">';
-                                    echo '<h3 class="text-primary mb-4">Alamat Kantor</h3>';
-                                    echo '<div class="bg-light p-4 rounded">';
-                                    foreach($lines as $line) {
-                                        $line = trim($line);
-                                        if(!empty($line)) {
-                                            echo '<p class="mb-2"><i class="fas fa-map-marker-alt text-primary me-2"></i> ' . htmlspecialchars($line) . '</p>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        break;
+                                        
+                                    case 'dasar hukum':
+                                        $items = explode("\n", $content);
+                                        echo '<div class="legal-basis-content">';
+                                        echo '<h3 class="text-primary mb-4">Dasar Hukum</h3>';
+                                        echo '<div class="table-responsive">';
+                                        echo '<table class="table table-hover">';
+                                        echo '<tbody>';
+                                        $item_count = 0;
+                                        foreach($items as $item) {
+                                            $item = trim($item);
+                                            if(!empty($item)) {
+                                                echo '<tr>';
+                                                echo '<td class="border-0 pb-3 ps-0">' . ($item_count + 1) . '.</td>';
+                                                echo '<td class="border-0 pb-3">' . htmlspecialchars($item) . '</td>';
+                                                echo '</tr>';
+                                                $item_count++;
+                                            }
                                         }
-                                    }
-                                    echo '</div>';
-                                    echo '</div>';
-                                    echo '<div class="col-md-4">';
-                                    echo '<div class="bg-primary text-white p-4 rounded h-100 d-flex flex-column">';
-                                    echo '<h4 class="mb-3"><i class="fas fa-directions me-2"></i> Lokasi</h4>';
-                                    echo '<p class="flex-grow-1">Kantor PPID Kabupaten Mandailing Natal dapat diakses melalui berbagai jalur transportasi umum.</p>';
-                                    echo '<a href="#" class="btn btn-light text-primary mt-auto">Lihat di Peta</a>';
-                                    echo '</div>';
-                                    echo '</div>';
-                                    echo '</div>';
-                                    echo '</div>';
-                                    break;
-                                    
-                                default:
-                                    echo '<div class="default-content">';
-                                    echo htmlspecialchars_decode($content);
-                                    echo '</div>';
+                                        echo '</tbody>';
+                                        echo '</table>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        break;
+                                        
+                                    case 'alamat kantor':
+                                        $lines = explode("\n", $content);
+                                        echo '<div class="office-info-content">';
+                                        echo '<div class="row g-4">';
+                                        echo '<div class="col-md-8">';
+                                        echo '<h3 class="text-primary mb-4">Alamat Kantor</h3>';
+                                        echo '<div class="bg-light p-4 rounded">';
+                                        foreach($lines as $line) {
+                                            $line = trim($line);
+                                            if(!empty($line)) {
+                                                echo '<p class="mb-2"><i class="fas fa-map-marker-alt text-primary me-2"></i> ' . htmlspecialchars($line) . '</p>';
+                                            }
+                                        }
+                                        echo '</div>';
+                                        echo '</div>';
+                                        echo '<div class="col-md-4">';
+                                        echo '<div class="bg-primary text-white p-4 rounded h-100 d-flex flex-column">';
+                                        echo '<h4 class="mb-3"><i class="fas fa-directions me-2"></i> Lokasi</h4>';
+                                        echo '<p class="flex-grow-1">Kantor PPID Kabupaten Mandailing Natal dapat diakses melalui berbagai jalur transportasi umum.</p>';
+                                        echo '<a href="#" class="btn btn-light text-primary mt-auto">Lihat di Peta</a>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        break;
+                                        
+                                    default:
+                                        echo '<div class="default-content">';
+                                        echo htmlspecialchars_decode($content);
+                                        echo '</div>';
+                                }
                             }
                             ?>
                         </div>

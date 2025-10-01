@@ -58,29 +58,62 @@ class ProfileModel
         return $stmt->execute();
     }
 
-    // Method untuk handle upload file
+    // Method untuk handle upload file PDF dan Gambar
     public function handleFileUpload($file, $keterangan)
     {
         try {
-            $targetDir = "uploads/profile/";
+            // Get file extension
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+            // Define allowed file types
+            $allowedPdfTypes = ['pdf'];
+            $allowedImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+            $allowedTypes = array_merge($allowedPdfTypes, $allowedImageTypes);
+
+            // Validate file type
+            if (!in_array($extension, $allowedTypes)) {
+                throw new Exception("Tipe file tidak diizinkan. Tipe yang diterima: " . implode(', ', $allowedTypes));
+            }
+
+            // Verify MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            // Determine upload directory based on file type
+            if (in_array($extension, $allowedPdfTypes)) {
+                $allowedMimeTypes = ['application/pdf'];
+                $targetDir = "uploads/profile_pdfs/";
+                $maxSize = 10000000; // 10MB for PDF
+                $fileTypeLabel = 'PDF';
+            } else {
+                $allowedMimeTypes = [
+                    'image/jpeg', 
+                    'image/jpg', 
+                    'image/png', 
+                    'image/gif', 
+                    'image/bmp',
+                    'image/webp'
+                ];
+                $targetDir = "uploads/profile_images/";
+                $maxSize = 5000000; // 5MB for images
+                $fileTypeLabel = 'gambar';
+            }
+
+            // Check if MIME type is valid for the file type
+            if (!in_array($mimeType, $allowedMimeTypes)) {
+                throw new Exception("File bukan " . $fileTypeLabel . " yang valid. Tipe file: " . $mimeType);
+            }
 
             // Create directory if it doesn't exist
             if (!file_exists($targetDir)) {
                 mkdir($targetDir, 0777, true);
             }
 
-            // Get file extension
-            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-            // Validate file type
-            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-            if (!in_array($extension, $allowedTypes)) {
-                throw new Exception("Tipe file tidak diizinkan. Hanya: " . implode(', ', $allowedTypes));
-            }
-
-            // Validate file size (max 5MB)
-            if ($file['size'] > 5000000) {
-                throw new Exception("Ukuran file terlalu besar. Maksimal 5MB");
+            // Validate file size
+            if ($file['size'] > $maxSize) {
+                $maxSizeMB = $maxSize / 1024 / 1024;
+                throw new Exception("Ukuran file terlalu besar. Maksimal " . $maxSizeMB . "MB untuk " . $fileTypeLabel);
             }
 
             // Generate filename: keterangan_timestamp.extension
@@ -93,7 +126,7 @@ class ProfileModel
                     'success' => true,
                     'filename' => $newFilename,
                     'filepath' => $targetFile,
-                    'message' => 'File berhasil diupload'
+                    'message' => 'File ' . $fileTypeLabel . ' berhasil diupload'
                 ];
             } else {
                 throw new Exception("Gagal mengupload file");
