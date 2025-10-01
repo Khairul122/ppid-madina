@@ -231,66 +231,74 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   <?php include 'template/script.php'; ?>
 
   <!-- TinyMCE Editor -->
-  <script src="assets/vendors/tinymce/tinymce.min.js"></script>
+  <script src="https://cdn.tiny.cloud/1/z0t4wwtn9a2wpsk59ee400jsup9j2wusunqyvvezelo6imd8/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
   <script>
     // Initialize TinyMCE for all textareas with tinymce-editor class with image upload capability
     function initializeTinyMCE() {
       tinymce.init({
         selector: '.tinymce-editor',
         height: 400,
-        menubar: false,
-        plugins: [
-          'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-          'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-          'insertdatetime', 'media', 'table', 'help', 'wordcount'
-        ],
-        toolbar: 'undo redo | blocks | ' +
-          'bold italic forecolor | alignleft aligncenter ' +
-          'alignright alignjustify | bullist numlist outdent indent | ' +
-          'image media table | removeformat | help',
-        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-        branding: false,
-        elementpath: false,
-        statusbar: true,
-        resize: true,
-        image_advtab: true,
-        file_picker_types: 'image',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        file_picker_types: 'file image media',
+        automatic_uploads: true,
+        images_upload_url: 'index.php?controller=profile&action=upload_image',
         /* Enable image upload */
-        images_upload_handler: function(blobInfo, success, failure) {
-          var formData = new FormData();
-          formData.append('file', blobInfo.blob(), blobInfo.filename());
+        images_upload_handler: function(blobInfo, progress) {
+          return new Promise(function(resolve, reject) {
+            var formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-          // Create an AJAX request to handle image upload
-          var xhr = new XMLHttpRequest();
-          xhr.open('POST', 'index.php?controller=profile&action=upload_image');
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'index.php?controller=profile&action=upload_image');
 
-          xhr.onload = function() {
-            if (xhr.status === 200) {
-              try {
-                var response = JSON.parse(xhr.responseText);
-                if (response && response.success && response.url) {
-                  success(response.url);
-                } else {
-                  failure(response && response.message ? response.message : 'Upload failed');
-                }
-              } catch (e) {
-                failure('Invalid response from server');
+            xhr.upload.onprogress = function(e) {
+              if (typeof progress === 'function') {
+                progress((e.loaded / e.total) * 100);
               }
-            } else {
-              failure('HTTP Error: ' + xhr.status);
-            }
-          };
+            };
 
-          xhr.onerror = function() {
-            failure('Image upload failed due to a network error.');
-          };
+            xhr.onload = function() {
+              if (xhr.status === 200) {
+                console.log('Raw response:', xhr.responseText);
+                try {
+                  var response = JSON.parse(xhr.responseText);
+                  console.log('Parsed response:', response);
 
-          xhr.send(formData);
-        },
-        setup: function(editor) {
-          editor.on('init', function() {
-            // Editor is ready
-            console.log('TinyMCE editor initialized for:', editor.id);
+                  if (response && response.success === true) {
+                    if (response.url) {
+                      console.log('Upload success, URL:', response.url);
+                      resolve(response.url);
+                    } else if (response.location) {
+                      console.log('Upload success, location:', response.location);
+                      resolve(response.location);
+                    } else {
+                      console.error('No URL in response');
+                      reject('No URL returned from server');
+                    }
+                  } else {
+                    var errorMsg = response && response.message ? response.message : 'Upload failed';
+                    console.error('Upload failed:', errorMsg);
+                    reject(errorMsg);
+                  }
+                } catch (e) {
+                  console.error('JSON parse error:', e, 'Response:', xhr.responseText);
+                  reject('Invalid response from server: ' + e.message);
+                }
+              } else if (xhr.status === 403) {
+                reject('Session expired or unauthorized. Please refresh the page.');
+              } else {
+                console.error('HTTP Error:', xhr.status);
+                reject('HTTP Error: ' + xhr.status);
+              }
+            };
+
+            xhr.onerror = function() {
+              console.error('Network error during image upload');
+              reject('Image upload failed due to a network error.');
+            };
+
+            xhr.send(formData);
           });
         }
       });
@@ -300,211 +308,162 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     document.addEventListener('DOMContentLoaded', function() {
       initializeTinyMCE();
 
-      // Initialize TinyMCE for the new editor in the modal
+      // Initialize TinyMCE for the new editor in modal
       setTimeout(function() {
         if (!tinymce.get('newEditor')) {
           tinymce.init({
             selector: '#newEditor',
             height: 400,
-            menubar: false,
-            plugins: [
-              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-              'insertdatetime', 'media', 'table', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-              'bold italic forecolor | alignleft aligncenter ' +
-              'alignright alignjustify | bullist numlist outdent indent | ' +
-              'image media table | removeformat | help',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-            branding: false,
-            elementpath: false,
-            statusbar: true,
-            resize: true,
-            image_advtab: true,
-            file_picker_types: 'image',
-            /* Enable image upload */
-            images_upload_handler: function(blobInfo, success, failure) {
-              var formData = new FormData();
-              formData.append('file', blobInfo.blob(), blobInfo.filename());
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            file_picker_types: 'file image media',
+            automatic_uploads: true,
+            images_upload_url: 'index.php?controller=profile&action=upload_image',
+            images_upload_handler: function(blobInfo, progress) {
+              return new Promise(function(resolve, reject) {
+                var formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-              // Create an AJAX request to handle image upload
-              var xhr = new XMLHttpRequest();
-              xhr.open('POST', 'index.php?controller=profile&action=upload_image');
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'index.php?controller=profile&action=upload_image');
 
-              xhr.onload = function() {
-                if (xhr.status === 200) {
-                  try {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response && response.success && response.url) {
-                      success(response.url);
-                    } else {
-                      failure(response && response.message ? response.message : 'Upload failed');
-                    }
-                  } catch (e) {
-                    failure('Invalid response from server');
+                xhr.upload.onprogress = function(e) {
+                  if (typeof progress === 'function') {
+                    progress((e.loaded / e.total) * 100);
                   }
-                } else {
-                  failure('HTTP Error: ' + xhr.status);
-                }
-              };
+                };
 
-              xhr.onerror = function() {
-                failure('Image upload failed due to a network error.');
-              };
+                xhr.onload = function() {
+                  if (xhr.status === 200) {
+                    console.log('Raw response:', xhr.responseText);
+                    try {
+                      var response = JSON.parse(xhr.responseText);
+                      console.log('Parsed response:', response);
 
-              xhr.send(formData);
+                      if (response && response.success === true) {
+                        if (response.url) {
+                          console.log('Upload success, URL:', response.url);
+                          resolve(response.url);
+                        } else if (response.location) {
+                          console.log('Upload success, location:', response.location);
+                          resolve(response.location);
+                        } else {
+                          console.error('No URL in response');
+                          reject('No URL returned from server');
+                        }
+                      } else {
+                        var errorMsg = response && response.message ? response.message : 'Upload failed';
+                        console.error('Upload failed:', errorMsg);
+                        reject(errorMsg);
+                      }
+                    } catch (e) {
+                      console.error('JSON parse error:', e, 'Response:', xhr.responseText);
+                      reject('Invalid response from server: ' + e.message);
+                    }
+                  } else if (xhr.status === 403) {
+                    reject('Session expired or unauthorized. Please refresh the page.');
+                  } else {
+                    console.error('HTTP Error:', xhr.status);
+                    reject('HTTP Error: ' + xhr.status);
+                  }
+                };
+
+                xhr.onerror = function() {
+                  console.error('Network error during image upload');
+                  reject('Image upload failed due to a network error.');
+                };
+
+                xhr.send(formData);
+              });
             }
           });
         }
       }, 500);
     });
 
-    // Reinitialize TinyMCE when switching tabs to ensure editors are properly loaded
+    // Reinitialize TinyMCE when switching tabs
     document.addEventListener('shown.bs.tab', function(event) {
-      // Small delay to ensure tab content is fully loaded
       setTimeout(function() {
         initializeTinyMCE();
       }, 100);
     });
 
-    // Destroy TinyMCE when modal is closed to prevent conflicts
+    // Destroy TinyMCE when modal is closed
     document.getElementById('addProfileModal').addEventListener('hidden.bs.modal', function() {
       if (tinymce.get('newEditor')) {
         tinymce.get('newEditor').remove();
       }
 
-      // Reinitialize after a short delay
       setTimeout(function() {
         if (!tinymce.get('newEditor')) {
           tinymce.init({
             selector: '#newEditor',
             height: 400,
-            menubar: false,
-            plugins: [
-              'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-              'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-              'insertdatetime', 'media', 'table', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-              'bold italic forecolor | alignleft aligncenter ' +
-              'alignright alignjustify | bullist numlist outdent indent | ' +
-              'image media table | removeformat | help',
-            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-            branding: false,
-            elementpath: false,
-            statusbar: true,
-            resize: true,
-            image_advtab: true,
-            file_picker_types: 'image',
-            /* Enable image upload */
-            images_upload_handler: function(blobInfo, success, failure) {
-              var formData = new FormData();
-              formData.append('file', blobInfo.blob(), blobInfo.filename());
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            file_picker_types: 'file image media',
+            automatic_uploads: true,
+            images_upload_url: 'index.php?controller=profile&action=upload_image',
+            images_upload_handler: function(blobInfo, progress) {
+              return new Promise(function(resolve, reject) {
+                var formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-              // Create an AJAX request to handle image upload
-              var xhr = new XMLHttpRequest();
-              xhr.open('POST', 'index.php?controller=profile&action=upload_image');
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'index.php?controller=profile&action=upload_image');
 
-              xhr.onload = function() {
-                if (xhr.status === 200) {
-                  try {
-                    var response = JSON.parse(xhr.responseText);
-                    if (response && response.success && response.url) {
-                      success(response.url);
-                    } else {
-                      failure(response && response.message ? response.message : 'Upload failed');
-                    }
-                  } catch (e) {
-                    failure('Invalid response from server');
+                xhr.upload.onprogress = function(e) {
+                  if (typeof progress === 'function') {
+                    progress((e.loaded / e.total) * 100);
                   }
-                } else {
-                  failure('HTTP Error: ' + xhr.status);
-                }
-              };
+                };
 
-              xhr.onerror = function() {
-                failure('Image upload failed due to a network error.');
-              };
+                xhr.onload = function() {
+                  if (xhr.status === 200) {
+                    console.log('Raw response:', xhr.responseText);
+                    try {
+                      var response = JSON.parse(xhr.responseText);
+                      console.log('Parsed response:', response);
 
-              xhr.send(formData);
+                      if (response && response.success === true) {
+                        if (response.url) {
+                          console.log('Upload success, URL:', response.url);
+                          resolve(response.url);
+                        } else if (response.location) {
+                          console.log('Upload success, location:', response.location);
+                          resolve(response.location);
+                        } else {
+                          console.error('No URL in response');
+                          reject('No URL returned from server');
+                        }
+                      } else {
+                        var errorMsg = response && response.message ? response.message : 'Upload failed';
+                        console.error('Upload failed:', errorMsg);
+                        reject(errorMsg);
+                      }
+                    } catch (e) {
+                      console.error('JSON parse error:', e, 'Response:', xhr.responseText);
+                      reject('Invalid response from server: ' + e.message);
+                    }
+                  } else if (xhr.status === 403) {
+                    reject('Session expired or unauthorized. Please refresh the page.');
+                  } else {
+                    console.error('HTTP Error:', xhr.status);
+                    reject('HTTP Error: ' + xhr.status);
+                  }
+                };
+
+                xhr.onerror = function() {
+                  console.error('Network error during image upload');
+                  reject('Image upload failed due to a network error.');
+                };
+
+                xhr.send(formData);
+              });
             }
           });
         }
       }, 100);
-    });
-
-    // Update modal size on window resize for better responsiveness
-    window.addEventListener('resize', function() {
-      // Close and reopen modal to adjust its size if it's currently open
-      if (document.getElementById('addProfileModal').classList.contains('show')) {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addProfileModal'));
-        if (modal) {
-          const currentIsOpen = modal._isShown;
-          if (currentIsOpen) {
-            // Reinitialize TinyMCE to ensure it's responsive
-            if (tinymce.get('newEditor')) {
-              tinymce.get('newEditor').remove();
-
-              setTimeout(function() {
-                tinymce.init({
-                  selector: '#newEditor',
-                  height: 400,
-                  menubar: false,
-                  plugins: [
-                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                    'insertdatetime', 'media', 'table', 'help', 'wordcount'
-                  ],
-                  toolbar: 'undo redo | blocks | ' +
-                    'bold italic forecolor | alignleft aligncenter ' +
-                    'alignright alignjustify | bullist numlist outdent indent | ' +
-                    'image media table | removeformat | help',
-                  content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-                  branding: false,
-                  elementpath: false,
-                  statusbar: true,
-                  resize: true,
-                  image_advtab: true,
-                  file_picker_types: 'image',
-                  /* Enable image upload */
-                  images_upload_handler: function(blobInfo, success, failure) {
-                    var formData = new FormData();
-                    formData.append('file', blobInfo.blob(), blobInfo.filename());
-
-                    // Create an AJAX request to handle image upload
-                    var xhr = new XMLHttpRequest();
-                    xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-                    xhr.onload = function() {
-                      if (xhr.status === 200) {
-                        try {
-                          var response = JSON.parse(xhr.responseText);
-                          if (response && response.success && response.url) {
-                            success(response.url);
-                          } else {
-                            failure(response && response.message ? response.message : 'Upload failed');
-                          }
-                        } catch (e) {
-                          failure('Invalid response from server');
-                        }
-                      } else {
-                        failure('HTTP Error: ' + xhr.status);
-                      }
-                    };
-
-                    xhr.onerror = function() {
-                      failure('Image upload failed due to a network error.');
-                    };
-
-                    xhr.send(formData);
-                  }
-                });
-              }, 100);
-            }
-          }
-        }
-      }
     });
   </script>
 </body>

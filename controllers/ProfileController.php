@@ -165,68 +165,154 @@ class ProfileController {
         include 'views/profile/masyarakat.php';
     }
 
+    /**
+     * Menampilkan detail profil berdasarkan ID
+     */
+    public function viewDetail() {
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header('Location: index.php');
+            exit();
+        }
+
+        // Get profile by ID
+        $profile = $this->profileModel->getProfileById($id);
+
+        if (!$profile) {
+            $_SESSION['error'] = 'Profil tidak ditemukan';
+            header('Location: index.php');
+            exit();
+        }
+
+        // Siapkan data untuk view
+        $data = [
+            'title' => $profile['keterangan'],
+            'profile' => $profile
+        ];
+
+        // Load view
+        include 'views/profile/detail_public.php';
+    }
+
     // Method untuk upload gambar dari TinyMCE
     public function upload_image() {
-        header('Content-Type: application/json');
+        // Clear any output buffers to prevent extra output
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Disable error display to prevent it from breaking JSON
+        ini_set('display_errors', 0);
+        error_reporting(0);
+
+        // Set header
+        header('Content-Type: application/json; charset=utf-8');
 
         try {
-            // Validasi request
+            // Validasi session
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
             if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 throw new Exception('Unauthorized access');
             }
 
             if (!isset($_FILES['file'])) {
-                throw new Exception('No file uploaded');
+                throw new Exception('No file uploaded. FILES: ' . json_encode($_FILES));
             }
 
             $file = $_FILES['file'];
 
             // Cek error upload
             if ($file['error'] !== UPLOAD_ERR_OK) {
-                throw new Exception('Upload error: ' . $file['error']);
+                $errorMessages = [
+                    UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize',
+                    UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE',
+                    UPLOAD_ERR_PARTIAL => 'File only partially uploaded',
+                    UPLOAD_ERR_NO_FILE => 'No file uploaded',
+                    UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+                    UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+                    UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
+                ];
+                $errorMsg = $errorMessages[$file['error']] ?? 'Unknown upload error: ' . $file['error'];
+                throw new Exception($errorMsg);
             }
 
-            // Validasi file
+            // Validasi file type
             $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (!in_array($file['type'], $allowedTypes)) {
-                throw new Exception('Invalid file type. Only JPG, PNG, GIF, and WEBP allowed.');
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mimeType, $allowedTypes) && !in_array($file['type'], $allowedTypes)) {
+                throw new Exception('Invalid file type: ' . $mimeType . '. Only JPG, PNG, GIF, and WEBP allowed.');
             }
 
             // Validasi ukuran file (maksimal 5MB)
             if ($file['size'] > 5 * 1024 * 1024) {
-                throw new Exception('File size too large. Maximum 5MB allowed.');
+                throw new Exception('File size too large: ' . round($file['size'] / 1024 / 1024, 2) . 'MB. Maximum 5MB allowed.');
             }
 
             // Setup direktori upload
             $uploadDir = 'uploads/profile_images/';
             if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+                if (!mkdir($uploadDir, 0755, true)) {
+                    throw new Exception('Failed to create upload directory');
+                }
             }
 
             // Generate nama file unik
-            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (empty($extension)) {
+                $extension = 'jpg';
+            }
             $filename = time() . '_' . uniqid() . '.' . $extension;
             $filepath = $uploadDir . $filename;
 
             // Upload file
             if (!move_uploaded_file($file['tmp_name'], $filepath)) {
-                throw new Exception('Failed to upload image');
+                throw new Exception('Failed to move uploaded file to: ' . $filepath);
             }
 
             // Return URL relatif untuk ditampilkan di editor
-            echo json_encode([
+            // Gunakan absolute URL atau path dari root
+            $baseUrl = '';
+            if (isset($_SERVER['HTTP_HOST'])) {
+                $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+                $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
+
+                // Add base path if exists
+                $scriptName = $_SERVER['SCRIPT_NAME'];
+                $basePath = dirname($scriptName);
+                if ($basePath !== '/' && $basePath !== '\\') {
+                    $baseUrl .= $basePath;
+                }
+                $baseUrl = rtrim($baseUrl, '/') . '/';
+            }
+
+            $response = [
                 'success' => true,
-                'url' => $filepath,
-                'message' => 'Image uploaded successfully'
-            ]);
+                'url' => $baseUrl . $filepath,
+                'message' => 'Image uploaded successfully',
+                'filename' => $filename,
+                'location' => $baseUrl . $filepath  // TinyMCE juga mendukung 'location'
+            ];
+
+            echo json_encode($response, JSON_UNESCAPED_SLASHES);
 
         } catch (Exception $e) {
-            echo json_encode([
+            $response = [
                 'success' => false,
                 'message' => $e->getMessage(),
-                'url' => '' // Tambahkan url kosong untuk menghindari error
-            ]);
+                'url' => '',
+                'location' => $e->getFile() . ':' . $e->getLine()
+            ];
+
+            echo json_encode($response, JSON_UNESCAPED_SLASHES);
         }
+
         exit();
     }
 }

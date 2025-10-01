@@ -137,6 +137,30 @@ class ProfileModel
         return $groupedProfiles;
     }
 
+    // Method untuk mendapatkan profile yang dikelompokkan berdasarkan nama_kategori dan keterangan untuk navbar
+    public function getProfilesForNavbar()
+    {
+        $query = "SELECT nama_kategori, keterangan, id_profile FROM " . $this->table_name . " ORDER BY id_profile ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $profiles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Group by kategori and keterangan
+        $grouped = [];
+        foreach ($profiles as $profile) {
+            $kategori = $profile['nama_kategori'];
+            if (!isset($grouped[$kategori])) {
+                $grouped[$kategori] = [];
+            }
+            $grouped[$kategori][] = [
+                'keterangan' => $profile['keterangan'],
+                'id_profile' => $profile['id_profile']
+            ];
+        }
+
+        return $grouped;
+    }
+
     // Method untuk mendapatkan profile berdasarkan kategori
     public function getProfilesByCategory($category)
     {

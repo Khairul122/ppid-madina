@@ -1173,41 +1173,7 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer" data-aos="fade-in">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4" data-aos="fade-right" data-aos-delay="100">
-                    <h5>PPID Madina</h5>
-                    <p><?= $data['kontak']['alamat'] ?></p>
-                    <p><i class="fas fa-phone me-2"></i> <?= $data['kontak']['telepon'] ?></p>
-                    <p><i class="fas fa-envelope me-2"></i> <?= $data['kontak']['email'] ?></p>
-                </div>
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <h5>Link Terkait</h5>
-                    <a href="#">Beranda</a>
-                    <a href="#">Profil</a>
-                    <a href="#">Layanan Informasi</a>
-                    <a href="#">Daftar Informasi Publik</a>
-                    <a href="#">Tata Kelola</a>
-                </div>
-                <div class="col-md-4 mb-4" data-aos="fade-left" data-aos-delay="300">
-                    <h5>Media Sosial</h5>
-                    <div class="social-links">
-                        <?php foreach($data['kontak']['media_sosial'] as $social): ?>
-                        <a href="<?= $social['url'] ?>" title="<?= $social['platform'] ?>"><i class="<?= $social['icon'] ?>"></i></a>
-                        <?php endforeach; ?>
-                    </div>
-                    <p class="mt-3">Jam Operasional:</p>
-                    <p>Senin - Kamis: <?= $data['kontak']['jam_operasional']['senin_kamis'] ?></p>
-                    <p>Jumat: <?= $data['kontak']['jam_operasional']['jumat'] ?></p>
-                </div>
-            </div>
-            <div class="copyright" data-aos="fade-in" data-aos-delay="500">
-                <p>&copy; 2025 PPID Mandailing Natal. Hak Cipta Dilindungi.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'template/layout/footer.php'; ?>
 
     <!-- News Modal -->
     <div id="newsModal" class="news-modal">
