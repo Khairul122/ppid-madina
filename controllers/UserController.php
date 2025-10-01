@@ -1,13 +1,16 @@
 <?php
 require_once 'models/UserModel.php';
+require_once 'models/ProfileModel.php';
 
 class UserController {
     private $userModel;
+    private $profileModel;
 
     public function __construct() {
         global $database;
         $db = $database->getConnection();
         $this->userModel = new UserModel($db);
+        $this->profileModel = new ProfileModel($db);
     }
 
     public function index() {
@@ -18,6 +21,9 @@ class UserController {
 
         // Get user biodata
         $user_data = $this->userModel->getUserBiodata($_SESSION['user_id']);
+
+        // Get profile categories for navbar
+        $profile_categories = $this->profileModel->getUniqueCategories();
 
         // Set default values if data not found
         $nama_lengkap = $user_data['nama_lengkap'] ?? $_SESSION['username'] ?? 'Pengguna';
@@ -52,6 +58,9 @@ class UserController {
         // Get user biodata
         $user_data = $this->userModel->getUserBiodata($_SESSION['user_id']);
 
+        // Get profile categories for navbar
+        $profile_categories = $this->profileModel->getUniqueCategories();
+
         // Set default values if data not found
         $nama_lengkap = $user_data['nama_lengkap'] ?? $_SESSION['username'] ?? 'Pengguna';
         $status_pengguna = $user_data['status_pengguna'] ?? 'publik';
@@ -81,6 +90,9 @@ class UserController {
             header('Location: index.php?controller=auth&action=login');
             exit();
         }
+
+        // Get profile categories for navbar
+        $profile_categories = $this->profileModel->getUniqueCategories();
 
         $error = '';
         $success = '';
@@ -133,6 +145,9 @@ class UserController {
             exit();
         }
 
+        // Get profile categories for navbar
+        $profile_categories = $this->profileModel->getUniqueCategories();
+
         if (!isset($_FILES['profile_photo']) || $_FILES['profile_photo']['error'] !== UPLOAD_ERR_OK) {
             $_SESSION['error_message'] = 'Tidak ada file yang diupload atau terjadi error';
             header('Location: index.php?controller=user&action=profile');
@@ -156,6 +171,9 @@ class UserController {
             header('Location: index.php?controller=auth&action=login');
             exit();
         }
+
+        // Get profile categories for navbar
+        $profile_categories = $this->profileModel->getUniqueCategories();
 
         // Path ke file panduan
         $filePath = 'ppid_assets/panduan-pengguna-ppid.pdf';

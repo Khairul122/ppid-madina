@@ -12,7 +12,7 @@
         <!-- Navigation Links -->
         <div class="navbar-nav">
           <a href="index.php?controller=user&action=index">BERANDA</a>
-          <a href="index.php?controller=user&action=profile" class="active">PROFILE</a>
+          <a href="index.php?controller=user&action=profile">PROFILE</a>
 
           <!-- Permohonan Dropdown -->
           <div class="nav-dropdown">

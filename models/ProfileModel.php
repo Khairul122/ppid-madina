@@ -106,4 +106,55 @@ class ProfileModel
             ];
         }
     }
+
+    // Method untuk mendapatkan kategori unik dari tabel profile
+    public function getUniqueCategories()
+    {
+        $query = "SELECT DISTINCT nama_kategori FROM " . $this->table_name . " ORDER BY nama_kategori ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Method untuk mendapatkan profile yang dikelompokkan berdasarkan nama_kategori
+    public function getGroupedProfiles()
+    {
+        $query = "SELECT * FROM " . $this->table_name . " ORDER BY nama_kategori ASC, id_profile ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $profiles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Group profiles by 'nama_kategori'
+        $groupedProfiles = [];
+        foreach ($profiles as $profile) {
+            $category = $profile['nama_kategori'];
+            if (!isset($groupedProfiles[$category])) {
+                $groupedProfiles[$category] = [];
+            }
+            $groupedProfiles[$category][] = $profile;
+        }
+
+        return $groupedProfiles;
+    }
+
+    // Method untuk mendapatkan profile berdasarkan kategori
+    public function getProfilesByCategory($category)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE nama_kategori = :nama_kategori ORDER BY id_profile ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':nama_kategori', $category);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Method untuk menambah profile baru
+    public function insertProfile($nama_kategori, $keterangan, $isi)
+    {
+        $query = "INSERT INTO " . $this->table_name . " (nama_kategori, keterangan, isi, created_at, updated_at) VALUES (:nama_kategori, :keterangan, :isi, NOW(), NOW())";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':nama_kategori', $nama_kategori);
+        $stmt->bindParam(':keterangan', $keterangan);
+        $stmt->bindParam(':isi', $isi);
+        return $stmt->execute();
+    }
 }
