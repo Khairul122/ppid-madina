@@ -571,7 +571,7 @@
                                 echo '<h4 class="text-primary mb-3">Dokumen PDF</h4>';
                                 echo '<p class="text-muted">Klik tombol di bawah untuk melihat atau mengunduh file PDF</p>';
                                 echo '<a href="' . $content . '" target="_blank" class="btn btn-primary btn-lg">';
-                                echo '<i class="fas fa-file-pdf me-2"></i>klik disini';
+                                echo '<i class="fas fa-file-pdf me-2"></i>Klik Disini';
                                 echo '</a>';
                                 echo '<div class="mt-3">';
                                 echo '<a href="' . $content . '" class="btn btn-outline-secondary" download>';
@@ -735,7 +735,15 @@
                                         
                                     default:
                                         echo '<div class="default-content">';
-                                        echo htmlspecialchars_decode($content);
+                                        // Replace URL text in links with "Klik Disini"
+                                        $content_decoded = htmlspecialchars_decode($content);
+                                        // Pattern to match links with URL as text
+                                        $content_decoded = preg_replace(
+                                            '/<a([^>]*href=["\']([^"\']*\.pdf)["\'][^>]*)>https?:\/\/[^<]+<\/a>/i',
+                                            '<a$1>Klik Disini</a>',
+                                            $content_decoded
+                                        );
+                                        echo $content_decoded;
                                         echo '</div>';
                                 }
                             }
