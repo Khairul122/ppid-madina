@@ -273,7 +273,7 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
                             <i class="fas fa-video me-2"></i>Galeri Video
                         </a>
                         <a href="index.php?controller=berita&action=public" class="dropdown-kategori-direct">
-                            <i class="fas fa-newspaper me-2"></i>Berita
+                            <i class="fas fa-newspaper me-2"></i>Semua Berita
                         </a>
                     </div>
                 </div>

@@ -131,5 +131,54 @@ class BeritaModel {
 
         return $result['count'] > 0;
     }
+
+    // Method untuk mendapatkan berita untuk halaman publik
+    public function getPublicBerita($search = '', $limit = 12, $offset = 0) {
+        $whereClause = '';
+        $params = [];
+
+        if (!empty($search)) {
+            $whereClause = "WHERE judul LIKE :search OR summary LIKE :search";
+            $params[':search'] = "%$search%";
+        }
+
+        $query = "SELECT * FROM " . $this->table_name . " $whereClause ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindParam($key, $value);
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Method untuk mendapatkan berita terkait
+    public function getRelatedBerita($excludeId, $limit = 4) {
+        $query = "SELECT * FROM " . $this->table_name . "
+                  WHERE id_berita != :exclude_id
+                  ORDER BY created_at DESC
+                  LIMIT :limit";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':exclude_id', $excludeId, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Method untuk mendapatkan berita terbaru (untuk homepage)
+    public function getLatestBerita($limit = 6) {
+        $query = "SELECT * FROM " . $this->table_name . "
+                  ORDER BY created_at DESC
+                  LIMIT :limit";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>

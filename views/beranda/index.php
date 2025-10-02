@@ -648,27 +648,7 @@
         }
 
         /* Footer */
-        .footer {
-            background: rgb(0, 0, 0);
-            color: white;
-            padding: 60px 0 30px;
-        }
-
-        .footer h5 {
-            color: var(--accent-color);
-            margin-bottom: 20px;
-        }
-
-        .footer a {
-            color: #cbd5e1;
-            text-decoration: none;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .footer a:hover {
-            color: var(--accent-color);
-        }
+        
 
         .social-links {
             display: flex;

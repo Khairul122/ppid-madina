@@ -245,6 +245,58 @@ class BeritaController {
         exit();
     }
 
+    // Method untuk menampilkan berita untuk publik
+    public function public() {
+        // Parameter untuk search dan pagination
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 12; // Data per halaman untuk publik
+        $offset = ($page - 1) * $limit;
+
+        // Ambil data berita untuk publik
+        $beritaList = $this->beritaModel->getPublicBerita($search, $limit, $offset);
+        $totalCount = $this->beritaModel->getTotalCount($search);
+        $totalPages = ceil($totalCount / $limit);
+
+        // Data untuk view
+        $pageInfo = [
+            'title' => 'Berita - PPID Mandailing Natal',
+            'description' => 'Informasi terbaru dan terpercaya seputar Kabupaten Mandailing Natal'
+        ];
+
+        include 'views/berita/public.php';
+    }
+
+    // Method untuk menampilkan detail berita
+    public function detail() {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+        if (!$id) {
+            header('Location: index.php?controller=berita&action=public');
+            exit();
+        }
+
+        // Ambil data berita
+        $berita = $this->beritaModel->getBeritaById($id);
+
+        if (!$berita) {
+            $_SESSION['error'] = 'Berita tidak ditemukan!';
+            header('Location: index.php?controller=berita&action=public');
+            exit();
+        }
+
+        // Ambil berita terkait (berita terbaru lainnya)
+        $relatedNews = $this->beritaModel->getRelatedBerita($id, 4);
+
+        // Data untuk view
+        $pageInfo = [
+            'title' => $berita['judul'] . ' - PPID Mandailing Natal',
+            'description' => substr(strip_tags($berita['summary']), 0, 160)
+        ];
+
+        include 'views/berita/detail.php';
+    }
+
     // Method untuk handle upload gambar
     private function handleImageUpload($file) {
         $uploadDir = 'uploads/berita/';
