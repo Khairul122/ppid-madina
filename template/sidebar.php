@@ -207,6 +207,12 @@ function hasRole($allowedRoles)
                 <span class="menu-title">Informasi Publik</span>
               </a>
             </li>
+             <li class="nav-item">
+              <a class="nav-link <?php echo isActive('faq') ? 'active' : ''; ?>" href="index.php?controller=faq&action=index">
+                <i class="fa fa-instagram menu-icon"></i>
+                <span class="menu-title">FAQ</span>
+              </a>
+            </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('sosialmedia') ? 'active' : ''; ?>" href="index.php?controller=sosialmedia&action=index">
                 <i class="fa fa-instagram menu-icon"></i>
