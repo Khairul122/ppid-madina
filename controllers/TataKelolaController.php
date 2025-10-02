@@ -68,7 +68,7 @@ class TataKelolaController {
             $id = (int)$_GET['id'];
             $tataKelola = $this->tataKelolaModel->getTataKelolaById($id);
             if (!$tataKelola) {
-                header('Location: index.php?controller=tata_kelola&action=index');
+                header('Location: index.php?controller=tataKelola&action=index');
                 exit();
             }
             $action = 'update';
@@ -125,7 +125,7 @@ class TataKelolaController {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Data tata kelola berhasil ' . ($id ? 'diperbarui' : 'ditambahkan') . '.',
-                    'redirect' => 'index.php?controller=tata_kelola&action=index'
+                    'redirect' => 'index.php?controller=tataKelola&action=index'
                 ]);
             } else {
                 echo json_encode([
@@ -167,18 +167,31 @@ class TataKelolaController {
                 exit();
             }
 
+            // Check if the record exists before attempting deletion
+            $existingRecord = $this->tataKelolaModel->getTataKelolaById($id);
+            if (!$existingRecord) {
+                error_log("TataKelolaController::delete - Record not found for ID: $id");
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Data tata kelola tidak ditemukan.'
+                ]);
+                exit();
+            }
+
+            error_log("TataKelolaController::delete - Attempting to delete ID: $id");
             $result = $this->tataKelolaModel->deleteTataKelola($id);
+            error_log("TataKelolaController::delete - Deletion result for ID $id: " . ($result ? 'true' : 'false'));
 
             if ($result) {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Data tata kelola berhasil dihapus.',
-                    'redirect' => 'index.php?controller=tata_kelola&action=index'
+                    'redirect' => 'index.php?controller=tataKelola&action=index'
                 ]);
             } else {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Gagal menghapus data tata kelola.'
+                    'message' => 'Gagal menghapus data tata kelola. Silakan coba lagi.'
                 ]);
             }
 

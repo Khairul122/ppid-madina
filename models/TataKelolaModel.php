@@ -109,8 +109,16 @@ class TataKelolaModel {
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $result = $stmt->execute();
-
-            return $result;
+            
+            // Log the number of affected rows for debugging
+            error_log("Delete operation - ID: $id, Result: " . ($result ? 'true' : 'false') . ", Rows affected: " . $stmt->rowCount());
+            
+            // Return the number of affected rows
+            if ($result) {
+                return $stmt->rowCount() > 0;
+            }
+            
+            return false;
         } catch (PDOException $e) {
             error_log("Database error in deleteTataKelola: " . $e->getMessage());
             return false;

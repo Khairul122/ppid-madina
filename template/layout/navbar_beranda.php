@@ -3,6 +3,7 @@
 require_once 'models/ProfileModel.php';
 require_once 'models/LayananInformasiModel.php';
 require_once 'models/InformasiPublikModel.php';
+require_once 'models/TataKelolaModel.php';
 global $database;
 $db = $database->getConnection();
 $profileModel = new ProfileModel($db);
@@ -236,8 +237,46 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     </div>
                 </div>
-                <a href="#">TATA KELOLA</a>
-                <a href="#">INFO</a>
+
+                <div class="dropdown-wrapper">
+                    <a href="#" class="nav-link-main">
+                        TATA KELOLA <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-content">
+                        <?php
+                        // Fetch tata kelola data
+                        $tataKelolaModel = new TataKelolaModel($db);
+                        $tataKelolaList = $tataKelolaModel->getAllTataKelola();
+                        ?>
+                        <?php if (!empty($tataKelolaList)): ?>
+                            <?php foreach ($tataKelolaList as $tataKelola): ?>
+                                <a href="<?php echo !empty($tataKelola['link']) ? htmlspecialchars($tataKelola['link']) : '#'; ?>"
+                                    <?php echo !empty($tataKelola['link']) ? 'target="_blank"' : ''; ?>>
+                                    <?php echo htmlspecialchars($tataKelola['nama_tata_kelola']); ?>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <a href="#" class="dropdown-kategori-direct">Tidak ada data</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="dropdown-wrapper">
+                    <a href="#" class="nav-link-main">
+                        INFO <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="index.php?controller=album&action=public&kategori=foto" class="dropdown-kategori-direct">
+                            <i class="fas fa-camera me-2"></i>Galeri Foto
+                        </a>
+                        <a href="index.php?controller=album&action=public&kategori=video" class="dropdown-kategori-direct">
+                            <i class="fas fa-video me-2"></i>Galeri Video
+                        </a>
+                        <a href="index.php?controller=berita&action=public" class="dropdown-kategori-direct">
+                            <i class="fas fa-newspaper me-2"></i>Berita
+                        </a>
+                    </div>
+                </div>
                 <a href="index.php?controller=auth&action=login">LOGIN</a>
 
                 <div class="nav-social">
