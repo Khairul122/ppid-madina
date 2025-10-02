@@ -52,27 +52,11 @@ foreach ($allInformasi as $informasi) {
     }
 }
 
-// Get dokumen pemda menu data
-$query_dokumen = "SELECT dp.id_dokumen_pemda, dp.nama_jenis, k.id_kategori, k.nama_kategori
-                  FROM dokumen_pemda dp
-                  INNER JOIN kategori k ON dp.id_kategori = k.id_kategori
-                  ORDER BY k.nama_kategori ASC, dp.nama_jenis ASC";
+// Get dokumen menu data (dari tabel kategori)
+$query_dokumen = "SELECT id_kategori, nama_kategori FROM kategori ORDER BY nama_kategori ASC";
 $stmt_dokumen = $db->prepare($query_dokumen);
 $stmt_dokumen->execute();
-$allDokumenPemda = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
-
-// Group by nama_kategori -> nama_jenis
-$dokumen_menu = [];
-foreach ($allDokumenPemda as $dok) {
-    $kategori = $dok['nama_kategori'];
-    if (!isset($dokumen_menu[$kategori])) {
-        $dokumen_menu[$kategori] = [];
-    }
-    $dokumen_menu[$kategori][] = [
-        'id_kategori' => $dok['id_kategori'],
-        'nama_jenis' => $dok['nama_jenis']
-    ];
-}
+$dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="top-info-bar">
@@ -145,7 +129,7 @@ foreach ($allDokumenPemda as $dok) {
                                     $direct_id = $items['_direct_id'];
                                 } else {
                                     // Filter hanya item yang bukan _direct_id
-                                    $sub_items = array_filter($items, function($key) {
+                                    $sub_items = array_filter($items, function ($key) {
                                         return $key !== '_direct_id';
                                     }, ARRAY_FILTER_USE_KEY);
 
@@ -198,7 +182,7 @@ foreach ($allDokumenPemda as $dok) {
                                     $direct_id = $items['_direct_id'];
                                 } else {
                                     // Filter hanya item yang bukan _direct_id
-                                    $sub_items = array_filter($items, function($key) {
+                                    $sub_items = array_filter($items, function ($key) {
                                         return $key !== '_direct_id';
                                     }, ARRAY_FILTER_USE_KEY);
 
@@ -233,41 +217,49 @@ foreach ($allDokumenPemda as $dok) {
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
+
+                        <!-- Dropdown Dokumen -->
+                        <div class="dropdown-item-wrapper">
+                            <a href="#" class="dropdown-kategori">
+                                Dokumen
+                                <i class="fas fa-chevron-right kategori-icon"></i>
+                            </a>
+                            <div class="dropdown-sub">
+                                <?php if (!empty($dokumen_menu)): ?>
+                                    <?php foreach ($dokumen_menu as $kategori): ?>
+                                        <a href="index.php?controller=dokumen&action=index&kategori=<?php echo $kategori['id_kategori']; ?>">
+                                            <?php echo htmlspecialchars($kategori['nama_kategori']); ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="dropdown-wrapper">
-                    <a href="#" class="nav-link-main">
-                        TATA KELOLA <i class="fas fa-chevron-down dropdown-icon"></i>
-                    </a>
-                    <div class="dropdown-content">
-                        <?php if (!empty($dokumen_menu)): ?>
-                            <?php foreach ($dokumen_menu as $nama_kategori => $items): ?>
-                                <div class="dropdown-item-wrapper">
-                                    <a href="#" class="dropdown-kategori">
-                                        <?php echo htmlspecialchars($nama_kategori); ?>
-                                        <i class="fas fa-chevron-right kategori-icon"></i>
-                                    </a>
-                                    <div class="dropdown-sub">
-                                        <?php foreach ($items as $item): ?>
-                                            <a href="index.php?controller=dokumen&action=index&kategori=<?php echo $item['id_kategori']; ?>&nama_jenis=<?php echo urlencode($item['nama_jenis']); ?>">
-                                                <?php echo htmlspecialchars($item['nama_jenis']); ?>
-                                            </a>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
+                <a href="#">TATA KELOLA</a>
                 <a href="#">INFO</a>
                 <a href="index.php?controller=auth&action=login">LOGIN</a>
 
                 <div class="nav-social">
-                    <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" title="Search"><i class="fas fa-search"></i></a>
+                    <a href="https://www.facebook.com/PemkabMandailingNatal" title="Facebook" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+
+                    <a href="https://www.instagram.com/pemkabmandailingnatal/" title="Instagram" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+
+                    <a href="https://www.youtube.com/@DISKOMINFOMADINA" title="YouTube" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+
+                    <a href="https://www.tiktok.com/@diskominfomadina2" title="TikTok" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+
+                    <a href="#" title="Search">
+                        <i class="fas fa-search"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -275,163 +267,163 @@ foreach ($allDokumenPemda as $dok) {
 </nav>
 
 <style>
-/* Dropdown Wrapper */
-.dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-}
+    /* Dropdown Wrapper */
+    .dropdown-wrapper {
+        position: relative;
+        display: inline-block;
+    }
 
-.nav-link-main {
-    color: white;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 10px 15px;
-}
+    .nav-link-main {
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 10px 15px;
+    }
 
-.dropdown-icon {
-    font-size: 12px;
-    transition: transform 0.3s;
-}
+    .dropdown-icon {
+        font-size: 12px;
+        transition: transform 0.3s;
+    }
 
-.dropdown-wrapper:hover .dropdown-icon {
-    transform: rotate(180deg);
-}
+    .dropdown-wrapper:hover .dropdown-icon {
+        transform: rotate(180deg);
+    }
 
-/* Level 1 Dropdown (Kategori) */
-.dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: #000000;
-    min-width: 250px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    z-index: 1000;
-    /* margin-top: 5px; <-- BARIS INI DIHAPUS UNTUK MEMPERBAIKI MASALAH */
-}
-
-.dropdown-wrapper:hover .dropdown-content {
-    display: block;
-}
-
-/* Dropdown Item Wrapper */
-.dropdown-item-wrapper {
-    position: relative;
-}
-
-.dropdown-kategori {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    color: white;
-    text-decoration: none;
-    border-bottom: 1px solid #333;
-    transition: background 0.3s;
-}
-
-.dropdown-kategori:hover {
-    background: #1a1a1a;
-    color: white;
-}
-
-.kategori-icon {
-    font-size: 12px;
-    transition: transform 0.3s;
-}
-
-.dropdown-item-wrapper:hover .kategori-icon {
-    transform: translateX(5px);
-}
-
-/* Level 2 Dropdown (Keterangan) */
-.dropdown-sub {
-    display: none;
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #1a1a1a;
-    min-width: 250px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    /* margin-left: 2px; <-- BARIS INI DIHAPUS UNTUK MEMPERBAIKI MASALAH */
-}
-
-.dropdown-item-wrapper:hover .dropdown-sub {
-    display: block;
-}
-
-.dropdown-sub a {
-    display: block;
-    padding: 12px 20px;
-    color: white;
-    text-decoration: none;
-    border-bottom: 1px solid #333;
-    transition: all 0.3s;
-}
-
-.dropdown-sub a:hover {
-    background: #2a2a2a;
-    padding-left: 30px;
-}
-
-.dropdown-sub a:last-child {
-    border-bottom: none;
-}
-
-/* Direct Link (Tanpa Sub) */
-.dropdown-kategori-direct {
-    display: block;
-    padding: 12px 20px;
-    color: white;
-    text-decoration: none;
-    border-bottom: 1px solid #333;
-    transition: all 0.3s;
-}
-
-.dropdown-kategori-direct:hover {
-    background: #1a1a1a;
-    color: white;
-    padding-left: 30px;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
+    /* Level 1 Dropdown (Kategori) */
     .dropdown-content {
-        position: static;
-        box-shadow: none;
-        background: #1a1a1a;
-        margin-top: 0;
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #000000;
+        min-width: 250px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        /* margin-top: 5px; <-- BARIS INI DIHAPUS UNTUK MEMPERBAIKI MASALAH */
     }
 
-    .dropdown-wrapper.mobile-open .dropdown-content {
+    .dropdown-wrapper:hover .dropdown-content {
         display: block;
     }
 
-    .dropdown-sub {
-        position: static;
-        box-shadow: none;
-        background: #2a2a2a;
-        margin-left: 0;
-    }
-
-    .dropdown-item-wrapper.mobile-open .dropdown-sub {
-        display: block;
+    /* Dropdown Item Wrapper */
+    .dropdown-item-wrapper {
+        position: relative;
     }
 
     .dropdown-kategori {
-        padding-left: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid #333;
+        transition: background 0.3s;
+    }
+
+    .dropdown-kategori:hover {
+        background: #1a1a1a;
+        color: white;
+    }
+
+    .kategori-icon {
+        font-size: 12px;
+        transition: transform 0.3s;
+    }
+
+    .dropdown-item-wrapper:hover .kategori-icon {
+        transform: translateX(5px);
+    }
+
+    /* Level 2 Dropdown (Keterangan) */
+    .dropdown-sub {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 0;
+        background: #1a1a1a;
+        min-width: 250px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        /* margin-left: 2px; <-- BARIS INI DIHAPUS UNTUK MEMPERBAIKI MASALAH */
+    }
+
+    .dropdown-item-wrapper:hover .dropdown-sub {
+        display: block;
     }
 
     .dropdown-sub a {
-        padding-left: 50px;
+        display: block;
+        padding: 12px 20px;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid #333;
+        transition: all 0.3s;
     }
 
     .dropdown-sub a:hover {
-        padding-left: 60px;
+        background: #2a2a2a;
+        padding-left: 30px;
     }
-}
+
+    .dropdown-sub a:last-child {
+        border-bottom: none;
+    }
+
+    /* Direct Link (Tanpa Sub) */
+    .dropdown-kategori-direct {
+        display: block;
+        padding: 12px 20px;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid #333;
+        transition: all 0.3s;
+    }
+
+    .dropdown-kategori-direct:hover {
+        background: #1a1a1a;
+        color: white;
+        padding-left: 30px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .dropdown-content {
+            position: static;
+            box-shadow: none;
+            background: #1a1a1a;
+            margin-top: 0;
+        }
+
+        .dropdown-wrapper.mobile-open .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-sub {
+            position: static;
+            box-shadow: none;
+            background: #2a2a2a;
+            margin-left: 0;
+        }
+
+        .dropdown-item-wrapper.mobile-open .dropdown-sub {
+            display: block;
+        }
+
+        .dropdown-kategori {
+            padding-left: 30px;
+        }
+
+        .dropdown-sub a {
+            padding-left: 50px;
+        }
+
+        .dropdown-sub a:hover {
+            padding-left: 60px;
+        }
+    }
 </style>
 
 <script>

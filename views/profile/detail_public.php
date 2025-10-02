@@ -569,9 +569,9 @@
                                 echo '<i class="fas fa-file-pdf fa-5x text-danger"></i>';
                                 echo '</div>';
                                 echo '<h4 class="text-primary mb-3">Dokumen PDF</h4>';
-                                echo '<p class="text-muted">Klik tombol di bawah untuk melihat atau mengunduh file PDF</p>';
+                                echo '<p class="text-muted">Klik tombol di bawah untuk melihat atau mengunduh file</p>';
                                 echo '<a href="' . $content . '" target="_blank" class="btn btn-primary btn-lg">';
-                                echo '<i class="fas fa-file-pdf me-2"></i>Klik Disini';
+                                echo '<i class="fas fa-file-pdf me-2"></i>klik disini';
                                 echo '</a>';
                                 echo '<div class="mt-3">';
                                 echo '<a href="' . $content . '" class="btn btn-outline-secondary" download>';
