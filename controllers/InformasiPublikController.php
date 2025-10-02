@@ -1,18 +1,18 @@
 <?php
-require_once 'models/LayananInformasiModel.php';
+require_once 'models/InformasiPublikModel.php';
 
-class LayananInformasiController
+class InformasiPublikController
 {
-    private $layananModel;
+    private $informasiModel;
 
     public function __construct()
     {
         global $database;
         $db = $database->getConnection();
-        $this->layananModel = new LayananInformasiModel($db);
+        $this->informasiModel = new InformasiPublikModel($db);
     }
 
-    // Method untuk menampilkan halaman index layanan informasi
+    // Method untuk menampilkan halaman index informasi publik
     public function index()
     {
         // Check if user is admin
@@ -21,26 +21,26 @@ class LayananInformasiController
             exit();
         }
 
-        // Get all layanan grouped by nama_layanan
-        $groupedLayanan = $this->layananModel->getGroupedLayanan();
-        $namaLayananList = $this->layananModel->getUniqueNamaLayanan();
+        // Get all informasi grouped by nama_informasi_publik
+        $groupedInformasi = $this->informasiModel->getGroupedInformasi();
+        $namaInformasiList = $this->informasiModel->getUniqueNamaInformasi();
 
         // Prepare categories for tabs
         $categories = [];
-        foreach ($namaLayananList as $item) {
-            $categories[] = $item['nama_layanan'];
+        foreach ($namaInformasiList as $item) {
+            $categories[] = $item['nama_informasi_publik'];
         }
 
         $data = [
-            'title' => 'Layanan Informasi Publik',
-            'groupedLayanan' => $groupedLayanan,
+            'title' => 'Daftar Informasi Publik',
+            'groupedInformasi' => $groupedInformasi,
             'categories' => $categories
         ];
 
-        include 'views/layanan_informasi/index.php';
+        include 'views/informasi_publik/index.php';
     }
 
-    // Method untuk menampilkan detail layanan publik
+    // Method untuk menampilkan detail informasi publik
     public function viewDetail()
     {
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -50,28 +50,29 @@ class LayananInformasiController
             exit();
         }
 
-        $layanan = $this->layananModel->getLayananById($id);
+        $informasi = $this->informasiModel->getInformasiById($id);
 
-        if (!$layanan) {
+        if (!$informasi) {
             header('Location: index.php');
             exit();
         }
 
         $data = [
-            'title' => $layanan['nama_layanan'],
-            'layanan' => $layanan
+            'title' => $informasi['nama_informasi_publik'],
+            'informasi' => $informasi
         ];
 
-        include 'views/layanan_informasi/detail_public.php';
+        include 'views/informasi_publik/detail_public.php';
     }
 
-    // Method untuk menambah layanan baru
+    // Method untuk menambah informasi baru
     public function create()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nama_layanan = trim($_POST['nama_layanan']);
-            $has_sub_layanan = isset($_POST['has_sub_layanan']) ? true : false;
-            $sub_layanan = $has_sub_layanan && !empty($_POST['sub_layanan']) ? trim($_POST['sub_layanan']) : null;
+            $nama_informasi_publik = trim($_POST['nama_informasi_publik']);
+            $has_sub_informasi = isset($_POST['has_sub_informasi']) ? true : false;
+            $sub_informasi_publik = $has_sub_informasi && !empty($_POST['sub_informasi_publik']) ? trim($_POST['sub_informasi_publik']) : null;
+            $tags = isset($_POST['tags']) && !empty($_POST['tags']) ? trim($_POST['tags']) : null;
             $content_type = $_POST['content_type'];
 
             $isi = '';
@@ -79,13 +80,13 @@ class LayananInformasiController
             // Handle content type
             if ($content_type === 'file' && isset($_FILES['isi']) && $_FILES['isi']['error'] === UPLOAD_ERR_OK) {
                 // Handle file upload
-                $uploadResult = $this->layananModel->handleFileUpload($_FILES['isi'], $nama_layanan);
+                $uploadResult = $this->informasiModel->handleFileUpload($_FILES['isi'], $nama_informasi_publik);
 
                 if ($uploadResult['success']) {
                     $isi = $uploadResult['filepath'];
                 } else {
                     $_SESSION['error'] = $uploadResult['message'];
-                    header('Location: index.php?controller=layananInformasi&action=index');
+                    header('Location: index.php?controller=informasiPublik&action=index');
                     exit();
                 }
             } else {
@@ -93,45 +94,49 @@ class LayananInformasiController
                 $isi = isset($_POST['isi_text']) ? trim($_POST['isi_text']) : '';
             }
 
-            // Insert new layanan
-            if ($this->layananModel->insertLayanan($nama_layanan, $sub_layanan, $isi)) {
-                $_SESSION['success'] = 'Data layanan informasi berhasil ditambahkan!';
+            // Insert new informasi
+            if ($this->informasiModel->insertInformasi($nama_informasi_publik, $sub_informasi_publik, $isi, $tags)) {
+                $_SESSION['success'] = 'Data informasi publik berhasil ditambahkan!';
             } else {
-                $_SESSION['error'] = 'Gagal menambahkan data layanan informasi.';
+                $_SESSION['error'] = 'Gagal menambahkan data informasi publik.';
             }
 
-            header('Location: index.php?controller=layananInformasi&action=index');
+            header('Location: index.php?controller=informasiPublik&action=index');
             exit();
         }
     }
 
-    // Method untuk update layanan
+    // Method untuk update informasi
     public function update()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_layanan = $_POST['id_layanan'];
-            $has_sub_layanan = isset($_POST['has_sub_layanan']) ? true : false;
-            $sub_layanan = $has_sub_layanan && !empty($_POST['sub_layanan']) ? trim($_POST['sub_layanan']) : null;
+            $id_informasi = $_POST['id_informasi_publik'];
+            $has_sub_informasi = isset($_POST['has_sub_informasi']) ? true : false;
+            $sub_informasi_publik = $has_sub_informasi && !empty($_POST['sub_informasi_publik']) ? trim($_POST['sub_informasi_publik']) : null;
+            $tags = isset($_POST['tags']) && !empty($_POST['tags']) ? trim($_POST['tags']) : null;
 
-            // Update sub_layanan
-            $this->layananModel->updateSubLayanan($id_layanan, $sub_layanan);
+            // Update sub_informasi_publik
+            $this->informasiModel->updateSubInformasi($id_informasi, $sub_informasi_publik);
+
+            // Update tags
+            $this->informasiModel->updateTags($id_informasi, $tags);
 
             // Check if file is uploaded
             if (isset($_FILES['isi']) && $_FILES['isi']['error'] === UPLOAD_ERR_OK) {
-                $layanan = $this->layananModel->getLayananById($id_layanan);
-                $uploadResult = $this->layananModel->handleFileUpload($_FILES['isi'], $layanan['nama_layanan']);
+                $informasi = $this->informasiModel->getInformasiById($id_informasi);
+                $uploadResult = $this->informasiModel->handleFileUpload($_FILES['isi'], $informasi['nama_informasi_publik']);
 
                 if ($uploadResult['success']) {
                     // Delete old file if exists
-                    if (!empty($layanan['isi']) && file_exists($layanan['isi'])) {
-                        unlink($layanan['isi']);
+                    if (!empty($informasi['isi']) && file_exists($informasi['isi'])) {
+                        unlink($informasi['isi']);
                     }
 
                     // Update with new file
-                    if ($this->layananModel->updateLayananFile($id_layanan, $uploadResult['filepath'])) {
-                        $_SESSION['success'] = 'Data layanan informasi berhasil diupdate!';
+                    if ($this->informasiModel->updateInformasiFile($id_informasi, $uploadResult['filepath'])) {
+                        $_SESSION['success'] = 'Data informasi publik berhasil diupdate!';
                     } else {
-                        $_SESSION['error'] = 'Gagal mengupdate data layanan informasi.';
+                        $_SESSION['error'] = 'Gagal mengupdate data informasi publik.';
                     }
                 } else {
                     $_SESSION['error'] = $uploadResult['message'];
@@ -139,38 +144,38 @@ class LayananInformasiController
             } else if (isset($_POST['isi_text'])) {
                 // Update text content
                 $isi_text = trim($_POST['isi_text']);
-                if ($this->layananModel->updateLayananText($id_layanan, $isi_text)) {
-                    $_SESSION['success'] = 'Data layanan informasi berhasil diupdate!';
+                if ($this->informasiModel->updateInformasiText($id_informasi, $isi_text)) {
+                    $_SESSION['success'] = 'Data informasi publik berhasil diupdate!';
                 } else {
-                    $_SESSION['error'] = 'Gagal mengupdate data layanan informasi.';
+                    $_SESSION['error'] = 'Gagal mengupdate data informasi publik.';
                 }
             } else {
-                $_SESSION['success'] = 'Sub layanan berhasil diupdate!';
+                $_SESSION['success'] = 'Sub informasi dan tags berhasil diupdate!';
             }
 
-            header('Location: index.php?controller=layananInformasi&action=index');
+            header('Location: index.php?controller=informasiPublik&action=index');
             exit();
         }
     }
 
-    // Method untuk hapus layanan
+    // Method untuk hapus informasi
     public function delete()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id_layanan = $_POST['id_layanan'];
+            $id_informasi = $_POST['id_informasi_publik'];
 
-            if ($this->layananModel->deleteLayanan($id_layanan)) {
-                $_SESSION['success'] = 'Data layanan informasi berhasil dihapus!';
+            if ($this->informasiModel->deleteInformasi($id_informasi)) {
+                $_SESSION['success'] = 'Data informasi publik berhasil dihapus!';
             } else {
-                $_SESSION['error'] = 'Gagal menghapus data layanan informasi.';
+                $_SESSION['error'] = 'Gagal menghapus data informasi publik.';
             }
 
-            header('Location: index.php?controller=layananInformasi&action=index');
+            header('Location: index.php?controller=informasiPublik&action=index');
             exit();
         }
     }
 
-    // Method untuk handle upload image dan file dari TinyMCE
+    // Method untuk handle upload image dari TinyMCE
     public function upload_image()
     {
         // Security: Check if user is logged in and is admin
@@ -217,9 +222,9 @@ class LayananInformasiController
 
         // Create upload directory based on file type
         if ($extension === 'pdf') {
-            $uploadDir = 'uploads/layanan_documents/';
+            $uploadDir = 'uploads/informasi_documents/';
         } else {
-            $uploadDir = 'uploads/layanan_images/';
+            $uploadDir = 'uploads/informasi_images/';
         }
 
         if (!file_exists($uploadDir)) {

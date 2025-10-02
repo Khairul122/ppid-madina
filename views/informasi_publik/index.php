@@ -44,11 +44,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
               <!-- Header Section -->
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center">
-                  <i class="mdi mdi-information-outline me-2" style="font-size: 24px;"></i>
-                  <span style="font-size: 18px; font-weight: 500;">Layanan Informasi Publik</span>
+                  <i class="mdi mdi-file-document-outline me-2" style="font-size: 24px;"></i>
+                  <span style="font-size: 18px; font-weight: 500;">Daftar Informasi Publik</span>
                 </div>
                 <!-- Add New Button -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLayananModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformasiModal">
                   <i class="mdi mdi-plus"></i> Tambah Data Baru
                 </button>
               </div>
@@ -59,52 +59,58 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                   <div class="d-flex align-items-start">
                     <i class="mdi mdi-information text-primary me-2" style="font-size: 20px; margin-top: 2px;"></i>
                     <div>
-                      <strong>Note:</strong> Kelola data layanan informasi publik.
+                      <strong>Note:</strong> Kelola daftar informasi publik dengan tags untuk memudahkan pencarian.
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- All Layanan Data -->
-              <div class="layanan-list">
+              <!-- All Informasi Data -->
+              <div class="informasi-list">
                 <?php
-                $allLayanan = $this->layananModel->getAllLayanan();
-                if (empty($allLayanan)):
+                $allInformasi = $this->informasiModel->getAllInformasi();
+                if (empty($allInformasi)):
                 ?>
                   <div class="card border-0 shadow-sm">
                     <div class="card-body text-center py-5">
                       <i class="mdi mdi-folder-open-outline" style="font-size: 56px; color: #e0e0e0;"></i>
-                      <p class="text-muted mt-3 mb-0">Belum ada data layanan informasi.</p>
+                      <p class="text-muted mt-3 mb-0">Belum ada data informasi publik.</p>
                     </div>
                   </div>
                 <?php else: ?>
-                  <?php foreach ($allLayanan as $index => $layanan): ?>
-                    <div class="layanan-item card border-0 shadow-sm mb-3" data-index="<?php echo $index; ?>">
-                      <div class="card-header bg-white border-0 p-0" id="heading_<?php echo $layanan['id_layanan']; ?>">
+                  <?php foreach ($allInformasi as $index => $informasi): ?>
+                    <div class="informasi-item card border-0 shadow-sm mb-3" data-index="<?php echo $index; ?>">
+                      <div class="card-header bg-white border-0 p-0" id="heading_<?php echo $informasi['id_informasi_publik']; ?>">
                         <button
-                          class="layanan-toggle w-100 text-start p-3 border-0 bg-transparent d-flex justify-content-between align-items-center"
+                          class="informasi-toggle w-100 text-start p-3 border-0 bg-transparent d-flex justify-content-between align-items-center"
                           type="button"
                           data-bs-toggle="collapse"
-                          data-bs-target="#collapse_<?php echo $layanan['id_layanan']; ?>"
+                          data-bs-target="#collapse_<?php echo $informasi['id_informasi_publik']; ?>"
                           aria-expanded="false"
-                          aria-controls="collapse_<?php echo $layanan['id_layanan']; ?>">
+                          aria-controls="collapse_<?php echo $informasi['id_informasi_publik']; ?>">
                           <div class="d-flex align-items-start flex-grow-1">
-                            <div class="layanan-number me-3 mt-1">
+                            <div class="informasi-number me-3 mt-1">
                               <span class="badge bg-light text-dark"><?php echo $index + 1; ?></span>
                             </div>
-                            <div class="layanan-info flex-grow-1">
+                            <div class="informasi-info flex-grow-1">
                               <h6 class="mb-1 fw-semibold text-dark">
-                                <?php echo htmlspecialchars($layanan['nama_layanan']); ?>
+                                <?php echo htmlspecialchars($informasi['nama_informasi_publik']); ?>
                               </h6>
-                              <?php if (!empty($layanan['sub_layanan'])): ?>
+                              <?php if (!empty($informasi['sub_informasi_publik'])): ?>
                                 <small class="text-muted d-flex align-items-center">
                                   <i class="mdi mdi-arrow-right-thin me-1"></i>
-                                  <?php echo htmlspecialchars($layanan['sub_layanan']); ?>
+                                  <?php echo htmlspecialchars($informasi['sub_informasi_publik']); ?>
+                                </small>
+                              <?php endif; ?>
+                              <?php if (!empty($informasi['tags'])): ?>
+                                <small class="text-muted d-flex align-items-center mt-1">
+                                  <i class="mdi mdi-tag-multiple-outline me-1"></i>
+                                  <span class="badge bg-secondary me-1"><?php echo htmlspecialchars($informasi['tags']); ?></span>
                                 </small>
                               <?php endif; ?>
                               <small class="text-muted d-block mt-1">
                                 <i class="mdi mdi-clock-outline me-1"></i>
-                                Terakhir diupdate: <?php echo date('d M Y', strtotime($layanan['updated_at'])); ?>
+                                Terakhir diupdate: <?php echo date('d M Y', strtotime($informasi['updated_at'])); ?>
                               </small>
                             </div>
                           </div>
@@ -115,41 +121,59 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       </div>
 
                       <div
-                        id="collapse_<?php echo $layanan['id_layanan']; ?>"
+                        id="collapse_<?php echo $informasi['id_informasi_publik']; ?>"
                         class="collapse"
-                        aria-labelledby="heading_<?php echo $layanan['id_layanan']; ?>"
-                        data-bs-parent=".layanan-list">
+                        aria-labelledby="heading_<?php echo $informasi['id_informasi_publik']; ?>"
+                        data-bs-parent=".informasi-list">
                               <div class="card-body">
                                 <!-- Edit Form -->
-                                <form method="POST" action="index.php?controller=layananInformasi&action=update" enctype="multipart/form-data">
-                                  <input type="hidden" name="id_layanan" value="<?php echo $layanan['id_layanan']; ?>">
+                                <form method="POST" action="index.php?controller=informasiPublik&action=update" enctype="multipart/form-data">
+                                  <input type="hidden" name="id_informasi_publik" value="<?php echo $informasi['id_informasi_publik']; ?>">
 
-                                  <!-- Sub Layanan Field -->
+                                  <!-- Tags Field -->
                                   <div class="mb-4">
-                                    <label class="form-label fw-semibold text-dark mb-2">Sub Layanan (Opsional)</label>
-                                    <div class="sub-layanan-wrapper border rounded p-3" id="subLayananCard_<?php echo $layanan['id_layanan']; ?>">
+                                    <label class="form-label fw-semibold text-dark mb-2">
+                                      <i class="mdi mdi-tag-multiple-outline me-1 text-primary"></i>
+                                      Tags (Opsional)
+                                    </label>
+                                    <input
+                                      type="text"
+                                      class="form-control"
+                                      name="tags"
+                                      placeholder="Contoh: berkala, serta-merta, setiap-saat"
+                                      value="<?php echo htmlspecialchars($informasi['tags'] ?? ''); ?>">
+                                    <small class="text-muted d-block mt-1">
+                                      <i class="mdi mdi-information-outline me-1"></i>
+                                      Pisahkan dengan koma untuk multiple tags
+                                    </small>
+                                  </div>
+
+                                  <!-- Sub Informasi Field -->
+                                  <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark mb-2">Sub Informasi (Opsional)</label>
+                                    <div class="sub-layanan-wrapper border rounded p-3" id="subInformasiCard_<?php echo $informasi['id_informasi_publik']; ?>">
                                       <div class="form-check form-switch mb-0">
                                         <input
                                           class="form-check-input"
                                           type="checkbox"
                                           role="switch"
-                                          name="has_sub_layanan"
-                                          id="hasSubLayanan_<?php echo $layanan['id_layanan']; ?>"
-                                          onchange="toggleSubLayanan(<?php echo $layanan['id_layanan']; ?>)"
-                                          <?php echo !empty($layanan['sub_layanan']) ? 'checked' : ''; ?>>
-                                        <label class="form-check-label fw-medium" for="hasSubLayanan_<?php echo $layanan['id_layanan']; ?>">
+                                          name="has_sub_informasi_publik"
+                                          id="hasSubInformasi_<?php echo $informasi['id_informasi_publik']; ?>"
+                                          onchange="toggleSubInformasi(<?php echo $informasi['id_informasi_publik']; ?>)"
+                                          <?php echo !empty($informasi['sub_informasi_publik']) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label fw-medium" for="hasSubInformasi_<?php echo $informasi['id_informasi_publik']; ?>">
                                           <i class="mdi mdi-folder-outline me-1"></i>
-                                          Aktifkan Sub Layanan
+                                          Aktifkan Sub Informasi
                                         </label>
                                       </div>
-                                      <div class="sub-layanan-input-area mt-3 <?php echo !empty($layanan['sub_layanan']) ? 'active' : ''; ?>" id="subLayananInputArea_<?php echo $layanan['id_layanan']; ?>">
+                                      <div class="sub-layanan-input-area mt-3 <?php echo !empty($informasi['sub_informasi_publik']) ? 'active' : ''; ?>" id="subInformasiInputArea_<?php echo $informasi['id_informasi_publik']; ?>">
                                         <input
                                           type="text"
                                           class="form-control"
-                                          name="sub_layanan"
-                                          id="subLayanan_<?php echo $layanan['id_layanan']; ?>"
-                                          placeholder="Masukkan nama sub layanan"
-                                          value="<?php echo htmlspecialchars($layanan['sub_layanan'] ?? ''); ?>">
+                                          name="sub_informasi_publik"
+                                          id="subInformasi_<?php echo $informasi['id_informasi_publik']; ?>"
+                                          placeholder="Masukkan nama sub informasi publik"
+                                          value="<?php echo htmlspecialchars($informasi['sub_informasi_publik'] ?? ''); ?>">
                                         <small class="text-muted d-block mt-1">
                                           <i class="mdi mdi-information-outline me-1"></i>
                                           Contoh: Informasi Berkala, Informasi Setiap Saat
@@ -160,9 +184,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                                   <?php
                                   // Check if the layanan content is a PDF file or image
-                                  $extension = pathinfo($layanan['isi'], PATHINFO_EXTENSION);
-                                  $is_pdf = (strtolower($extension) === 'pdf' && file_exists($layanan['isi']));
-                                  $is_image = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']) && file_exists($layanan['isi']);
+                                  $extension = pathinfo($informasi['isi'], PATHINFO_EXTENSION);
+                                  $is_pdf = (strtolower($extension) === 'pdf' && file_exists($informasi['isi']));
+                                  $is_image = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']) && file_exists($informasi['isi']);
                                   ?>
 
                                   <?php if ($is_pdf || $is_image): ?>
@@ -171,12 +195,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                       <div class="alert alert-info">
                                         <?php if ($is_pdf): ?>
                                           <i class="mdi mdi-file-pdf text-danger me-2" style="font-size: 1.5em;"></i>
-                                          <span>File PDF: <?php echo basename($layanan['isi']); ?></span>
-                                          <a href="<?php echo $layanan['isi']; ?>" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Klik Disini</a>
+                                          <span>File PDF: <?php echo basename($informasi['isi']); ?></span>
+                                          <a href="<?php echo $informasi['isi']; ?>" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Klik Disini</a>
                                         <?php elseif ($is_image): ?>
                                           <i class="mdi mdi-file-image text-primary me-2" style="font-size: 1.5em;"></i>
-                                          <span>File Gambar: <?php echo basename($layanan['isi']); ?></span>
-                                          <a href="<?php echo $layanan['isi']; ?>" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Lihat Gambar</a>
+                                          <span>File Gambar: <?php echo basename($informasi['isi']); ?></span>
+                                          <a href="<?php echo $informasi['isi']; ?>" target="_blank" class="btn btn-sm btn-outline-primary ms-2">Lihat Gambar</a>
                                         <?php endif; ?>
                                       </div>
                                       <label class="form-label fw-bold mt-3">Upload File Baru (PDF atau Gambar)</label>
@@ -190,9 +214,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                       <!-- TinyMCE Editor -->
                                       <textarea
                                         name="isi_text"
-                                        id="editor_<?php echo $layanan['id_layanan']; ?>"
+                                        id="editor_<?php echo $informasi['id_informasi_publik']; ?>"
                                         class="form-control tinymce-editor"
-                                        rows="15"><?php echo htmlspecialchars_decode($layanan['isi']); ?></textarea>
+                                        rows="15"><?php echo htmlspecialchars_decode($informasi['isi']); ?></textarea>
                                     </div>
                                   <?php endif; ?>
 
@@ -201,7 +225,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                     <button
                                       type="button"
                                       class="btn btn-danger"
-                                      onclick="confirmDelete(<?php echo $layanan['id_layanan']; ?>, '<?php echo htmlspecialchars($layanan['nama_layanan']); ?>')">
+                                      onclick="confirmDelete(<?php echo $informasi['id_informasi_publik']; ?>, '<?php echo htmlspecialchars($informasi['nama_informasi_publik']); ?>')">
                                       <i class="mdi mdi-delete"></i> Hapus
                                     </button>
                                     <div class="d-flex gap-2">
@@ -209,7 +233,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                         type="button"
                                         class="btn btn-secondary"
                                         data-bs-toggle="collapse"
-                                        data-bs-target="#collapse_<?php echo $layanan['id_layanan']; ?>">
+                                        data-bs-target="#collapse_<?php echo $informasi['id_informasi_publik']; ?>">
                                         <i class="mdi mdi-close"></i> Tutup
                                       </button>
                                       <button type="submit" class="btn btn-success">
@@ -233,28 +257,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   </div>
 
   <!-- Add Layanan Modal -->
-  <div class="modal fade" id="addLayananModal" tabindex="-1" aria-labelledby="addLayananModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal fade" id="addInformasiModal" tabindex="-1" aria-labelledby="addInformasiModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title fw-bold" id="addLayananModalLabel">Tambah Data Layanan Informasi</h5>
+          <h5 class="modal-title fw-bold" id="addInformasiModalLabel">Tambah Data Informasi Publik</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form method="POST" action="index.php?controller=layananInformasi&action=create" enctype="multipart/form-data" id="addLayananForm">
+        <form method="POST" action="index.php?controller=informasiPublik&action=create" enctype="multipart/form-data" id="addLayananForm">
           <div class="modal-body px-4 py-3">
-            <!-- Nama Layanan -->
+            <!-- Nama Informasi -->
             <div class="mb-4">
-              <label class="form-label fw-semibold mb-2">Nama Layanan <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold mb-2">Nama Informasi Publik <span class="text-danger">*</span></label>
               <input
                 type="text"
                 class="form-control form-control-lg"
-                name="nama_layanan"
-                id="namaLayananInput"
-                placeholder="Masukkan nama layanan"
+                name="nama_informasi_publik"
+                id="namaInformasiInput"
+                placeholder="Masukkan nama informasi publik"
                 required>
             </div>
 
-            <!-- Checkbox Sub Layanan dengan Card -->
+            <!-- Tags -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold mb-2">
+                <i class="mdi mdi-tag-multiple-outline me-1 text-primary"></i>
+                Tags (Opsional)
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                name="tags"
+                placeholder="Contoh: berkala, serta-merta, setiap-saat">
+              <small class="text-muted d-block mt-1">
+                <i class="mdi mdi-information-outline me-1"></i>
+                Pisahkan dengan koma untuk multiple tags
+              </small>
+            </div>
+
+            <!-- Checkbox Sub Informasi dengan Card -->
             <div class="mb-4">
               <div class="card border sub-layanan-card">
                 <div class="card-body p-3">
@@ -263,24 +304,24 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       class="form-check-input"
                       type="checkbox"
                       role="switch"
-                      name="has_sub_layanan"
-                      id="hasSubLayananNew"
-                      onchange="toggleSubLayananNew()">
-                    <label class="form-check-label fw-semibold" for="hasSubLayananNew">
+                      name="has_sub_informasi_publik"
+                      id="hasSubInformasiNew"
+                      onchange="toggleSubInformasiNew()">
+                    <label class="form-check-label fw-semibold" for="hasSubInformasiNew">
                       <i class="mdi mdi-format-list-bulleted-square me-1"></i>
-                      Aktifkan Sub Layanan
+                      Aktifkan Sub Informasi
                     </label>
                   </div>
 
-                  <!-- Input Sub Layanan dengan Animasi -->
-                  <div class="sub-layanan-input-wrapper mt-3" id="subLayananWrapper">
-                    <label class="form-label fw-semibold mb-2">Sub Layanan</label>
+                  <!-- Input Sub Informasi dengan Animasi -->
+                  <div class="sub-layanan-input-wrapper mt-3" id="subInformasiWrapper">
+                    <label class="form-label fw-semibold mb-2">Sub Informasi</label>
                     <input
                       type="text"
                       class="form-control"
-                      name="sub_layanan"
-                      id="subLayananNew"
-                      placeholder="Masukkan sub layanan">
+                      name="sub_informasi_publik"
+                      id="subInformasiNew"
+                      placeholder="Masukkan sub informasi publik">
                   </div>
                 </div>
               </div>
@@ -312,49 +353,49 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
   <style>
     /* Layanan List - Minimalist & Dynamic */
-    .layanan-list {
+    .informasi-list {
       position: relative;
     }
 
-    .layanan-item {
+    .informasi-item {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 8px;
       overflow: hidden;
       background: #fff;
     }
 
-    .layanan-item:hover {
+    .informasi-item:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
     }
 
     /* Toggle Button */
-    .layanan-toggle {
+    .informasi-toggle {
       cursor: pointer;
       transition: all 0.2s ease;
       position: relative;
     }
 
-    .layanan-toggle:hover {
+    .informasi-toggle:hover {
       background-color: #f8f9fa !important;
     }
 
-    .layanan-toggle:focus {
+    .informasi-toggle:focus {
       outline: none;
       box-shadow: none;
     }
 
-    .layanan-toggle[aria-expanded="true"] {
+    .informasi-toggle[aria-expanded="true"] {
       background-color: #f8f9fa !important;
       border-bottom: 1px solid #e9ecef;
     }
 
-    .layanan-toggle[aria-expanded="true"] .chevron-icon i {
+    .informasi-toggle[aria-expanded="true"] .chevron-icon i {
       transform: rotate(180deg);
     }
 
     /* Number Badge */
-    .layanan-number .badge {
+    .informasi-number .badge {
       width: 32px;
       height: 32px;
       display: flex;
@@ -367,24 +408,24 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       transition: all 0.3s ease;
     }
 
-    .layanan-item:hover .layanan-number .badge {
+    .informasi-item:hover .informasi-number .badge {
       background-color: #2c3e50 !important;
       color: white !important;
       border-color: #2c3e50;
     }
 
     /* Layanan Info */
-    .layanan-info h6 {
+    .informasi-info h6 {
       font-size: 15px;
       color: #2c3e50;
       transition: color 0.2s ease;
     }
 
-    .layanan-toggle:hover .layanan-info h6 {
+    .informasi-toggle:hover .informasi-info h6 {
       color: #1a252f;
     }
 
-    .layanan-info small {
+    .informasi-info small {
       font-size: 12px;
       line-height: 1.4;
     }
@@ -400,26 +441,26 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     }
 
     /* Card Body */
-    .layanan-item .card-body {
+    .informasi-item .card-body {
       background: #fafbfc;
       border-top: 1px solid #e9ecef;
       padding: 1.5rem;
     }
 
     /* Form Elements in Card Body */
-    .layanan-item .form-label {
+    .informasi-item .form-label {
       color: #495057;
       font-size: 14px;
       margin-bottom: 0.5rem;
     }
 
-    .layanan-item .form-control,
-    .layanan-item .form-check-input {
+    .informasi-item .form-control,
+    .informasi-item .form-check-input {
       border-color: #dee2e6;
       transition: all 0.2s ease;
     }
 
-    .layanan-item .form-control:focus {
+    .informasi-item .form-control:focus {
       border-color: #6c757d;
       box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.15);
     }
@@ -486,7 +527,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     }
 
     /* Action Buttons Minimalist */
-    .layanan-item .btn {
+    .informasi-item .btn {
       border-radius: 6px;
       font-size: 13px;
       font-weight: 500;
@@ -494,38 +535,38 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       transition: all 0.2s ease;
     }
 
-    .layanan-item .btn-danger {
+    .informasi-item .btn-danger {
       background-color: #fff;
       border: 1px solid #dc3545;
       color: #dc3545;
     }
 
-    .layanan-item .btn-danger:hover {
+    .informasi-item .btn-danger:hover {
       background-color: #dc3545;
       color: white;
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(220, 53, 69, 0.25);
     }
 
-    .layanan-item .btn-secondary {
+    .informasi-item .btn-secondary {
       background-color: #fff;
       border: 1px solid #6c757d;
       color: #6c757d;
     }
 
-    .layanan-item .btn-secondary:hover {
+    .informasi-item .btn-secondary:hover {
       background-color: #6c757d;
       color: white;
       transform: translateY(-1px);
     }
 
-    .layanan-item .btn-success {
+    .informasi-item .btn-success {
       background-color: #2c3e50;
       border: 1px solid #2c3e50;
       color: white;
     }
 
-    .layanan-item .btn-success:hover {
+    .informasi-item .btn-success:hover {
       background-color: #1a252f;
       border-color: #1a252f;
       transform: translateY(-1px);
@@ -539,36 +580,36 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
     /* Responsive Design */
     @media (max-width: 768px) {
-      .layanan-toggle {
+      .informasi-toggle {
         padding: 1rem !important;
       }
 
-      .layanan-number .badge {
+      .informasi-number .badge {
         width: 28px;
         height: 28px;
         font-size: 12px;
       }
 
-      .layanan-info h6 {
+      .informasi-info h6 {
         font-size: 14px;
       }
 
-      .layanan-info small {
+      .informasi-info small {
         font-size: 11px;
       }
 
-      .layanan-item .card-body {
+      .informasi-item .card-body {
         padding: 1rem;
       }
 
-      .layanan-item .btn {
+      .informasi-item .btn {
         font-size: 12px;
         padding: 0.4rem 0.8rem;
       }
     }
 
     @media (max-width: 576px) {
-      .layanan-item {
+      .informasi-item {
         margin-bottom: 0.75rem !important;
       }
 
@@ -764,8 +805,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   </style>
 
   <!-- Delete Confirmation Form (Hidden) -->
-  <form id="deleteForm" method="POST" action="index.php?controller=layananInformasi&action=delete" style="display: none;">
-    <input type="hidden" name="id_layanan" id="deleteId">
+  <form id="deleteForm" method="POST" action="index.php?controller=informasiPublik&action=delete" style="display: none;">
+    <input type="hidden" name="id_informasi_publik" id="deleteId">
   </form>
 
   <?php include 'template/script.php'; ?>
@@ -774,10 +815,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   <script src="https://cdn.tiny.cloud/1/z0t4wwtn9a2wpsk59ee400jsup9j2wusunqyvvezelo6imd8/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
   <script>
     // Function to toggle sub layanan field dengan animasi
-    function toggleSubLayanan(id) {
-      const checkbox = document.getElementById('hasSubLayanan_' + id);
-      const inputArea = document.getElementById('subLayananInputArea_' + id);
-      const input = document.getElementById('subLayanan_' + id);
+    function toggleSubInformasi(id) {
+      const checkbox = document.getElementById('hasSubInformasi_' + id);
+      const inputArea = document.getElementById('subInformasiInputArea_' + id);
+      const input = document.getElementById('subInformasi_' + id);
 
       if (checkbox.checked) {
         inputArea.classList.add('active');
@@ -793,10 +834,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     }
 
     // Function to toggle sub layanan field for new entry dengan animasi
-    function toggleSubLayananNew() {
-      const checkbox = document.getElementById('hasSubLayananNew');
-      const wrapper = document.getElementById('subLayananWrapper');
-      const input = document.getElementById('subLayananNew');
+    function toggleSubInformasiNew() {
+      const checkbox = document.getElementById('hasSubInformasiNew');
+      const wrapper = document.getElementById('subInformasiWrapper');
+      const input = document.getElementById('subInformasiNew');
 
       if (checkbox.checked) {
         // Tambah class active untuk animasi slide down
@@ -848,7 +889,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             formData.append('file', file);
 
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'index.php?controller=layananInformasi&action=upload_image');
+            xhr.open('POST', 'index.php?controller=informasiPublik&action=upload_image');
 
             xhr.onload = function() {
               if (xhr.status === 200) {
@@ -930,7 +971,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 formData.append('file', file);
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'index.php?controller=layananInformasi&action=upload_image');
+                xhr.open('POST', 'index.php?controller=informasiPublik&action=upload_image');
 
                 xhr.onload = function() {
                   if (xhr.status === 200) {
@@ -983,7 +1024,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     });
 
     // Destroy TinyMCE when modal is closed
-    document.getElementById('addLayananModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('addInformasiModal').addEventListener('hidden.bs.modal', function() {
       if (tinymce.get('newEditor')) {
         tinymce.get('newEditor').remove();
       }
@@ -1015,7 +1056,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 formData.append('file', file);
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'index.php?controller=layananInformasi&action=upload_image');
+                xhr.open('POST', 'index.php?controller=informasiPublik&action=upload_image');
 
                 xhr.onload = function() {
                   if (xhr.status === 200) {

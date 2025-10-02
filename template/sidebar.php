@@ -186,6 +186,18 @@ function hasRole($allowedRoles) {
               <span class="menu-title">Profile</span>
             </a>
           </li>
+           <li class="nav-item">
+            <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>"href="index.php?controller=layananInformasi&action=index">
+              <i class="fa fa-user menu-icon"></i>
+              <span class="menu-title">Layanan Informasi Publik</span>
+            </a>
+          </li>
+                     <li class="nav-item">
+            <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>"href="index.php?controller=informasiPublik&action=index">
+              <i class="fa fa-user menu-icon"></i>
+              <span class="menu-title">Informasi Publik</span>
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link <?php echo isActive('sosialmedia') ? 'active' : ''; ?>" href="index.php?controller=sosialmedia&action=index">
               <i class="fa fa-instagram menu-icon"></i>
