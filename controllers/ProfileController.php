@@ -332,9 +332,7 @@ class ProfileController {
                 throw new Exception('Failed to move uploaded file to: ' . $filepath);
             }
 
-            // Return URL relatif untuk ditampilkan di editor
-            // Gunakan absolute URL atau path dari root
-            $baseUrl = '';
+            // Using relative path for the editor
             if (isset($_SERVER['HTTP_HOST'])) {
                 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
                 $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
@@ -350,10 +348,10 @@ class ProfileController {
 
             $response = [
                 'success' => true,
-                'url' => $baseUrl . $filepath,
+                'url' => $filepath,
                 'message' => 'File uploaded successfully',
                 'filename' => $filename,
-                'location' => $baseUrl . $filepath  // TinyMCE juga mendukung 'location'
+                'location' => $filepath  // TinyMCE juga mendukung 'location'
             ];
 
             echo json_encode($response, JSON_UNESCAPED_SLASHES);
