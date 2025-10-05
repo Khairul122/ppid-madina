@@ -55,6 +55,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 </div>
               </div>
 
+              <!-- Info Box -->
+              <div class="alert alert-info mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-info-circle me-3" style="font-size: 1.5rem;"></i>
+                  <div>
+                    <strong>Informasi:</strong> Halaman ini khusus menampilkan permohonan dengan status <span class="badge bg-info">Masuk</span> saja.
+                  </div>
+                </div>
+              </div>
+
               <!-- Filters -->
               <div class="card mb-4">
                 <div class="card-body">
@@ -63,23 +73,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     <input type="hidden" name="action" value="index">
 
                     <div class="col-md-4">
-                      <label class="form-label">Status</label>
-                      <select name="status" class="form-control">
-                        <option value="all" <?php echo (isset($_GET['status']) && $_GET['status'] == 'all') ? 'selected' : ''; ?>>Semua Status</option>
-                        <option value="Diproses" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Diproses') ? 'selected' : ''; ?>>Diproses</option>
-                        <option value="Selesai" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Selesai') ? 'selected' : ''; ?>>Selesai</option>
-                        <option value="Ditolak" <?php echo (isset($_GET['status']) && $_GET['status'] == 'Ditolak') ? 'selected' : ''; ?>>Ditolak</option>
-                      </select>
+                      <label class="form-label">Pencarian</label>
+                      <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nomor, nama, atau judul..." value="<?php echo htmlspecialchars($search ?? ''); ?>">
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Cari</label>
-                      <input type="text" name="search" class="form-control" placeholder="No. Permohonan, Nama, NIK..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
-                    </div>
+
                     <div class="col-md-2">
                       <label class="form-label">&nbsp;</label>
-                      <button type="submit" class="btn btn-primary w-100">
-                        <i class="mdi mdi-magnify me-1"></i>Filter
+                      <button type="submit" class="btn btn-primary d-block w-100">
+                        <i class="fas fa-search me-1"></i>Filter
                       </button>
+                    </div>
+
+                    <div class="col-md-2">
+                      <label class="form-label">&nbsp;</label>
+                      <a href="index.php?controller=permohonanadmin&action=index" class="btn btn-outline-secondary d-block w-100">
+                        <i class="fas fa-refresh me-1"></i>Reset
+                      </a>
                     </div>
                   </form>
                 </div>
@@ -157,23 +166,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                 </span>
                               </td>
                               <td>
-                                <?php
-                                $status = $permohonan['status'] ?? 'Diproses';
-                                $statusClass = '';
-                                switch ($status) {
-                                  case 'Selesai':
-                                  case 'approved':
-                                    $statusClass = 'bg-success';
-                                    break;
-                                  case 'Ditolak':
-                                  case 'rejected':
-                                    $statusClass = 'bg-danger';
-                                    break;
-                                  default:
-                                    $statusClass = 'bg-warning text-dark';
-                                }
-                                ?>
-                                <span class="badge <?php echo $statusClass; ?>"><?php echo htmlspecialchars($status); ?></span>
+                                <span class="badge bg-info">Masuk</span>
                               </td>
                               <td>
                                 <?php echo htmlspecialchars($permohonan['sumber_media'] ?? ''); ?>
@@ -207,7 +200,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <ul class="pagination justify-content-center">
                         <?php if ($page > 1): ?>
                           <li class="page-item">
-                            <a class="page-link" href="index.php?controller=permohonanadmin&action=index&page=<?php echo $page - 1; ?>&status=<?php echo urlencode($_GET['status'] ?? 'all'); ?>&search=<?php echo urlencode($_GET['search'] ?? ''); ?>">
+                            <a class="page-link" href="index.php?controller=permohonanadmin&action=index&page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                               <i class="mdi mdi-chevron-left"></i>
                             </a>
                           </li>
@@ -215,7 +208,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
                           <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                            <a class="page-link" href="index.php?controller=permohonanadmin&action=index&page=<?php echo $i; ?>&status=<?php echo urlencode($_GET['status'] ?? 'all'); ?>&search=<?php echo urlencode($_GET['search'] ?? ''); ?>">
+                            <a class="page-link" href="index.php?controller=permohonanadmin&action=index&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                               <?php echo $i; ?>
                             </a>
                           </li>
@@ -223,7 +216,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <?php if ($page < $total_pages): ?>
                           <li class="page-item">
-                            <a class="page-link" href="index.php?controller=permohonanadmin&action=index&page=<?php echo $page + 1; ?>&status=<?php echo urlencode($_GET['status'] ?? 'all'); ?>&search=<?php echo urlencode($_GET['search'] ?? ''); ?>">
+                            <a class="page-link" href="index.php?controller=permohonanadmin&action=index&page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                               <i class="mdi mdi-chevron-right"></i>
                             </a>
                           </li>

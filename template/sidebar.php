@@ -60,13 +60,19 @@ function hasRole($allowedRoles)
               <a class="nav-link <?php echo isActive('permohonanadmin', 'create') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=create">Meja Layanan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">List Permohonan</a>
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">Permohonan Masuk</a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'disposisi') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=disposisiIndex">Permohonan Disposisi</a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'diproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=diprosesIndex">Permohonan Diproses</a>
+            </li>
+             <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'selesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=selesaiIndex">Permohonan Selesai</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'ditolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=ditolakIndex">Permohonan Ditolak</a>
             </li>
           </ul>
         </div>

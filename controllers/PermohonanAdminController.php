@@ -50,7 +50,8 @@ class PermohonanAdminController
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $status = isset($_GET['status']) ? $_GET['status'] : 'all';
+        // Hardcoded status to "Masuk" only
+        $status = 'Masuk';
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
         $permohonan_list = $this->permohonanAdminModel->getAllPermohonan($limit, $offset, $status, $search);
@@ -440,8 +441,47 @@ class PermohonanAdminController
                 return;
             }
 
-            // Update status
-            $result = $this->permohonanAdminModel->updatePermohonanStatus($id, $status);
+            // Handle special status updates
+            if ($status === 'Disposisi') {
+                // Validate disposisi-specific fields
+                if (!isset($_POST['tujuan_permohonan']) || !isset($_POST['komponen_tujuan'])) {
+                    $this->sendJsonResponse(['success' => false, 'message' => 'Tujuan permohonan dan komponen tujuan harus diisi']);
+                    return;
+                }
+
+                $updateData = [
+                    'id_permohonan' => $id,
+                    'status' => $status,
+                    'tujuan_permohonan' => trim($_POST['tujuan_permohonan']),
+                    'komponen_tujuan' => trim($_POST['komponen_tujuan']),
+                    'catatan_petugas' => isset($_POST['catatan_petugas']) ? trim($_POST['catatan_petugas']) : ''
+                ];
+
+                $result = $this->permohonanAdminModel->updatePermohonanWithDisposisi($updateData);
+            } elseif ($status === 'Ditolak') {
+                // Validate penolakan-specific fields
+                if (!isset($_POST['alasan_penolakan']) || empty(trim($_POST['alasan_penolakan']))) {
+                    $this->sendJsonResponse(['success' => false, 'message' => 'Alasan penolakan harus diisi']);
+                    return;
+                }
+
+                if (!isset($_POST['catatan_petugas']) || empty(trim($_POST['catatan_petugas']))) {
+                    $this->sendJsonResponse(['success' => false, 'message' => 'Catatan petugas harus diisi']);
+                    return;
+                }
+
+                $updateData = [
+                    'id_permohonan' => $id,
+                    'status' => $status,
+                    'alasan_penolakan' => trim($_POST['alasan_penolakan']),
+                    'catatan_petugas' => trim($_POST['catatan_petugas'])
+                ];
+
+                $result = $this->permohonanAdminModel->updatePermohonanWithPenolakan($updateData);
+            } else {
+                // Regular status update
+                $result = $this->permohonanAdminModel->updatePermohonanStatus($id, $status);
+            }
 
             if ($result) {
                 $this->sendJsonResponse([
@@ -1021,7 +1061,7 @@ class PermohonanAdminController
             ? $skpd_data['alamat']
             : 'Perkantoran Panyabungan, Panyabungan, Kabupaten Mandailing Natal, Provinsi Sumatera Utara';
         $email = ($skpd_data && !empty($skpd_data['email'])) ? $skpd_data['email'] : 'diskominfo@gmail.madina.go.id';
-        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? $skpd_data['telepon'] : '';
+        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? $skpd_data['telepon'] : '0821-xxxx-xxxx';
 
         $pdf->SetX($text_start_x);
         $pdf->Cell(0, 5, 'Alamat: ' . $alamat, 0, 1, 'L');
@@ -1029,10 +1069,8 @@ class PermohonanAdminController
         $pdf->SetX($text_start_x);
         $pdf->Cell(0, 5, 'Email: ' . $email, 0, 1, 'L');
 
-        if (!empty($telp)) {
-            $pdf->SetX($text_start_x);
-            $pdf->Cell(0, 5, 'Telp: ' . $telp, 0, 1, 'L');
-        }
+        $pdf->SetX($text_start_x);
+        $pdf->Cell(0, 5, 'Telp: ' . $telp, 0, 1, 'L');
 
         $pdf->Ln(12);
 
@@ -1217,6 +1255,162 @@ class PermohonanAdminController
         $pdf->Cell(0, 4, 'Lembaran ini diterbitkan oleh PPID Kemendagri dan dicetak pada ' . $tanggal_indonesia, 0, 1, 'R');
     }
 
+    // BUKTI SELESAI PDF GENERATION
+    public function generateBuktiSelesaiPDF()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=selesaiIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=selesaiIndex');
+            exit();
+        }
+
+        // Get SKPD data based on komponen_tujuan
+        $skpd_data = $this->permohonanAdminModel->getSKPDDataByName($permohonan['komponen_tujuan']);
+
+        $this->generateBuktiSelesaiTCPDF($permohonan, $skpd_data);
+    }
+
+    private function generateBuktiSelesaiTCPDF($data, $skpd_data = null)
+    {
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Document settings
+        $pdf->SetCreator('PPID Mandailing Natal');
+        $pdf->SetAuthor('PPID Mandailing Natal');
+        $pdf->SetTitle('Bukti Selesai Permohonan Informasi');
+        $pdf->SetSubject('Bukti Selesai Permohonan Informasi');
+
+        // Remove default header/footer
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        // Set margins
+        $pdf->SetMargins(15, 15, 15);
+        $pdf->SetAutoPageBreak(true, 15);
+
+        $pdf->AddPage();
+        $pdf->SetFont('times', '', 12);
+        $pdf->SetCellHeightRatio(1.15);
+
+        // Use same header as bukti proses
+        $this->addBuktiProsesHeader($pdf, $data, $skpd_data);
+
+        // Title section
+        $this->addBuktiProsesTitle($pdf, $data);
+
+        // Data section with PERMOHONAN SELESAI
+        $this->addBuktiSelesaiDataSection($pdf, $data);
+
+        // Signature section
+        $this->addBuktiProsesSignature($pdf, $data);
+
+        // Footer notes
+        $this->addBuktiProsesFooter($pdf);
+
+        // Output PDF
+        $filename = 'Bukti_Selesai_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
+        $pdf->Output($filename, 'I');
+        exit();
+    }
+
+    private function addBuktiSelesaiDataSection($pdf, $data)
+    {
+        $pdf->Ln(5);
+        $pdf->SetFont('times', '', 12);
+
+        $items = [
+            ['Nama Pemohon', $data['nama_lengkap'] ?? $data['username']],
+            ['Alamat', $data['alamat'] ?? ''],
+            ['Telepon', $data['no_kontak'] ?? ''],
+            ['Email', $data['email'] ?? ''],
+            ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
+            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
+            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+        ];
+
+        foreach ($items as $item) {
+            $pdf->Cell(50, 6, $item[0], 0, 0, 'L');
+            $pdf->Cell(5, 6, ':', 0, 0, 'L');
+            $pdf->Cell(0, 6, $item[1], 0, 1, 'L');
+        }
+
+        // Kandungan Informasi dengan background
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $kandungan_info, 1, 1, 'L', true);
+
+        $pdf->Ln(1);
+
+        // Tujuan Penggunaan dengan background
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->Cell(0, 6, $tujuan_penggunaan, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+
+        $pdf->Ln(2);
+
+        // Keputusan PPID section - PERMOHONAN SELESAI
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Keputusan PPID', 0, 1, 'C');
+
+        $pdf->SetFont('times', 'B', 12);
+        $pdf->Cell(0, 6, 'PERMOHONAN SELESAI', 0, 1, 'C');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Ln(2);
+
+        // Cara Memperoleh Informasi
+        $lebar_indentasi = 55;
+        $pdf->Cell(50, 6, 'Cara Memperoleh Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        $pdf->SetFont('dejavusans', '', 12);
+        $pdf->Cell(10, 6, '☐', 0, 0, 'L');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Melihat/Membaca/Mendengarkan/Mencatat', 0, 1, 'L');
+
+        $pdf->Cell($lebar_indentasi, 6, '', 0, 0, 'L');
+
+        $pdf->SetFont('dejavusans', '', 12);
+        $pdf->Cell(10, 6, '☑', 0, 0, 'L');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Mendapatkan Salinan Informasi (Hard Copy / Soft Copy)', 0, 1, 'L');
+
+        $pdf->Ln(2);
+
+        // Catatan Petugas dengan background seperti kandungan informasi
+        $catatan_petugas = !empty($data['catatan_petugas']) ? $data['catatan_petugas'] : '-';
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->Ln(2);
+
+        $pdf->Ln(10);
+    }
+
     // DISPOSISI METHODS
 
     // Display disposisi index
@@ -1338,6 +1532,277 @@ class PermohonanAdminController
             echo json_encode($response);
         }
         exit();
+    }
+
+    // SELESAI METHODS
+
+    // Display selesai index
+    public function selesaiIndex()
+    {
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+        // Get permohonan with status "Selesai" ONLY
+        $selesai_status = ['Selesai'];
+        $permohonan_list = $this->permohonanAdminModel->getSelesaiPermohonan($limit, $offset, $search, $selesai_status);
+        $total_records = $this->permohonanAdminModel->countSelesaiPermohonan($search, $selesai_status);
+        $total_pages = ($total_records > 0) ? ceil($total_records / $limit) : 0;
+
+        // Get selesai specific stats
+        $stats = $this->permohonanAdminModel->getSelesaiStats();
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        // Debug: Log the query results
+        error_log("Selesai Index - Total Records: " . $total_records);
+        error_log("Selesai Index - Permohonan List Count: " . count($permohonan_list));
+
+        include 'views/permohonan_admin/selesai/index.php';
+    }
+
+    // Display selesai detail
+    public function selesaiDetail()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=selesaiIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=selesaiIndex');
+            exit();
+        }
+
+        // Check if this is a selesai-related permohonan (status Selesai)
+        if ($permohonan['status'] !== 'Selesai') {
+            $_SESSION['error_message'] = 'Permohonan ini bukan dalam status selesai';
+            header('Location: index.php?controller=permohonanadmin&action=selesaiIndex');
+            exit();
+        }
+
+        include 'views/permohonan_admin/selesai/detail.php';
+    }
+
+    // DITOLAK METHODS
+
+    // Display ditolak index
+    public function ditolakIndex()
+    {
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        // Hardcoded status to "Ditolak" only
+        $ditolak_status = ['Ditolak'];
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+        $permohonan_list = $this->permohonanAdminModel->getDitolakPermohonan($limit, $offset, $search, $ditolak_status);
+        $total_records = $this->permohonanAdminModel->countDitolakPermohonan($search, $ditolak_status);
+        $total_pages = ceil($total_records / $limit);
+
+        $stats = $this->permohonanAdminModel->getDitolakStats();
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/ditolak/index.php';
+    }
+
+    // Display ditolak detail
+    public function ditolakDetail()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        // Check if this is a ditolak-related permohonan (status Ditolak)
+        if ($permohonan['status'] !== 'Ditolak') {
+            $_SESSION['error_message'] = 'Permohonan ini bukan dalam status ditolak';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        include 'views/permohonan_admin/ditolak/detail.php';
+    }
+
+    // Generate Bukti Ditolak PDF
+    public function generateBuktiDitolakPDF()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        // Get SKPD data for dynamic address
+        $skpd_data = null;
+        if (!empty($permohonan['komponen_tujuan'])) {
+            $skpd_data = $this->permohonanAdminModel->getSKPDDataByName($permohonan['komponen_tujuan']);
+        }
+
+        // Generate PDF
+        $this->generateBuktiDitolakTCPDF($permohonan, $skpd_data);
+    }
+
+    // Generate Bukti Ditolak using TCPDF
+    private function generateBuktiDitolakTCPDF($data, $skpd_data = null)
+    {
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Document settings
+        $pdf->SetCreator('PPID Mandailing Natal');
+        $pdf->SetAuthor('PPID Mandailing Natal');
+        $pdf->SetTitle('Bukti Ditolak Permohonan Informasi');
+        $pdf->SetSubject('Bukti Ditolak Permohonan Informasi');
+
+        // Remove default header/footer
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        // Set margins
+        $pdf->SetMargins(15, 15, 15);
+        $pdf->SetAutoPageBreak(true, 15);
+
+        $pdf->AddPage();
+        $pdf->SetFont('times', '', 12);
+        $pdf->SetCellHeightRatio(1.15);
+
+        // Use same header as bukti proses
+        $this->addBuktiProsesHeader($pdf, $data, $skpd_data);
+
+        // Title section
+        $this->addBuktiProsesTitle($pdf, $data);
+
+        // Data section with PERMOHONAN DITOLAK
+        $this->addBuktiDitolakDataSection($pdf, $data);
+
+        // Signature section
+        $this->addBuktiProsesSignature($pdf, $data);
+
+        // Footer notes
+        $this->addBuktiProsesFooter($pdf);
+
+        // Output PDF
+        $filename = 'Bukti_Ditolak_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
+        $pdf->Output($filename, 'I');
+        exit();
+    }
+
+    // Add data section for Bukti Ditolak with PERMOHONAN DITOLAK
+    private function addBuktiDitolakDataSection($pdf, $data)
+    {
+        $pdf->Ln(5);
+        $pdf->SetFont('times', '', 12);
+
+        $items = [
+            ['Nama Pemohon', $data['nama_lengkap'] ?? $data['username']],
+            ['Alamat', $data['alamat'] ?? ''],
+            ['Pekerjaan', $data['pekerjaan'] ?? '-']
+        ];
+
+        foreach ($items as $item) {
+            $pdf->Cell(50, 6, $item[0], 0, 0, 'L');
+            $pdf->Cell(5, 6, ':', 0, 0, 'L');
+            $pdf->Cell(0, 6, $item[1], 0, 1, 'L');
+        }
+
+        $pdf->Ln(1);
+
+        // Kandungan Informasi dengan background
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $kandungan_info, 1, 1, 'L', true);
+
+        $pdf->Ln(1);
+
+        // Tujuan Penggunaan dengan background
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->Cell(0, 6, $tujuan_penggunaan, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+
+        $pdf->Ln(2);
+
+        // Keputusan PPID section - PERMOHONAN DITOLAK
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Keputusan PPID', 0, 1, 'C');
+
+        $pdf->SetFont('times', 'B', 12);
+        $pdf->Cell(0, 6, 'PERMOHONAN DITOLAK', 0, 1, 'C');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Ln(2);
+
+        // Alasan Penolakan
+        $alasan_penolakan = !empty($data['alasan_penolakan']) ? $data['alasan_penolakan'] : '-';
+        $pdf->Cell(50, 6, 'Alasan Penolakan', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(255, 235, 59);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $alasan_penolakan, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->Ln(2);
+
+        // Catatan Petugas dengan background seperti kandungan informasi
+        $catatan_petugas = !empty($data['catatan_petugas']) ? $data['catatan_petugas'] : '-';
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->SetTextColor(0, 0, 0);
+
+        $pdf->Ln(2);
+
+        // Website
+        $pdf->Cell(50, 6, 'Website', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->Cell(0, 6, 'www.madinakab.go.id', 0, 1, 'L');
     }
 
     // PROSES METHODS

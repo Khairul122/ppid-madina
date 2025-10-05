@@ -455,6 +455,60 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
   </div>
 
+  <!-- Modal Penolakan -->
+  <div class="modal fade" id="penolakanModal" tabindex="-1" aria-labelledby="penolakanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger">
+          <h5 class="modal-title text-white" id="penolakanModalLabel">
+            <i class="fas fa-times-circle me-2"></i>Keputusan PPID DITOLAK
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="penolakan-form">
+            <input type="hidden" name="id" value="<?php echo $permohonan['id_permohonan']; ?>">
+            <input type="hidden" name="status" value="Ditolak">
+
+            <div class="mb-3">
+              <label for="alasan_penolakan" class="form-label fw-bold">Alasan Penolakan <span class="text-danger">*</span></label>
+              <select name="alasan_penolakan" id="alasan_penolakan" class="form-select" required>
+                <option value="">-- Pilih Alasan Penolakan --</option>
+                <option value="Belum Dikuasai">Belum Dikuasai</option>
+                <option value="Belum Dikomentasikan">Belum Dikomentasikan</option>
+                <option value="Otoritas Instansi Lain">Otoritas Instansi Lain</option>
+                <option value="Informasi Dikecualikan">Informasi Dikecualikan</option>
+              </select>
+              <div class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>Pilih alasan penolakan permohonan informasi
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="catatan_petugas_penolakan" class="form-label fw-bold">Catatan Petugas <span class="text-danger">*</span></label>
+              <textarea name="catatan_petugas" id="catatan_petugas_penolakan" class="form-control" rows="4"
+                        placeholder="Masukkan catatan atau penjelasan tambahan terkait penolakan..." required></textarea>
+              <small class="form-text text-muted">Berikan penjelasan detail terkait alasan penolakan permohonan ini</small>
+            </div>
+
+            <div class="alert alert-warning" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Perhatian:</strong> Permohonan yang ditolak tidak dapat diproses lebih lanjut. Pastikan alasan penolakan dan catatan sudah sesuai.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Batal
+          </button>
+          <button type="button" class="btn btn-danger" id="btn-submit-penolakan">
+            <i class="fas fa-times-circle me-1"></i>Tolak Permohonan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <?php include 'template/script.php'; ?>
 
   <script>
@@ -470,7 +524,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         return;
       }
 
-      // Untuk status selain disposisi, lanjutkan dengan update biasa
+      // Jika status yang dipilih adalah Ditolak, tampilkan modal penolakan
+      if (selectedStatus === 'Ditolak') {
+        $('#penolakanModal').modal('show');
+        return;
+      }
+
+      // Untuk status selain disposisi dan ditolak, lanjutkan dengan update biasa
       const formData = new FormData(this);
 
       // Debug: log form data
@@ -756,6 +816,86 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       if (!window.skpdData) {
         loadSKPDData();
       }
+    });
+
+    // Handle submit penolakan
+    $('#btn-submit-penolakan').on('click', function() {
+      const alasanPenolakan = $('#alasan_penolakan').val();
+      const catatanPetugas = $('#catatan_petugas_penolakan').val();
+
+      // Validasi form
+      if (!alasanPenolakan) {
+        alert('Alasan penolakan harus dipilih!');
+        return;
+      }
+
+      if (!catatanPetugas.trim()) {
+        alert('Catatan petugas harus diisi!');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('id', $('input[name="id"]').val());
+      formData.append('status', 'Ditolak');
+      formData.append('alasan_penolakan', alasanPenolakan);
+      formData.append('catatan_petugas', catatanPetugas);
+
+      // Debug: log form data
+      console.log('Penolakan form data:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      $.ajax({
+        url: 'index.php?controller=permohonanadmin&action=updateStatus',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Penolakan response:', response);
+
+          let result;
+          if (typeof response === 'object') {
+            result = response;
+          } else {
+            try {
+              result = JSON.parse(response);
+            } catch (e) {
+              console.error('Error parsing JSON:', e);
+              const cleanedResponse = response.trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+              try {
+                result = JSON.parse(cleanedResponse);
+              } catch (e2) {
+                alert('Error: Response tidak valid dari server\n\nResponse: ' + response.substring(0, 200));
+                return;
+              }
+            }
+          }
+
+          $('#penolakanModal').modal('hide');
+
+          if (result.success) {
+            alert('Permohonan berhasil ditolak');
+            location.reload();
+          } else {
+            alert('Gagal menolak permohonan: ' + result.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Penolakan AJAX error:', error);
+          console.log('Response Text:', xhr.responseText);
+          $('#penolakanModal').modal('hide');
+          alert('Terjadi kesalahan saat menolak permohonan: ' + error);
+        }
+      });
+    });
+
+    // Reset modal penolakan ketika ditutup
+    $('#penolakanModal').on('hidden.bs.modal', function () {
+      $('#penolakan-form')[0].reset();
+      $('#status-select').val($('#status-select option:selected').data('current-status') || 'Diproses');
     });
   </script>
 
