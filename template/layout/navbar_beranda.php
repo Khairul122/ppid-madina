@@ -525,7 +525,7 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
         <div class="d-flex justify-content-between align-items-center w-100">
             <a href="index.php" class="navbar-brand">
                 <div class="logo-img">
-                    <img src="ppid_assets/logo-new.png" alt="Logo">
+                    <img src="ppid_assets/logo.jpg" alt="Logo">
                 </div>
             </a>
 

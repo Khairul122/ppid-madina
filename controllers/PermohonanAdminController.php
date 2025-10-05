@@ -239,7 +239,7 @@ class PermohonanAdminController
             'tujuan_penggunaan_informasi' => $_POST['tujuan_penggunaan_informasi'],
             'upload_foto_identitas' => $uploaded_files['upload_foto_identitas'] ?? null,
             'upload_data_pedukung' => $uploaded_files['upload_data_pedukung'] ?? null,
-            'status' => $_POST['status'] ?? 'Diproses',
+            'status' => 'Diproses',  // Status otomatis diisi 'Diproses' karena form input dihapus
             'sumber_media' => 'Website',  // Always set to Website for all inputs
             'catatan_petugas' => $_POST['catatan_petugas'] ?? null
         ];
@@ -358,7 +358,7 @@ class PermohonanAdminController
             'tujuan_penggunaan_informasi' => $_POST['tujuan_penggunaan_informasi'],
             'upload_foto_identitas' => $uploaded_files['upload_foto_identitas'] ?? $permohonan['upload_foto_identitas'],
             'upload_data_pedukung' => $uploaded_files['upload_data_pedukung'] ?? $permohonan['upload_data_pedukung'],
-            'status' => $_POST['status'] ?? $permohonan['status'],
+            'status' => $permohonan['status'],  // Status tidak berubah karena input form dihapus
             'sumber_media' => $_POST['sumber_media'] ?? 'Website',
             'catatan_petugas' => $_POST['catatan_petugas'] ?? $permohonan['catatan_petugas']
         ];

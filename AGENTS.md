@@ -806,6 +806,626 @@ element.addEventListener('keydown', function(e) {
 
 ---
 
+## ✅ Do's and Don'ts
+
+### 📋 Naming Conventions
+
+#### ✅ DO:
+```php
+// PHP - snake_case
+$nama_layanan = "Informasi Publik";
+$sub_layanan_2 = "Berkala";
+$id_kategori = 1;
+
+function updateSubLayanan($id, $sub_layanan, $sub_layanan_2) {
+    // Implementation
+}
+```
+
+```javascript
+// JavaScript - camelCase
+const bannerTrack = document.getElementById('bannerTrack');
+let currentIndex = 0;
+function updateBannerPosition() {}
+```
+
+```css
+/* CSS - kebab-case */
+.navbar-custom { }
+.dropdown-sub-kategori { }
+.content-wrapper { }
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN gunakan camelCase di PHP
+$namaLayanan = "Wrong";
+$subLayanan2 = "Wrong";
+
+// ❌ JANGAN gunakan PascalCase untuk variable
+$NamaLayanan = "Wrong";
+```
+
+```javascript
+// ❌ JANGAN gunakan snake_case di JavaScript
+const banner_track = document.getElementById('bannerTrack'); // Wrong
+let current_index = 0; // Wrong
+```
+
+```css
+/* ❌ JANGAN gunakan camelCase atau snake_case di CSS */
+.navbarCustom { } /* Wrong */
+.dropdown_sub_kategori { } /* Wrong */
+```
+
+### 🔒 Security & Data Handling
+
+#### ✅ DO:
+```php
+// SELALU escape output untuk prevent XSS
+echo htmlspecialchars($user_input, ENT_QUOTES, 'UTF-8');
+
+// SELALU gunakan prepared statements
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+
+// SELALU validasi file upload
+$allowed_types = ['image/jpeg', 'image/png', 'application/pdf'];
+if (!in_array($_FILES['upload']['type'], $allowed_types)) {
+    $error = "Tipe file tidak diizinkan";
+}
+
+// SELALU cek ukuran file
+$max_size = 5 * 1024 * 1024; // 5MB
+if ($_FILES['upload']['size'] > $max_size) {
+    $error = "Ukuran file terlalu besar";
+}
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN output langsung tanpa escape
+echo $user_input; // XSS vulnerability!
+
+// ❌ JANGAN gunakan string concatenation untuk SQL
+$query = "SELECT * FROM users WHERE email = '$email'"; // SQL Injection!
+
+// ❌ JANGAN terima semua tipe file
+move_uploaded_file($_FILES['upload']['tmp_name'], $destination); // Dangerous!
+
+// ❌ JANGAN skip validasi ukuran file
+// No size check = server resource abuse
+```
+
+### 🎨 UI/UX Patterns
+
+#### ✅ DO:
+```php
+// Selalu gunakan template pattern untuk admin
+<?php include('template/header.php'); ?>
+<body class="with-welcome-text">
+  <div class="container-scroller">
+    <?php include 'template/navbar.php'; ?>
+    <!-- Content -->
+  </div>
+</body>
+
+// Selalu gunakan template pattern untuk public
+<?php include 'template/layout/navbar_beranda.php'; ?>
+<!-- Content -->
+<?php include 'template/layout/footer.php'; ?>
+
+// Selalu beri feedback ke user
+if ($success) {
+    $_SESSION['success'] = 'Data berhasil disimpan!';
+}
+
+// Selalu cek empty state
+<?php if (!empty($data['items'])): ?>
+    <!-- Show items -->
+<?php else: ?>
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <h4>Belum Ada Data</h4>
+    </div>
+<?php endif; ?>
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN buat template dari scratch
+<html>
+<head>
+    <!-- Duplicating all header code -->
+</head>
+<!-- Wrong approach! Use template -->
+
+// ❌ JANGAN silent failure tanpa feedback
+if ($error) {
+    // No message to user - bad UX!
+    header('Location: index.php');
+}
+
+// ❌ JANGAN tampilkan empty table/grid
+<table>
+    <thead>...</thead>
+    <tbody>
+        <!-- Empty tbody - confusing for users -->
+    </tbody>
+</table>
+```
+
+### 🎯 Dropdown Menu Hierarchy
+
+#### ✅ DO:
+```php
+// Selalu konsisten dengan icon chevron
+<a href="#" class="dropdown-kategori">
+    Kategori
+    <i class="fas fa-chevron-right kategori-icon"></i>
+</a>
+
+// Selalu support 3 level jika diperlukan
+Level 1: nama_layanan (direct atau parent)
+  └─ Level 2: sub_layanan (direct atau parent)
+      └─ Level 3: sub_layanan_2 (always direct link)
+
+// Selalu tampilkan judul yang paling spesifik
+if (!empty($sub_layanan_2)) {
+    echo $sub_layanan_2; // Most specific
+} elseif (!empty($sub_layanan)) {
+    echo $sub_layanan;
+} else {
+    echo $nama_layanan;
+}
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN inconsistent icon size/style
+.kategori-icon { font-size: 12px; }
+.sub-kategori-icon { font-size: 10px; } // Different!
+
+// ❌ JANGAN double judul
+<h2>
+    Regulasi
+    <br>Klasifikasi
+    <br>Informasi Berkala  <!-- Too many levels! -->
+</h2>
+
+// ❌ JANGAN skip chevron untuk item dengan child
+<a href="#">Kategori</a> <!-- No icon, confusing! -->
+```
+
+### 📱 Responsive Design
+
+#### ✅ DO:
+```css
+/* Selalu mobile-first approach */
+.container {
+    padding: 15px; /* Mobile */
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding: 30px; /* Tablet+ */
+    }
+}
+
+/* Selalu test di breakpoints Bootstrap */
+/* xs: <576px, sm: ≥576px, md: ≥768px, lg: ≥992px, xl: ≥1200px */
+
+/* Selalu support mobile menu */
+@media (max-width: 992px) {
+    .navbar-nav {
+        display: none;
+        position: absolute;
+        /* Mobile menu styles */
+    }
+    .navbar-nav.show {
+        display: flex;
+    }
+}
+```
+
+#### ❌ DON'T:
+```css
+/* ❌ JANGAN desktop-first */
+.container {
+    padding: 60px; /* Desktop */
+}
+@media (max-width: 768px) {
+    .container {
+        padding: 15px; /* Mobile as afterthought */
+    }
+}
+
+/* ❌ JANGAN fixed width tanpa responsive */
+.sidebar {
+    width: 300px; /* Breaks on mobile! */
+}
+
+/* ❌ JANGAN skip mobile menu */
+/* No mobile navigation = unusable on phones */
+```
+
+### 📁 File Creation & Modification
+
+#### ✅ DO:
+```php
+// HANYA edit file yang diminta
+// User: "Update navbar_beranda.php"
+// Action: Edit navbar_beranda.php ONLY
+
+// HANYA create file jika EXPLICITLY diminta
+// User: "Buatkan file README.md"
+// Action: Create README.md
+
+// SELALU tanya jika tidak jelas
+// User: "Update dokumentasi"
+// Response: "Apakah Anda ingin saya update file AGENTS.md yang ada,
+//           atau buat file dokumentasi baru?"
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN create file tanpa diminta
+// User: "Update navbar"
+// Wrong: Create navbar_new.php, navbar_backup.php, navbar_v2.php
+// Correct: Edit navbar_beranda.php yang sudah ada
+
+// ❌ JANGAN create dokumentasi otomatis
+// User: "Selesai dengan fitur X"
+// Wrong: Auto-create README.md, CHANGELOG.md, DOCS.md
+// Correct: Hanya edit jika diminta
+
+// ❌ JANGAN create backup files
+// Wrong: file_backup.php, file_old.php, file_2024.php
+// Correct: Gunakan version control (git)
+
+// ❌ JANGAN proactive file creation
+// Wrong: "Saya buatkan config.example.php untuk referensi"
+// Correct: Tunggu instruksi eksplisit dari user
+```
+
+### 🗂️ File Structure & Organization
+
+#### ✅ DO:
+```
+✅ Organize by feature/module
+views/
+  ├── layanan_informasi/
+  │   ├── index.php
+  │   ├── detail_public.php
+  │   └── dokumen.php
+  ├── berita/
+  │   ├── index.php
+  │   └── public.php
+
+✅ Separate concerns
+models/LayananInformasiModel.php    // Database logic
+controllers/LayananInformasiController.php  // Business logic
+views/layanan_informasi/index.php   // Presentation
+
+✅ Use consistent naming
+navbar_beranda.php      // Snake case for PHP files
+setting_panel.php       // Descriptive names
+detail_public.php       // Clear purpose
+
+✅ ALWAYS prefer EDITING existing files over creating new ones
+```
+
+#### ❌ DON'T:
+```
+❌ Mix different concerns
+views/
+  ├── page1.php          // Vague name
+  ├── page2.php          // No structure
+  ├── NavbarBeranda.php  // Wrong case
+  └── form-data.php      // Inconsistent separator
+
+❌ Put logic in views
+<?php
+// views/something.php
+$data = mysqli_query($conn, "SELECT * FROM table"); // Wrong!
+// Database logic should be in Model
+
+❌ Use generic names
+form.php               // Which form?
+list.php              // List of what?
+detail.php            // Detail of what?
+
+❌ Create files without explicit request
+// Don't create: README.md, CHANGELOG.md, docs.md, backup files, etc.
+```
+
+### 🎬 Animations & Interactions
+
+#### ✅ DO:
+```css
+/* Selalu gunakan transition yang smooth */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+/* Selalu konsisten timing */
+transition: all 0.3s ease; // Standard across project
+```
+
+```javascript
+// Selalu cleanup animation state
+function toggleMenu() {
+    wrapper.classList.toggle('active');
+    if (!wrapper.classList.contains('active')) {
+        setTimeout(() => {
+            input.value = ''; // Cleanup after animation
+        }, 300);
+    }
+}
+```
+
+#### ❌ DON'T:
+```css
+/* ❌ JANGAN timing yang berbeda-beda */
+.card { transition: 0.5s; }
+.button { transition: 0.2s; }
+.dropdown { transition: 0.8s; } /* Inconsistent! */
+
+/* ❌ JANGAN animasi yang terlalu cepat/lambat */
+.modal { transition: 0.05s; } /* Too fast - jarring */
+.menu { transition: 2s; } /* Too slow - annoying */
+```
+
+```javascript
+// ❌ JANGAN lupa cleanup
+function toggleMenu() {
+    wrapper.classList.toggle('active');
+    // No cleanup - memory leaks!
+}
+```
+
+### 🔄 Form Handling
+
+#### ✅ DO:
+```php
+// Selalu validate input
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nama = trim($_POST['nama']);
+
+    if (empty($nama)) {
+        $error = "Nama harus diisi";
+    }
+
+    if (strlen($nama) < 3) {
+        $error = "Nama minimal 3 karakter";
+    }
+}
+
+// Selalu retain form values on error
+<input type="text"
+       value="<?php echo isset($_POST['nama']) ? htmlspecialchars($_POST['nama']) : ''; ?>">
+
+// Selalu gunakan method yang tepat
+<form method="POST"> <!-- For data submission -->
+<form method="GET">  <!-- For search/filter -->
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN skip validation
+$nama = $_POST['nama'];
+// Direct use without validation!
+
+// ❌ JANGAN clear form on error
+<input type="text" value="">
+<!-- User has to retype everything! -->
+
+// ❌ JANGAN salah method
+<form method="GET"> <!-- For sensitive data - exposed in URL! -->
+```
+
+### 📊 Database Operations
+
+#### ✅ DO:
+```php
+// Selalu gunakan model pattern
+class LayananInformasiModel {
+    public function getAllLayanan() {
+        $query = "SELECT * FROM layanan_informasi ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
+// Selalu handle errors
+try {
+    $stmt->execute();
+} catch (PDOException $e) {
+    error_log($e->getMessage());
+    return false;
+}
+
+// Selalu close connections (PDO auto-closes, but good practice)
+$stmt = null;
+$conn = null;
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN query langsung di controller/view
+$result = mysqli_query($conn, "SELECT * FROM table");
+// Should be in Model!
+
+// ❌ JANGAN expose error details to user
+echo $e->getMessage(); // Security risk!
+
+// ❌ JANGAN multiple queries tanpa transaction
+$conn->query("INSERT INTO table1 VALUES (...)");
+$conn->query("INSERT INTO table2 VALUES (...)");
+// Use transactions for related operations!
+```
+
+### 🌐 Internationalization (Bahasa Indonesia)
+
+#### ✅ DO:
+```php
+// Selalu gunakan format tanggal Indonesia
+$months = [
+    1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+    4 => 'April', 5 => 'Mei', 6 => 'Juni',
+    7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+    10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+];
+
+// Selalu gunakan pesan formal
+$messages = [
+    'success' => 'Data berhasil disimpan.',
+    'error' => 'Gagal menyimpan data. Silakan coba lagi.',
+    'confirm' => 'Apakah Anda yakin ingin menghapus data ini?'
+];
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN mix bahasa
+$error = "Failed to simpan data"; // Mixed!
+
+// ❌ JANGAN gunakan format tanggal Inggris
+echo date('M d, Y'); // Dec 05, 2025 - Wrong for Indonesia!
+
+// ❌ JANGAN informal untuk government site
+$error = "Yah, gagal nih bro!"; // Too casual!
+```
+
+### 🚀 Performance
+
+#### ✅ DO:
+```javascript
+// Selalu debounce untuk search/filter
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}
+
+searchInput.addEventListener('input', debounce(search, 250));
+```
+
+```php
+// Selalu limit query results
+$query = "SELECT * FROM table LIMIT 50";
+
+// Selalu optimize images
+// Resize images before upload
+// Max 1920px width for web display
+```
+
+#### ❌ DON'T:
+```javascript
+// ❌ JANGAN trigger on every keystroke
+searchInput.addEventListener('input', function() {
+    performExpensiveSearch(); // Too many requests!
+});
+```
+
+```php
+// ❌ JANGAN load semua data
+$query = "SELECT * FROM large_table";
+// Could crash with millions of rows!
+
+// ❌ JANGAN terima file berukuran besar
+// No max size = server storage abuse
+```
+
+### 📝 Documentation & Comments
+
+#### ✅ DO:
+```php
+// Selalu comment untuk logic kompleks
+/**
+ * Generate unique filename dengan timestamp dan random string
+ * Format: {nik}_{type}_{timestamp}.{ext}
+ */
+$filename = $nik . '_' . $type . '_' . time() . '.' . $ext;
+
+// Selalu document public functions
+/**
+ * Update sub layanan dan sub layanan 2
+ *
+ * @param int $id ID layanan
+ * @param string|null $sub_layanan Sub layanan level 1
+ * @param string|null $sub_layanan_2 Sub layanan level 2
+ * @return bool Success status
+ */
+public function updateSubLayanan($id, $sub_layanan, $sub_layanan_2 = null) {
+    // Implementation
+}
+```
+
+#### ❌ DON'T:
+```php
+// ❌ JANGAN comment yang obvious
+$i = 0; // Set i to 0 (unnecessary!)
+
+// ❌ JANGAN comment yang outdated
+// This function returns string (actually returns array now!)
+
+// ❌ JANGAN commented-out code berlebihan
+// $old_code = "something";
+// $another_old = "old";
+// Use version control instead!
+```
+
+### 🔧 JavaScript Best Practices
+
+#### ✅ DO:
+```javascript
+// Selalu check element exists
+const element = document.getElementById('myElement');
+if (element) {
+    element.addEventListener('click', handleClick);
+}
+
+// Selalu use const/let, bukan var
+const API_URL = 'https://api.example.com';
+let currentPage = 1;
+
+// Selalu cleanup event listeners
+function init() {
+    const btn = document.getElementById('btn');
+    btn.addEventListener('click', handleClick);
+}
+
+function destroy() {
+    const btn = document.getElementById('btn');
+    btn.removeEventListener('click', handleClick);
+}
+```
+
+#### ❌ DON'T:
+```javascript
+// ❌ JANGAN assume element exists
+document.getElementById('myElement').addEventListener('click', handleClick);
+// Crashes if element doesn't exist!
+
+// ❌ JANGAN gunakan var
+var name = "something"; // Use const or let
+
+// ❌ JANGAN memory leaks
+// Event listeners tanpa cleanup
+// setTimeout/setInterval tanpa clear
+```
+
+---
+
 ## 📌 Quick Reference
 
 ### Warna Palette
@@ -839,6 +1459,21 @@ border-radius: 50%;   /* Circles */
 
 ---
 
-**Last Updated**: 2025
-**Version**: 1.0.0
+**Last Updated**: Januari 2025
+**Version**: 2.0.0
 **Maintainer**: PPID Mandailing Natal Development Team
+
+## 💡 Tips Terakhir
+
+1. **Konsistensi adalah Kunci**: Ikuti pattern yang sudah ada di project
+2. **Security First**: Selalu validasi input dan escape output
+3. **User Experience**: Pikirkan dari perspektif pengguna akhir
+4. **Performance Matters**: Optimize untuk loading cepat
+5. **Mobile Friendly**: Test di berbagai ukuran layar
+6. **Aksesibilitas**: Website pemerintah harus accessible untuk semua
+7. **Documentation**: Code yang terdokumentasi adalah code yang maintainable
+8. **Testing**: Test sebelum deploy ke production
+
+---
+
+💙 **Happy Coding & Semoga Bermanfaat!** 💙

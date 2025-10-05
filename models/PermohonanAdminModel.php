@@ -688,4 +688,124 @@ class PermohonanAdminModel
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['count'] > 0;
     }
+
+    // Get permohonan with specific disposisi status for admin with pagination
+    public function getDisposisiPermohonan($limit = 10, $offset = 0, $status = 'all', $search = '', $disposisi_status = [])
+    {
+        $whereClause = "WHERE 1=1";
+        $params = [];
+        
+        // Add disposisi status filtering
+        if (!empty($disposisi_status)) {
+            $status_placeholders = [];
+            for ($i = 0; $i < count($disposisi_status); $i++) {
+                $placeholder = ':disposisi_status_' . $i;
+                $status_placeholders[] = $placeholder;
+                $params[$placeholder] = $disposisi_status[$i];
+            }
+            $whereClause .= " AND p.status IN (" . implode(',', $status_placeholders) . ")";
+        }
+
+        if ($status && $status !== 'all') {
+            $whereClause .= " AND p.status = :status";
+            $params[':status'] = $status;
+        }
+
+        if (!empty($search)) {
+            $whereClause .= " AND (p.no_permohonan LIKE :search
+                             OR p.tujuan_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR p.kandungan_informasi LIKE :search
+                             OR bp.nama_lengkap LIKE :search
+                             OR bp.nik LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT p.*, u.username, u.email as user_email,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                  FROM " . $this->table_permohonan . " p
+                  JOIN " . $this->table_users . " u ON p.id_user = u.id_user
+                  LEFT JOIN " . $this->table_biodata . " bp ON u.id_biodata = bp.id_biodata
+                  " . $whereClause . "
+                  ORDER BY p.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count total permohonan with specific disposisi status for pagination
+    public function countDisposisiPermohonan($status = 'all', $search = '', $disposisi_status = [])
+    {
+        $whereClause = "WHERE 1=1";
+        $params = [];
+        
+        // Add disposisi status filtering
+        if (!empty($disposisi_status)) {
+            $status_placeholders = [];
+            for ($i = 0; $i < count($disposisi_status); $i++) {
+                $placeholder = ':disposisi_status_' . $i;
+                $status_placeholders[] = $placeholder;
+                $params[$placeholder] = $disposisi_status[$i];
+            }
+            $whereClause .= " AND p.status IN (" . implode(',', $status_placeholders) . ")";
+        }
+
+        if ($status && $status !== 'all') {
+            $whereClause .= " AND p.status = :status";
+            $params[':status'] = $status;
+        }
+
+        if (!empty($search)) {
+            $whereClause .= " AND (p.no_permohonan LIKE :search
+                             OR p.tujuan_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR bp.nama_lengkap LIKE :search
+                             OR bp.nik LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT COUNT(*) as total
+                  FROM " . $this->table_permohonan . " p
+                  JOIN " . $this->table_users . " u ON p.id_user = u.id_user
+                  LEFT JOIN " . $this->table_biodata . " bp ON u.id_biodata = bp.id_biodata
+                  " . $whereClause;
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+    // Get statistics for disposisi dashboard
+    public function getDisposisiStats()
+    {
+        $query = "SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'Disposisi' THEN 1 ELSE 0 END) as disposisi,
+                    SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as selesai,
+                    SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END) as ditolak
+                  FROM " . $this->table_permohonan . "
+                  WHERE status IN ('Disposisi', 'Selesai', 'Ditolak')";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

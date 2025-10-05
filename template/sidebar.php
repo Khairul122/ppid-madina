@@ -32,7 +32,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas', 'masyarakat'])): ?>
       <li class="nav-item">
         <a class="nav-link <?php echo isActive('user', 'index') ? 'active' : ''; ?>" href="index.php?controller=user&action=index">
-          <i class="fa fa-home menu-icon"></i>
+          <i class="fa fa-home menu-icon fa-sm"></i>
           <span class="menu-title">Dashboard</span>
         </a>
       </li>
@@ -41,7 +41,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <a class="nav-link" href="index.php?controller=download&action=download" target="_blank">
-          <i class="fa fa-download menu-icon"></i>
+          <i class="fa fa-download menu-icon fa-sm"></i>
           <span class="menu-title">Download Panduan</span>
         </a>
       </li>
@@ -50,18 +50,19 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <div class="nav-link <?php echo isDropdownActive(['permohonanadmin']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActive(['permohonanadmin']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
-          <i class="fa fa-desktop menu-icon"></i>
+          <i class="fa fa-desktop menu-icon fa-sm"></i>
           <span class="menu-title">Permohonan</span>
           <i class="menu-arrow"></i>
         </div>
         <div class="collapse <?php echo isDropdownActive(['permohonanadmin']) ? 'show' : ''; ?>" id="mejalayananDropdown">
           <ul class="nav flex-column sub-menu">
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">List Permohonan</a>
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'create') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=create">Meja Layanan</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'create') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=create">Form Permohonan Lengkap</a>
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">List Permohonan</a>
             </li>
+            
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'disposisi') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=disposisiIndex">Permohonan Disposisi</a>
             </li>
@@ -73,7 +74,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <div class="nav-link <?php echo isDropdownActive(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#informasiPublikDropdown" aria-expanded="<?php echo isDropdownActive(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'true' : 'false'; ?>" aria-controls="informasiPublikDropdown">
-          <i class="fa fa-file-text-o menu-icon"></i>
+          <i class="fa fa-file-text-o menu-icon fa-sm"></i>
           <span class="menu-title">Dokumen Informasi<br>Publik Pemda</span>
           <i class="menu-arrow"></i>
         </div>
@@ -96,7 +97,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <a class="nav-link <?php echo isActive('dokumenPemda') ? 'active' : ''; ?>" href="index.php?controller=dokumenPemda&action=index">
-          <i class="fa fa-download menu-icon"></i>
+          <i class="fa fa-download menu-icon fa-sm"></i>
           <span class="menu-title">Master Jenis<br>Dokumen Pemda</span>
         </a>
       </li>
@@ -105,7 +106,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <div class="nav-link <?php echo isDropdownActive(['skpd', 'petugas']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#penggunaDropdown" aria-expanded="<?php echo isDropdownActive(['skpd', 'petugas']) ? 'true' : 'false'; ?>" aria-controls="penggunaDropdown">
-          <i class="fa fa-users menu-icon"></i>
+          <i class="fa fa-users menu-icon fa-sm"></i>
           <span class="menu-title">Pengguna</span>
           <i class="menu-arrow"></i>
         </div>
@@ -125,7 +126,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin'])): ?>
       <li class="nav-item">
         <div class="nav-link <?php echo isDropdownActive(['wagateway']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#wagatewayDropdown" aria-expanded="<?php echo isDropdownActive(['wagateway']) ? 'true' : 'false'; ?>" aria-controls="wagatewayDropdown">
-          <i class="fa fa-whatsapp menu-icon"></i>
+          <i class="fa fa-whatsapp menu-icon fa-sm"></i>
           <span class="menu-title">WA Gateway</span>
           <i class="menu-arrow"></i>
         </div>
@@ -151,7 +152,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <div class="nav-link <?php echo isDropdownActive(['berita']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#beritaDropdown" aria-expanded="<?php echo isDropdownActive(['berita']) ? 'true' : 'false'; ?>" aria-controls="beritaDropdown">
-          <i class="fa fa-newspaper-o menu-icon"></i>
+          <i class="fa fa-newspaper-o menu-icon fa-sm"></i>
           <span class="menu-title">Berita</span>
           <i class="menu-arrow"></i>
         </div>
@@ -171,7 +172,7 @@ function hasRole($allowedRoles)
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
         <div class="nav-link <?php echo isDropdownActive(['banner', 'profile', 'sosialmedia']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#pengaturanDropdown" aria-expanded="<?php echo isDropdownActive(['banner', 'profile', 'sosialmedia']) ? 'true' : 'false'; ?>" aria-controls="pengaturanDropdown">
-          <i class="fa fa-cog menu-icon"></i>
+          <i class="fa fa-cog menu-icon fa-sm"></i>
           <span class="menu-title">Pengaturan</span>
           <i class="menu-arrow"></i>
         </div>
@@ -179,50 +180,50 @@ function hasRole($allowedRoles)
           <ul class="nav flex-column sub-menu">
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('banner') ? 'active' : ''; ?>" href="index.php?controller=banner&action=index">
-                <i class="fa fa-image menu-icon"></i>
+                <i class="fa fa-image menu-icon fa-sm"></i>
                 <span class="menu-title">Banner</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>" href="index.php?controller=profile&action=index">
-                <i class="fa fa-user menu-icon"></i>
+                <i class="fa fa-user menu-icon fa-sm"></i>
                 <span class="menu-title">Profile</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>" href="index.php?controller=layananInformasi&action=index">
-                <i class="fa fa-user menu-icon"></i>
+                <i class="fa fa-user menu-icon fa-sm"></i>
                 <span class="menu-title">Layanan Informasi Publik</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>" href="index.php?controller=tataKelola&action=index">
-                <i class="fa fa-user menu-icon"></i>
+                <i class="fa fa-user menu-icon fa-sm"></i>
                 <span class="menu-title">Tata Kelola</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>" href="index.php?controller=informasiPublik&action=index">
-                <i class="fa fa-user menu-icon"></i>
+                <i class="fa fa-user menu-icon fa-sm"></i>
                 <span class="menu-title">Informasi Publik</span>
               </a>
             </li>
              <li class="nav-item">
               <a class="nav-link <?php echo isActive('faq') ? 'active' : ''; ?>" href="index.php?controller=faq&action=index">
-                <i class="fa fa-instagram menu-icon"></i>
+                <i class="fa fa-instagram menu-icon fa-sm"></i>
                 <span class="menu-title">FAQ</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('sosialmedia') ? 'active' : ''; ?>" href="index.php?controller=sosialmedia&action=index">
-                <i class="fa fa-instagram menu-icon"></i>
+                <i class="fa fa-instagram menu-icon fa-sm"></i>
                 <span class="menu-title">Sosial Media</span>
               </a>
             </li>
             <?php if (hasRole(['admin', 'petugas'])): ?>
               <li class="nav-item">
                 <a class="nav-link <?php echo isActive('album') ? 'active' : ''; ?>" href="index.php?controller=album&action=index">
-                  <i class="fa fa-download menu-icon"></i>
+                  <i class="fa fa-download menu-icon fa-sm"></i>
                   <span class="menu-title">Album</span>
                 </a>
               </li>
