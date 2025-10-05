@@ -17,20 +17,36 @@ $profile_menu = $profileModel->getProfilesForNavbar();
 $layananModel = new LayananInformasiModel($db);
 $allLayanan = $layananModel->getAllLayanan();
 
-// Group layanan by nama_layanan
+// Group layanan by nama_layanan with 3-level support
 $layanan_menu = [];
 foreach ($allLayanan as $layanan) {
     $nama = $layanan['nama_layanan'];
+    $sub = $layanan['sub_layanan'];
+    $sub_2 = $layanan['sub_layanan_2'];
+
     if (!isset($layanan_menu[$nama])) {
         $layanan_menu[$nama] = [];
     }
-    if (!empty($layanan['sub_layanan'])) {
-        $layanan_menu[$nama][] = [
-            'id' => $layanan['id_layanan'],
-            'sub_layanan' => $layanan['sub_layanan']
-        ];
+
+    if (!empty($sub)) {
+        // Ada sub_layanan
+        if (!empty($sub_2)) {
+            // Ada sub_layanan_2 (3 level)
+            if (!isset($layanan_menu[$nama][$sub])) {
+                $layanan_menu[$nama][$sub] = [];
+            }
+            $layanan_menu[$nama][$sub][] = [
+                'id' => $layanan['id_layanan'],
+                'sub_layanan_2' => $sub_2
+            ];
+        } else {
+            // Hanya sub_layanan (2 level)
+            if (!isset($layanan_menu[$nama][$sub])) {
+                $layanan_menu[$nama][$sub] = ['_direct_id' => $layanan['id_layanan']];
+            }
+        }
     } else {
-        // Store ID for direct link if no sub_layanan exists
+        // Tidak ada sub_layanan (1 level - direct link)
         $layanan_menu[$nama]['_direct_id'] = $layanan['id_layanan'];
     }
 }
@@ -222,13 +238,28 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
         padding: 10px 15px;
     }
 
+    /* Universal Chevron Styling - Sama untuk semua level */
+    .dropdown-icon,
+    .kategori-icon,
+    .sub-kategori-icon {
+        font-size: 10px;
+        font-weight: 600;
+        opacity: 0.9;
+        transition: all 0.3s ease;
+    }
+
     .dropdown-icon {
-        font-size: 12px;
-        transition: transform 0.3s;
+        margin-left: 6px;
+    }
+
+    .kategori-icon,
+    .sub-kategori-icon {
+        margin-left: auto;
     }
 
     .dropdown-wrapper:hover .dropdown-icon {
         transform: rotate(180deg);
+        opacity: 1;
     }
 
     /* Level 1 Dropdown (Kategori) */
@@ -268,16 +299,12 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
         color: white;
     }
 
-    .kategori-icon {
-        font-size: 12px;
-        transition: transform 0.3s;
-    }
-
     .dropdown-item-wrapper:hover .kategori-icon {
-        transform: translateX(5px);
+        transform: translateX(4px);
+        opacity: 1;
     }
 
-    /* Level 2 Dropdown (Keterangan) */
+    /* Level 2 Dropdown (Sub Layanan) */
     .dropdown-sub {
         display: none;
         position: absolute;
@@ -293,7 +320,9 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
     }
 
     .dropdown-sub a {
-        display: block;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 12px 20px;
         color: white;
         text-decoration: none;
@@ -307,6 +336,67 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
     }
 
     .dropdown-sub a:last-child {
+        border-bottom: none;
+    }
+
+    /* Sub Item Wrapper (untuk level 3) */
+    .dropdown-sub-item-wrapper {
+        position: relative;
+    }
+
+    .dropdown-sub-kategori {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid #333;
+        transition: background 0.3s;
+    }
+
+    .dropdown-sub-kategori:hover {
+        background: #2a2a2a;
+        color: white;
+    }
+
+    .dropdown-sub-item-wrapper:hover .sub-kategori-icon {
+        transform: translateX(4px);
+        opacity: 1;
+    }
+
+    /* Level 3 Dropdown (Sub Layanan 2) */
+    .dropdown-sub-2 {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 0;
+        background: #2a2a2a;
+        min-width: 220px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .dropdown-sub-item-wrapper:hover .dropdown-sub-2 {
+        display: block;
+    }
+
+    .dropdown-sub-2 a {
+        display: block;
+        padding: 10px 18px;
+        color: #ddd;
+        text-decoration: none;
+        border-bottom: 1px solid #444;
+        transition: all 0.3s;
+        font-size: 13px;
+    }
+
+    .dropdown-sub-2 a:hover {
+        background: #3a3a3a;
+        padding-left: 28px;
+        color: white;
+    }
+
+    .dropdown-sub-2 a:last-child {
         border-bottom: none;
     }
 
@@ -350,8 +440,23 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
             display: block;
         }
 
+        .dropdown-sub-2 {
+            position: static;
+            box-shadow: none;
+            background: #3a3a3a;
+            margin-left: 0;
+        }
+
+        .dropdown-sub-item-wrapper.mobile-open .dropdown-sub-2 {
+            display: block;
+        }
+
         .dropdown-kategori {
             padding-left: 30px;
+        }
+
+        .dropdown-sub-kategori {
+            padding-left: 50px;
         }
 
         .dropdown-sub a {
@@ -360,6 +465,14 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
 
         .dropdown-sub a:hover {
             padding-left: 60px;
+        }
+
+        .dropdown-sub-2 a {
+            padding-left: 70px;
+        }
+
+        .dropdown-sub-2 a:hover {
+            padding-left: 80px;
         }
     }
 
@@ -456,51 +569,66 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
                         <?php if (!empty($layanan_menu)): ?>
                             <?php foreach ($layanan_menu as $nama_layanan => $items): ?>
                                 <?php
-                                // Cek apakah ada sub_layanan atau direct link
-                                $has_sub = false;
-                                $direct_id = null;
-
+                                // Cek apakah direct link (Level 1)
                                 if (isset($items['_direct_id'])) {
                                     $direct_id = $items['_direct_id'];
+                                    ?>
+                                    <!-- Level 1: Tanpa Sub Layanan - Direct Link -->
+                                    <a href="index.php?controller=layananInformasi&action=viewDetail&id=<?php echo $direct_id; ?>" class="dropdown-kategori-direct">
+                                        <?php echo htmlspecialchars($nama_layanan); ?>
+                                    </a>
+                                    <?php
                                 } else {
-                                    // Filter hanya item yang bukan _direct_id
-                                    $sub_items = array_filter($items, function ($key) {
-                                        return $key !== '_direct_id';
-                                    }, ARRAY_FILTER_USE_KEY);
-
-                                    if (!empty($sub_items)) {
-                                        $has_sub = true;
-                                    }
-                                }
-                                ?>
-
-                                <?php if ($has_sub): ?>
-                                    <!-- Dengan Sub Layanan - Dropdown Bertingkat -->
+                                    // Ada sub_layanan (Level 2 atau 3)
+                                    ?>
                                     <div class="dropdown-item-wrapper">
                                         <a href="#" class="dropdown-kategori">
                                             <?php echo htmlspecialchars($nama_layanan); ?>
                                             <i class="fas fa-chevron-right kategori-icon"></i>
                                         </a>
                                         <div class="dropdown-sub">
-                                            <?php foreach ($items as $item): ?>
-                                                <?php if (is_array($item) && isset($item['sub_layanan'])): ?>
-                                                    <a href="index.php?controller=layananInformasi&action=viewDetail&id=<?php echo $item['id']; ?>">
-                                                        <?php echo htmlspecialchars($item['sub_layanan']); ?>
+                                            <?php foreach ($items as $sub_layanan => $sub_items): ?>
+                                                <?php
+                                                // Cek apakah sub_layanan punya sub_layanan_2
+                                                if (is_array($sub_items) && isset($sub_items['_direct_id'])) {
+                                                    // Level 2: Hanya sub_layanan (direct link)
+                                                    ?>
+                                                    <a href="index.php?controller=layananInformasi&action=viewDetail&id=<?php echo $sub_items['_direct_id']; ?>">
+                                                        <?php echo htmlspecialchars($sub_layanan); ?>
                                                     </a>
-                                                <?php endif; ?>
+                                                    <?php
+                                                } elseif (is_array($sub_items) && !isset($sub_items['_direct_id'])) {
+                                                    // Level 3: Ada sub_layanan_2
+                                                    ?>
+                                                    <div class="dropdown-sub-item-wrapper">
+                                                        <a href="#" class="dropdown-sub-kategori">
+                                                            <?php echo htmlspecialchars($sub_layanan); ?>
+                                                            <i class="fas fa-chevron-right sub-kategori-icon"></i>
+                                                        </a>
+                                                        <div class="dropdown-sub-2">
+                                                            <?php foreach ($sub_items as $item): ?>
+                                                                <?php if (is_array($item) && isset($item['sub_layanan_2'])): ?>
+                                                                    <a href="index.php?controller=layananInformasi&action=viewDetail&id=<?php echo $item['id']; ?>">
+                                                                        <?php echo htmlspecialchars($item['sub_layanan_2']); ?>
+                                                                    </a>
+                                                                <?php endif; ?>
+                                                            <?php endforeach; ?>
+                                                        </div>
+                                                    </div>
+                                                    <?php
+                                                }
+                                                ?>
                                             <?php endforeach; ?>
                                         </div>
                                     </div>
-                                <?php else: ?>
-                                    <!-- Tanpa Sub Layanan - Direct Link -->
-                                    <a href="index.php?controller=layananInformasi&action=viewDetail&id=<?php echo $direct_id; ?>" class="dropdown-kategori-direct">
-                                        <?php echo htmlspecialchars($nama_layanan); ?>
-                                    </a>
-                                <?php endif; ?>
+                                    <?php
+                                }
+                                ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
+                
                 <div class="dropdown-wrapper">
                     <a href="#" class="nav-link-main">
                         DAFTAR INFORMASI PUBLIK <i class="fas fa-chevron-down dropdown-icon"></i>
@@ -684,13 +812,27 @@ $dokumen_menu = $stmt_dokumen->fetchAll(PDO::FETCH_ASSOC);
             });
         });
 
-        // Category toggle for mobile
+        // Category toggle for mobile (Level 2)
         const kategoriLinks = document.querySelectorAll('.dropdown-kategori');
         kategoriLinks.forEach(function(link) {
             link.addEventListener('click', function(e) {
                 if (window.innerWidth <= 768) {
                     e.preventDefault();
                     const wrapper = this.closest('.dropdown-item-wrapper');
+                    if (wrapper) {
+                        wrapper.classList.toggle('mobile-open');
+                    }
+                }
+            });
+        });
+
+        // Sub Category toggle for mobile (Level 3)
+        const subKategoriLinks = document.querySelectorAll('.dropdown-sub-kategori');
+        subKategoriLinks.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    const wrapper = this.closest('.dropdown-sub-item-wrapper');
                     if (wrapper) {
                         wrapper.classList.toggle('mobile-open');
                     }

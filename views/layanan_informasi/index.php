@@ -102,6 +102,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                   <?php echo htmlspecialchars($layanan['sub_layanan']); ?>
                                 </small>
                               <?php endif; ?>
+                              <?php if (!empty($layanan['sub_layanan_2'])): ?>
+                                <small class="text-muted d-flex align-items-center">
+                                  <i class="mdi mdi-arrow-right-thin me-1"></i>
+                                  <?php echo htmlspecialchars($layanan['sub_layanan_2']); ?>
+                                </small>
+                              <?php endif; ?>
                               <small class="text-muted d-block mt-1">
                                 <i class="mdi mdi-clock-outline me-1"></i>
                                 Terakhir diupdate: <?php echo date('d M Y', strtotime($layanan['updated_at'])); ?>
@@ -153,6 +159,40 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                         <small class="text-muted d-block mt-1">
                                           <i class="mdi mdi-information-outline me-1"></i>
                                           Contoh: Informasi Berkala, Informasi Setiap Saat
+                                        </small>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <!-- Sub Layanan 2 Field -->
+                                  <div class="mb-4">
+                                    <label class="form-label fw-semibold text-dark mb-2">Sub Layanan 2 (Opsional)</label>
+                                    <div class="sub-layanan-wrapper border rounded p-3" id="subLayanan2Card_<?php echo $layanan['id_layanan']; ?>">
+                                      <div class="form-check form-switch mb-0">
+                                        <input
+                                          class="form-check-input"
+                                          type="checkbox"
+                                          role="switch"
+                                          name="has_sub_layanan_2"
+                                          id="hasSubLayanan2_<?php echo $layanan['id_layanan']; ?>"
+                                          onchange="toggleSubLayanan2(<?php echo $layanan['id_layanan']; ?>)"
+                                          <?php echo !empty($layanan['sub_layanan_2']) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label fw-medium" for="hasSubLayanan2_<?php echo $layanan['id_layanan']; ?>">
+                                          <i class="mdi mdi-folder-outline me-1"></i>
+                                          Aktifkan Sub Layanan 2
+                                        </label>
+                                      </div>
+                                      <div class="sub-layanan-input-area mt-3 <?php echo !empty($layanan['sub_layanan_2']) ? 'active' : ''; ?>" id="subLayanan2InputArea_<?php echo $layanan['id_layanan']; ?>">
+                                        <input
+                                          type="text"
+                                          class="form-control"
+                                          name="sub_layanan_2"
+                                          id="subLayanan2_<?php echo $layanan['id_layanan']; ?>"
+                                          placeholder="Masukkan nama sub layanan 2"
+                                          value="<?php echo htmlspecialchars($layanan['sub_layanan_2'] ?? ''); ?>">
+                                        <small class="text-muted d-block mt-1">
+                                          <i class="mdi mdi-information-outline me-1"></i>
+                                          Sub kategori tambahan untuk klasifikasi lebih detail
                                         </small>
                                       </div>
                                     </div>
@@ -281,6 +321,38 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       name="sub_layanan"
                       id="subLayananNew"
                       placeholder="Masukkan sub layanan">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checkbox Sub Layanan 2 dengan Card -->
+            <div class="mb-4">
+              <div class="card border sub-layanan-card">
+                <div class="card-body p-3">
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      role="switch"
+                      name="has_sub_layanan_2"
+                      id="hasSubLayanan2New"
+                      onchange="toggleSubLayanan2New()">
+                    <label class="form-check-label fw-semibold" for="hasSubLayanan2New">
+                      <i class="mdi mdi-format-list-bulleted-square me-1"></i>
+                      Aktifkan Sub Layanan 2
+                    </label>
+                  </div>
+
+                  <!-- Input Sub Layanan 2 dengan Animasi -->
+                  <div class="sub-layanan-input-wrapper mt-3" id="subLayanan2Wrapper">
+                    <label class="form-label fw-semibold mb-2">Sub Layanan 2</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="sub_layanan_2"
+                      id="subLayanan2New"
+                      placeholder="Masukkan sub layanan 2">
                   </div>
                 </div>
               </div>
@@ -797,6 +869,44 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       const checkbox = document.getElementById('hasSubLayananNew');
       const wrapper = document.getElementById('subLayananWrapper');
       const input = document.getElementById('subLayananNew');
+
+      if (checkbox.checked) {
+        // Tambah class active untuk animasi slide down
+        wrapper.classList.add('active');
+      } else {
+        // Hapus class active untuk animasi slide up
+        wrapper.classList.remove('active');
+        // Reset input value
+        setTimeout(() => {
+          input.value = '';
+        }, 400);
+      }
+    }
+
+    // Function to toggle sub layanan 2 field dengan animasi
+    function toggleSubLayanan2(id) {
+      const checkbox = document.getElementById('hasSubLayanan2_' + id);
+      const inputArea = document.getElementById('subLayanan2InputArea_' + id);
+      const input = document.getElementById('subLayanan2_' + id);
+
+      if (checkbox.checked) {
+        inputArea.classList.add('active');
+      } else {
+        inputArea.classList.remove('active');
+        // Clear input setelah animasi selesai
+        setTimeout(() => {
+          if (!checkbox.checked) {
+            input.value = '';
+          }
+        }, 350);
+      }
+    }
+
+    // Function to toggle sub layanan 2 field for new entry dengan animasi
+    function toggleSubLayanan2New() {
+      const checkbox = document.getElementById('hasSubLayanan2New');
+      const wrapper = document.getElementById('subLayanan2Wrapper');
+      const input = document.getElementById('subLayanan2New');
 
       if (checkbox.checked) {
         // Tambah class active untuk animasi slide down

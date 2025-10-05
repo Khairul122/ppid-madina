@@ -59,12 +59,13 @@ class LayananInformasiModel
     }
 
     // Method untuk menambah layanan baru
-    public function insertLayanan($nama_layanan, $sub_layanan, $isi)
+    public function insertLayanan($nama_layanan, $sub_layanan, $sub_layanan_2, $isi)
     {
-        $query = "INSERT INTO " . $this->table_name . " (nama_layanan, sub_layanan, isi, created_at, updated_at) VALUES (:nama_layanan, :sub_layanan, :isi, NOW(), NOW())";
+        $query = "INSERT INTO " . $this->table_name . " (nama_layanan, sub_layanan, sub_layanan_2, isi, created_at, updated_at) VALUES (:nama_layanan, :sub_layanan, :sub_layanan_2, :isi, NOW(), NOW())";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':nama_layanan', $nama_layanan);
         $stmt->bindParam(':sub_layanan', $sub_layanan);
+        $stmt->bindParam(':sub_layanan_2', $sub_layanan_2);
         $stmt->bindParam(':isi', $isi);
         return $stmt->execute();
     }
@@ -89,12 +90,13 @@ class LayananInformasiModel
         return $stmt->execute();
     }
 
-    // Method untuk update sub_layanan
-    public function updateSubLayanan($id, $sub_layanan)
+    // Method untuk update sub_layanan dan sub_layanan_2
+    public function updateSubLayanan($id, $sub_layanan, $sub_layanan_2 = null)
     {
-        $query = "UPDATE " . $this->table_name . " SET sub_layanan = :sub_layanan, updated_at = NOW() WHERE id_layanan = :id";
+        $query = "UPDATE " . $this->table_name . " SET sub_layanan = :sub_layanan, sub_layanan_2 = :sub_layanan_2, updated_at = NOW() WHERE id_layanan = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':sub_layanan', $sub_layanan);
+        $stmt->bindParam(':sub_layanan_2', $sub_layanan_2);
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }

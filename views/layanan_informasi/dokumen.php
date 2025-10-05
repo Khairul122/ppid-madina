@@ -839,7 +839,7 @@
                         <div class="content-footer">
                             <a href="index.php" class="back-button">
                                 <i class="fas fa-arrow-left"></i>
-                                Kembali ke Beranda
+                                Kembali ke Berand
                             </a>
                         </div>
                     </div>

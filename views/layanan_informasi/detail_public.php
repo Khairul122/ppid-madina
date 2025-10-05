@@ -550,10 +550,16 @@
                     <div class="card content-card">
                         <div class="content-header">
                             <h2 class="content-title">
-                                <?php echo htmlspecialchars($data['layanan']['nama_layanan']); ?>
-                                <?php if (!empty($data['layanan']['sub_layanan'])): ?>
-                                    <br><small class="text-muted" style="font-size: 0.6em;"><?php echo htmlspecialchars($data['layanan']['sub_layanan']); ?></small>
-                                <?php endif; ?>
+                                <?php
+                                // Prioritas: sub_layanan_2 > sub_layanan > nama_layanan
+                                if (!empty($data['layanan']['sub_layanan_2'])) {
+                                    echo htmlspecialchars($data['layanan']['sub_layanan_2']);
+                                } elseif (!empty($data['layanan']['sub_layanan'])) {
+                                    echo htmlspecialchars($data['layanan']['sub_layanan']);
+                                } else {
+                                    echo htmlspecialchars($data['layanan']['nama_layanan']);
+                                }
+                                ?>
                             </h2>
                         </div>
 

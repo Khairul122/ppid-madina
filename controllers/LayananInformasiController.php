@@ -72,6 +72,8 @@ class LayananInformasiController
             $nama_layanan = trim($_POST['nama_layanan']);
             $has_sub_layanan = isset($_POST['has_sub_layanan']) ? true : false;
             $sub_layanan = $has_sub_layanan && !empty($_POST['sub_layanan']) ? trim($_POST['sub_layanan']) : null;
+            $has_sub_layanan_2 = isset($_POST['has_sub_layanan_2']) ? true : false;
+            $sub_layanan_2 = $has_sub_layanan_2 && !empty($_POST['sub_layanan_2']) ? trim($_POST['sub_layanan_2']) : null;
             $content_type = $_POST['content_type'];
 
             $isi = '';
@@ -94,7 +96,7 @@ class LayananInformasiController
             }
 
             // Insert new layanan
-            if ($this->layananModel->insertLayanan($nama_layanan, $sub_layanan, $isi)) {
+            if ($this->layananModel->insertLayanan($nama_layanan, $sub_layanan, $sub_layanan_2, $isi)) {
                 $_SESSION['success'] = 'Data layanan informasi berhasil ditambahkan!';
             } else {
                 $_SESSION['error'] = 'Gagal menambahkan data layanan informasi.';
@@ -112,9 +114,11 @@ class LayananInformasiController
             $id_layanan = $_POST['id_layanan'];
             $has_sub_layanan = isset($_POST['has_sub_layanan']) ? true : false;
             $sub_layanan = $has_sub_layanan && !empty($_POST['sub_layanan']) ? trim($_POST['sub_layanan']) : null;
+            $has_sub_layanan_2 = isset($_POST['has_sub_layanan_2']) ? true : false;
+            $sub_layanan_2 = $has_sub_layanan_2 && !empty($_POST['sub_layanan_2']) ? trim($_POST['sub_layanan_2']) : null;
 
-            // Update sub_layanan
-            $this->layananModel->updateSubLayanan($id_layanan, $sub_layanan);
+            // Update sub_layanan dan sub_layanan_2
+            $this->layananModel->updateSubLayanan($id_layanan, $sub_layanan, $sub_layanan_2);
 
             // Check if file is uploaded
             if (isset($_FILES['isi']) && $_FILES['isi']['error'] === UPLOAD_ERR_OK) {
