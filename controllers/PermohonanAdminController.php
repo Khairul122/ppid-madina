@@ -685,6 +685,30 @@ class PermohonanAdminController
         $this->generateTCPDF($permohonan, $skpd_data);
     }
 
+    // Generate PDF for bukti proses
+    public function generateBuktiProsesPDF()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=diprosesIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=diprosesIndex');
+            exit();
+        }
+
+        // Get SKPD data based on komponen_tujuan
+        $skpd_data = $this->permohonanAdminModel->getSKPDDataByName($permohonan['komponen_tujuan']);
+
+        $this->generateBuktiProsesTCPDF($permohonan, $skpd_data);
+    }
+
     private function generateTCPDF($data, $skpd_data = null)
     {
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -887,6 +911,277 @@ class PermohonanAdminController
     }
 
     private function addFooterNotes($pdf)
+    {
+        $pdf->SetFont('times', '', 10);
+        $pdf->Cell(0, 5, 'Berdasarkan Undang-Undang No 14 Tahun 2008 Tentang Keterbukaan Informasi Publik, maka :', 0, 1, 'L');
+
+        $notes = [
+            'Bukti Permohonan Ini merupakan hak pemohon yang wajib diterbitkan oleh Badan Publik. (Pasal 22 Ayat 3 dan 4)',
+            'Pemohon dapat menerima pemberitahuan atas permohonannya dalam waktu 10 (sepuluh) hari. (Pasal 22 Ayat 7)',
+            'Bukti Permohonan ini merupakan bukti sah atas permohonan informasi yang diajukan ke daerah tujuan.',
+            'Badan Publik dapat memperpanjang waktu pemberitahuan / jawaban permohonan hingga 7 (tujuh) hari. (Pasal 22 Ayat 8)',
+            'Informasi Publik yang dapat diberikan diatur dalam Pasal 9 s.d 16',
+            'Dalam hal terjadi sengketa, Pemohon dapat mengajukan gugatan ke pengadilan apabila dalam mendapatkan Informasi Publik mendapatkan hambatan / kegagalan. (Pasal 4 Ayat 4)'
+        ];
+
+        foreach ($notes as $note) {
+            $pdf->Cell(5, 4, '', 0, 0);
+            $pdf->Cell(5, 4, '•', 0, 0, 'L');
+            $pdf->MultiCell(0, 4, $note, 0, 'L');
+        }
+
+        $pdf->Ln(5);
+
+        $hari = array(1 => 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu');
+        $bulan = array(1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember');
+
+        $tgl = date('d');
+        $bln = date('n');
+        $thn = date('Y');
+        $hr = date('N');
+
+        $tanggal_indonesia = $hari[$hr] . ', ' . $tgl . ' ' . $bulan[$bln] . ' ' . $thn;
+
+        $pdf->SetFont('times', 'I', 10);
+        $pdf->Cell(0, 4, 'Lembaran ini diterbitkan oleh PPID Kemendagri dan dicetak pada ' . $tanggal_indonesia, 0, 1, 'R');
+    }
+
+    // BUKTI PROSES PDF GENERATION
+    private function generateBuktiProsesTCPDF($data, $skpd_data = null)
+    {
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Document settings
+        $pdf->SetCreator('PPID Mandailing Natal');
+        $pdf->SetAuthor('PPID Mandailing Natal');
+        $pdf->SetTitle('Bukti Proses Permohonan Informasi');
+        $pdf->SetSubject('Bukti Proses Permohonan Informasi');
+
+        // Remove default header/footer
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        // Set margins
+        $pdf->SetMargins(15, 15, 15);
+        $pdf->SetAutoPageBreak(true, 15);
+
+        $pdf->AddPage();
+        // Using Times New Roman font with size 12 and 1.15 line spacing
+        $pdf->SetFont('times', '', 12);
+        $pdf->SetCellHeightRatio(1.15);
+
+        // Header with logo and SKPD information
+        $this->addBuktiProsesHeader($pdf, $data, $skpd_data);
+
+        // Title section
+        $this->addBuktiProsesTitle($pdf, $data);
+
+        // Data section
+        $this->addBuktiProsesDataSection($pdf, $data);
+
+        // Signature section
+        $this->addBuktiProsesSignature($pdf, $data);
+
+        // Footer notes
+        $this->addBuktiProsesFooter($pdf);
+
+        // Output PDF
+        $filename = 'Bukti_Proses_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
+        $pdf->Output($filename, 'I');
+        exit();
+    }
+
+    private function addBuktiProsesHeader($pdf, $data, $skpd_data = null)
+    {
+        $pdf->SetFont('times', 'B', 16);
+        $pdf->SetTextColor(0, 0, 0);
+
+        $logo_path = __DIR__ . '/../ppid_assets/logo-resmi.png';
+        $start_x = 15;
+        $start_y = 15;
+        $logo_width = 25;
+        $logo_height = 25;
+        $text_start_x = $start_x + $logo_width + 5;
+        $text_y = $start_y;
+
+        if (file_exists($logo_path)) {
+            $pdf->Image($logo_path, $start_x, $start_y, $logo_width, $logo_height, 'PNG', '', 'T', false, 300, '', false, false, 0, false, false, false);
+            $pdf->SetXY($text_start_x, $text_y);
+        } else {
+            $pdf->SetXY($start_x, $start_y);
+        }
+
+        $skpd_name = !empty($data['komponen_tujuan']) ? strtoupper($data['komponen_tujuan']) : 'DINAS KOMUNIKASI DAN INFORMATIKA';
+        $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
+
+        $pdf->SetFont('times', '', 11);
+
+        // Get dynamic address from SKPD data
+        $alamat = ($skpd_data && !empty($skpd_data['alamat']))
+            ? $skpd_data['alamat']
+            : 'Perkantoran Panyabungan, Panyabungan, Kabupaten Mandailing Natal, Provinsi Sumatera Utara';
+        $email = ($skpd_data && !empty($skpd_data['email'])) ? $skpd_data['email'] : 'diskominfo@gmail.madina.go.id';
+        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? $skpd_data['telepon'] : '';
+
+        $pdf->SetX($text_start_x);
+        $pdf->Cell(0, 5, 'Alamat: ' . $alamat, 0, 1, 'L');
+
+        $pdf->SetX($text_start_x);
+        $pdf->Cell(0, 5, 'Email: ' . $email, 0, 1, 'L');
+
+        if (!empty($telp)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, 'Telp: ' . $telp, 0, 1, 'L');
+        }
+
+        $pdf->Ln(12);
+
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->SetLineWidth(0.1);
+        $pdf->Line(11, $pdf->GetY(), $pdf->getPageWidth() - 11, $pdf->GetY());
+        $pdf->SetLineWidth(0.1);
+    }
+
+    private function addBuktiProsesTitle($pdf, $data)
+    {
+        $pdf->Ln(3);
+        $default_height = 5;
+        $line_spacing_factor = 1.0;
+        $next_line_y_jump = $default_height * $line_spacing_factor;
+
+        $pdf->SetFont('times', 'B', 12);
+
+        $pdf->Cell(0, $default_height, 'BUKTI PERMOHONAN INFORMASI', 0, 0, 'C');
+
+        $pdf->SetY($pdf->GetY() + $next_line_y_jump);
+
+        $pdf->SetFont('times', '', 12);
+
+        $pdf->Cell(0, $default_height, 'Nomor Permohonan : ' . ($data['no_permohonan'] ?? $data['id_permohonan']), 0, 1, 'C');
+    }
+
+    private function addBuktiProsesDataSection($pdf, $data)
+    {
+        $pdf->Ln(5);
+        $pdf->SetFont('times', '', 12);
+
+        $items = [
+            ['Nama Pemohon', $data['nama_lengkap'] ?? $data['username']],
+            ['Alamat', $data['alamat'] ?? ''],
+            ['Telepon', $data['no_kontak'] ?? ''],
+            ['Email', $data['email'] ?? ''],
+            ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
+            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
+            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+        ];
+
+        foreach ($items as $item) {
+            $pdf->Cell(50, 6, $item[0], 0, 0, 'L');
+            $pdf->Cell(5, 6, ':', 0, 0, 'L');
+            $pdf->Cell(0, 6, $item[1], 0, 1, 'L');
+        }
+
+        // Kandungan Informasi dengan background
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $kandungan_info, 1, 1, 'L', true);
+
+        $pdf->Ln(1);
+
+        // Tujuan Penggunaan dengan background
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->Cell(0, 6, $tujuan_penggunaan, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+
+        $pdf->Ln(2);
+
+        // Keputusan PPID section
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Keputusan PPID', 0, 1, 'C');
+
+        $pdf->SetFont('times', 'B', 12);
+        $pdf->Cell(0, 6, 'PERMOHONAN DIPENUHI', 0, 1, 'C');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Ln(2);
+
+        // Cara Memperoleh Informasi
+        $lebar_indentasi = 55;
+        $pdf->Cell(50, 6, 'Cara Memperoleh Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        $pdf->SetFont('dejavusans', '', 12);
+        $pdf->Cell(10, 6, '☐', 0, 0, 'L');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Melihat/Membaca/Mendengarkan/Mencatat', 0, 1, 'L');
+
+        $pdf->Cell($lebar_indentasi, 6, '', 0, 0, 'L');
+
+        $pdf->SetFont('dejavusans', '', 12);
+        $pdf->Cell(10, 6, '☑', 0, 0, 'L');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Mendapatkan Salinan Informasi (Hard Copy / Soft Copy)', 0, 1, 'L');
+
+        $pdf->Ln(2);
+
+        // Catatan Petugas dengan background seperti kandungan informasi
+        $catatan_petugas = !empty($data['catatan_petugas']) ? $data['catatan_petugas'] : '-';
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->Ln(2);
+
+        $pdf->Ln(10);
+    }
+
+    private function addBuktiProsesSignature($pdf, $data)
+    {
+        $y = $pdf->GetY();
+        $vertical_space = 20;
+        $line_gap = 10;
+
+        // Petugas Pelayanan Informasi
+        $pdf->SetXY(20, $y);
+        $pdf->Cell(80, 6, 'Petugas Pelayanan Informasi', 0, 1, 'C');
+        $pdf->SetY($y + 6 + $vertical_space);
+        $pdf->SetX(20);
+        $pdf->Cell(80, 6, strtoupper($data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA'), 0, 1, 'C');
+
+        // Pemohon
+        $pdf->SetXY(120, $y);
+        $pdf->Cell(80, 6, 'Pemohon', 0, 1, 'C');
+        $pdf->SetY($y + 6 + $vertical_space);
+        $pdf->SetX(120);
+        $pdf->Cell(80, 6, strtoupper($data['nama_lengkap'] ?? $data['username']), 0, 1, 'C');
+
+        $pdf->SetY($y + 6 + $vertical_space + 6 + $line_gap);
+
+        $pdf->SetLineWidth(0.1);
+
+        $page_width = $pdf->GetPageWidth();
+        $line_y = $pdf->GetY();
+        $pdf->Line(10, $line_y, $page_width - 10, $line_y);
+
+        $pdf->SetLineWidth(0.2);
+        $pdf->Ln(10);
+    }
+
+    private function addBuktiProsesFooter($pdf)
     {
         $pdf->SetFont('times', '', 10);
         $pdf->Cell(0, 5, 'Berdasarkan Undang-Undang No 14 Tahun 2008 Tentang Keterbukaan Informasi Publik, maka :', 0, 1, 'L');

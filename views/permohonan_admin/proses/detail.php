@@ -245,13 +245,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <!-- Preview Surat Bukti Permohonan -->
                         <a href="index.php?controller=permohonanadmin&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
                            class="btn btn-success btn-lg" target="_blank">
-                          <i class="fas fa-file-pdf me-2"></i>Preview Surat Bukti Permohonan
+                          <i class="fas fa-file-pdf me-2"></i>Surat Bukti Permohonan
                         </a>
 
-                        <!-- Preview Bukti Proses (placeholder untuk sekarang) -->
-                        <button class="btn btn-outline-warning btn-lg" onclick="previewBuktiProses()">
-                          <i class="fas fa-file-contract me-2"></i>Preview Bukti Proses
-                        </button>
+                        <!-- Preview Bukti Proses -->
+                        <a href="index.php?controller=permohonanadmin&action=generateBuktiProsesPDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+                           class="btn btn-warning btn-lg" target="_blank">
+                          <i class="fas fa-file-contract me-2"></i>Bukti Proses
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -327,46 +328,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
   </div>
 
-  <!-- Modal Preview Bukti Proses -->
-  <div class="modal fade" id="buktiProsesModal" tabindex="-1" aria-labelledby="buktiProsesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-warning">
-          <h5 class="modal-title text-white" id="buktiProsesModalLabel">
-            <i class="fas fa-file-contract me-2"></i>Preview Bukti Proses
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="text-center py-5">
-            <i class="fas fa-file-contract text-warning" style="font-size: 4rem; opacity: 0.5;"></i>
-            <h5 class="mt-4 mb-3">Bukti Proses Belum Tersedia</h5>
-            <p class="text-muted">
-              Bukti proses akan tersedia setelah permohonan diproses lebih lanjut oleh SKPD terkait.
-            </p>
-            <div class="alert alert-info mt-4" role="alert">
-              <i class="fas fa-info-circle me-2"></i>
-              <strong>Informasi:</strong> Dokumen bukti proses akan dibuat secara otomatis setelah status permohonan diperbarui.
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            <i class="fas fa-times me-1"></i>Tutup
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <?php include 'template/script.php'; ?>
-
-  <script>
-    function previewBuktiProses() {
-      const buktiProsesModal = new bootstrap.Modal(document.getElementById('buktiProsesModal'));
-      buktiProsesModal.show();
-    }
-  </script>
 
   <style>
     /* Government Standard Styling */

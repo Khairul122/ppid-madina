@@ -144,10 +144,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                      class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
-                                  <a href="index.php?controller=permohonanadmin&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
-                                     class="btn btn-success btn-sm" title="Cetak PDF" target="_blank">
-                                    <i class="fas fa-file-pdf"></i>
-                                  </a>
                                 </div>
                               </td>
                             </tr>
