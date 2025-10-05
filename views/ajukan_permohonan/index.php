@@ -1152,12 +1152,13 @@ $title = 'Ajukan Permohonan - PPID Mandailing';
                       <label for="komponen_tujuan" class="form-label">Komponen/Unit Tujuan <span class="required">*</span></label>
                       <select class="form-select" id="komponen_tujuan" name="komponen_tujuan" required>
                         <option value="">Pilih Unit Tujuan</option>
-                        <option value="Sekretariat Daerah" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == 'Sekretariat Daerah') ? 'selected' : ''; ?>>Sekretariat Daerah</option>
-                        <option value="Dinas Pendidikan" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == 'Dinas Pendidikan') ? 'selected' : ''; ?>>Dinas Pendidikan</option>
-                        <option value="Dinas Kesehatan" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == 'Dinas Kesehatan') ? 'selected' : ''; ?>>Dinas Kesehatan</option>
-                        <option value="Dinas Pekerjaan Umum" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == 'Dinas Pekerjaan Umum') ? 'selected' : ''; ?>>Dinas Pekerjaan Umum</option>
-                        <option value="Dinas Sosial" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == 'Dinas Sosial') ? 'selected' : ''; ?>>Dinas Sosial</option>
-                        <option value="Lainnya" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == 'Lainnya') ? 'selected' : ''; ?>>Lainnya</option>
+                        <?php if (!empty($skpd_list)): ?>
+                          <?php foreach ($skpd_list as $skpd): ?>
+                            <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>" <?php echo (isset($_POST['komponen_tujuan']) && $_POST['komponen_tujuan'] == $skpd['nama_skpd']) ? 'selected' : ''; ?>>
+                              <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
+                            </option>
+                          <?php endforeach; ?>
+                        <?php endif; ?>
                       </select>
                     </div>
                   </div>

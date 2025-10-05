@@ -182,20 +182,20 @@ class PermohonanAdminController
 
         // Generate username if not provided or if it's duplicate
         $username = !empty($_POST['username']) ? $_POST['username'] : $_POST['nama_lengkap'];
-        
+
         // If username is still empty or already exists, generate a unique one
         if (empty($username) || $this->permohonanAdminModel->checkUsernameExists($username)) {
             // Generate a unique username using nama_lengkap and appending a number if needed
             $baseUsername = !empty($_POST['nama_lengkap']) ? preg_replace('/[^A-Za-z0-9]/', '', strtolower($_POST['nama_lengkap'])) : 'user';
             $username = $baseUsername;
             $counter = 1;
-            
+
             while ($this->permohonanAdminModel->checkUsernameExists($username)) {
                 $username = $baseUsername . $counter;
                 $counter++;
             }
         }
-        
+
         $userData = [
             'email' => $_POST['email'],
             'username' => $username,
@@ -453,7 +453,6 @@ class PermohonanAdminController
             } else {
                 $this->sendJsonResponse(['success' => false, 'message' => 'Gagal mengupdate status']);
             }
-
         } catch (Exception $e) {
             $this->sendJsonResponse([
                 'success' => false,
@@ -521,7 +520,6 @@ class PermohonanAdminController
             } else {
                 $this->sendJsonResponse(['success' => false, 'message' => $result['message']]);
             }
-
         } catch (Exception $e) {
             $this->sendJsonResponse([
                 'success' => false,
@@ -681,10 +679,13 @@ class PermohonanAdminController
             exit();
         }
 
-        $this->generateTCPDF($permohonan);
+        // Get SKPD data based on komponen_tujuan
+        $skpd_data = $this->permohonanAdminModel->getSKPDDataByName($permohonan['komponen_tujuan']);
+
+        $this->generateTCPDF($permohonan, $skpd_data);
     }
 
-    private function generateTCPDF($data)
+    private function generateTCPDF($data, $skpd_data = null)
     {
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
@@ -707,8 +708,8 @@ class PermohonanAdminController
         $pdf->SetFont('times', '', 12);
         $pdf->SetCellHeightRatio(1.15); // Set line spacing to 1.15
 
-        // Header with logo
-        $this->addHeader($pdf);
+        // Header with logo and SKPD information
+        $this->addHeader($pdf, $data, $skpd_data);
 
         // Title section
         $this->addTitle($pdf, $data);
@@ -728,40 +729,69 @@ class PermohonanAdminController
         exit();
     }
 
-    private function addHeader($pdf)
+    private function addHeader($pdf, $data, $skpd_data = null)
     {
-        $pdf->SetFont('times', 'B', 14);
+        $pdf->SetFont('times', 'B', 16);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 10, 'Pemerintah Kabupaten Mandailing Natal', 0, 1, 'C');
 
-        $pdf->SetFont('times', '', 12);
-        $pdf->Cell(0, 5, 'Email:', 0, 1, 'C');
-        $pdf->Cell(0, 5, 'Telp.', 0, 1, 'C');
-        $pdf->Ln(5);
+        $logo_path = __DIR__ . '/../ppid_assets/logo-resmi.png';
+        $start_x = 15;
+        $start_y = 15;
+        $logo_width = 25;
+        $logo_height = 25;
+        $text_start_x = $start_x + $logo_width + 5;
+        $text_y = $start_y;
+
+        if (file_exists($logo_path)) {
+            $pdf->Image($logo_path, $start_x, $start_y, $logo_width, $logo_height, 'PNG', '', 'T', false, 300, '', false, false, 0, false, false, false);
+            $pdf->SetXY($text_start_x, $text_y);
+        } else {
+            $pdf->SetXY($start_x, $start_y);
+        }
+
+        $skpd_name = !empty($data['komponen_tujuan']) ? strtoupper($data['komponen_tujuan']) : '';
+        $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
+
+        $pdf->SetFont('times', '', 11);
+
+        $email = ($skpd_data && !empty($skpd_data['email'])) ? $skpd_data['email'] : '';
+        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? $skpd_data['telepon'] : '';
+
+        $pdf->SetX($text_start_x);
+        $pdf->Cell(0, 5, 'Email: ' . $email, 0, 1, 'L');
+
+        $pdf->SetX($text_start_x);
+        $pdf->Cell(0, 5, 'Telp: ' . $telp, 0, 1, 'L');
+
+        $pdf->Ln(12);
+
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->SetLineWidth(0.1);
+        $pdf->Line(11, $pdf->GetY(), $pdf->getPageWidth() - 11, $pdf->GetY());
+        $pdf->SetLineWidth(0.1);
     }
 
-  private function addTitle($pdf, $data)
-{
-    $default_height = 10;
-    $line_spacing_factor = 1.15;
-    $next_line_y_jump = $default_height * $line_spacing_factor;
+    private function addTitle($pdf, $data)
+    {
+        $pdf->Ln(3);
+        $default_height = 5;
+        $line_spacing_factor = 1.0;
+        $next_line_y_jump = $default_height * $line_spacing_factor;
 
-    $pdf->SetFont('times', 'B', 12);
-    
-    // Cetak judul baris pertama TANPA lompatan baris otomatis ('0' di parameter ke-4)
-    $pdf->Cell(0, $default_height, 'BUKTI PERMOHONAN INFORMASI', 0, 0, 'C');
-    
-    // Set posisi Y baru dengan lompatan 1.15 kali tinggi cell
-    $pdf->SetY($pdf->GetY() + $next_line_y_jump); 
+        $pdf->SetFont('times', 'B', 12);
 
-    $pdf->SetFont('times', 'B', 12);
-    
-    // Cetak judul baris kedua, menggunakan 1 untuk lompatan baris (agar kursor Y bergerak turun)
-    $pdf->Cell(0, $default_height, 'Nomor Permohonan : ' . ($data['no_permohonan'] ?? $data['id_permohonan']), 0, 1, 'C');
-}
+        $pdf->Cell(0, $default_height, 'BUKTI PERMOHONAN INFORMASI', 0, 0, 'C');
+
+        $pdf->SetY($pdf->GetY() + $next_line_y_jump);
+
+        $pdf->SetFont('times', 12);
+
+        $pdf->Cell(0, $default_height, 'Nomor Permohonan : ' . ($data['no_permohonan'] ?? $data['id_permohonan']), 0, 1, 'C');
+    }
 
     private function addDataSection($pdf, $data)
     {
+        $pdf->Ln(5);
         $pdf->SetFont('times', '', 12);
         $items = [
             ['Nama Pemohon', $data['nama_lengkap'] ?? $data['username']],
@@ -901,11 +931,11 @@ class PermohonanAdminController
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $status = isset($_GET['status']) ? $_GET['status'] : 'all';
+        $status = isset($_GET['status']) ? $_GET['status'] : 'Disposisi';
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-        // Get permohonan with disposisi focus (status: Disposisi, Selesai, Ditolak)
-        $disposisi_status = ['Disposisi', 'Selesai', 'Ditolak'];
+        // Get permohonan with disposisi focus (only status: Disposisi)
+        $disposisi_status = ['Disposisi'];
         $permohonan_list = $this->permohonanAdminModel->getDisposisiPermohonan($limit, $offset, $status, $search, $disposisi_status);
         $total_records = $this->permohonanAdminModel->countDisposisiPermohonan($status, $search, $disposisi_status);
         $total_pages = ceil($total_records / $limit);

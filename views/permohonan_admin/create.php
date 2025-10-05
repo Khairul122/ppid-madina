@@ -289,15 +289,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <input type="file" class="form-control form-control-lg" name="upload_data_pedukung" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
                           <small class="text-muted">JPG, PNG, PDF, DOC, DOCX (Max: 10MB)</small>
                         </div>
-
-                        <div class="col-md-4">
-                          <label class="form-label text-dark fw-medium">Status Permohonan</label>
-                          <select class="form-select form-control-lg" name="status">
-                            <option value="Diproses">Sedang Diproses</option>
-                            <option value="Selesai">Selesai</option>
-                            <option value="Ditolak">Ditolak</option>
-                          </select>
-                        </div>
                       </div>
                     </div>
 
@@ -668,6 +659,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
       .d-flex.gap-3 .btn {
         width: 100%;
+      }
+
+      .col-md-6, .col-md-4 {
+        flex: 1 0 100%; /* Make all columns full width on small screens */
       }
     }
 

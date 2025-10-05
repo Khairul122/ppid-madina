@@ -11,43 +11,43 @@ Sistem Informasi Publik Pejabat Pengelola Informasi dan Dokumentasi (SIP PPID) M
   - Primary: `#1e3a8a` (Biru tua - profesional dan dapat dipercaya)
   - Secondary: `#f59e0b` (Kuning/Orange - energik dan accessible)
   - Accent: `#fbbf24` (Kuning cerah - untuk highlight)
-- **Font**: Inter (clean, modern, highly readable)
+- **Font**: Inter (bersih, modern, mudah dibaca)
 - **Tone**: Formal namun ramah, menggunakan Bahasa Indonesia yang baku
-- **Accessibility**: Harus memenuhi standar WCAG untuk aksesibilitas publik
+- **Aksesibilitas**: Harus memenuhi standar WCAG untuk aksesibilitas publik
 
-### 2. Teknologi Stack
+### 2. Teknologi yang Digunakan
 - **Backend**: PHP Native (tanpa framework)
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla/ES6+)
-- **UI Framework**: Bootstrap 5.3.0
-- **Icons**: Font Awesome 6.4.0
-- **Rich Text Editor**: TinyMCE
-- **Animation**: AOS (Animate On Scroll)
-- **Database**: MySQL/MariaDB
+- **Kerangka UI**: Bootstrap 5.3.0
+- **Ikon**: Font Awesome 6.4.0
+- **Editor Teks**: TinyMCE
+- **Animasi**: AOS (Animate On Scroll)
+- **Basis Data**: MySQL/MariaDB
 
 ## 📁 Struktur Proyek
 
 ```
 ppid-mandailing/
-├── index.php                 # Entry point dengan routing
-├── template.php              # Template untuk admin panel
-├── controllers/              # Controller untuk MVC pattern
-├── models/                   # Model untuk database operations
-├── views/                    # View files
+├── index.php                 # Titik masuk dengan routing
+├── template.php              # Template untuk panel admin
+├── controllers/              # Controller untuk pola MVC
+├── models/                   # Model untuk operasi basis data
+├── views/                    # File tampilan
 │   ├── auth/                # Halaman autentikasi
-│   ├── beranda/             # Halaman public
-│   └── [module]/            # Module-specific views
+│   ├── beranda/             # Halaman publik
+│   └── [module]/            # Tampilan spesifik modul
 ├── template/                 # Komponen template admin
 │   ├── header.php
 │   ├── navbar.php
 │   ├── sidebar.php
 │   ├── setting_panel.php
 │   ├── script.php
-│   └── layout/              # Komponen layout public
+│   └── layout/              # Komponen layout publik
 │       ├── navbar_beranda.php
 │       └── footer.php
-├── ppid_assets/             # Assets statis
-├── uploads/                 # File uploads
-└── vendor/                  # Dependencies (Composer)
+├── ppid_assets/             # Aset statis
+├── uploads/                 # Unggahan file
+└── vendor/                  # Dependensi (Composer)
 ```
 
 ## 🎨 Konvensi Kode
@@ -104,25 +104,25 @@ let current_index = 0;
 .infoCardHeader { }
 ```
 
-## 🏗️ Pattern dan Arsitektur
+## 🏗️ Pola dan Arsitektur
 
-### MVC Pattern
+### Pola MVC
 ```php
-// URL Pattern
+// Pola URL
 index.php?controller=auth&action=login
 index.php?controller=berita&action=show&id=123
 
-// Controller Pattern
+// Pola Controller
 class BeritaController {
     public function index() {
-        // Logic untuk menampilkan daftar berita
+        // Logika untuk menampilkan daftar berita
         $data['berita'] = $this->model->getAllBerita();
         include 'views/berita/index.php';
     }
 }
 ```
 
-### Template Admin Panel
+### Template Panel Admin
 ```php
 <?php include('template/header.php'); ?>
 
@@ -144,7 +144,7 @@ class BeritaController {
 </html>
 ```
 
-### Template Public Pages
+### Template Halaman Publik
 ```php
 <!DOCTYPE html>
 <html lang="id">
@@ -192,9 +192,9 @@ class BeritaController {
 </html>
 ```
 
-## 💅 Styling Guidelines
+## 💅 Panduan Styling
 
-### CSS Variables (Gunakan Konsisten)
+### Variabel CSS (Gunakan Konsisten)
 ```css
 :root {
     --primary-color: #1e3a8a;
@@ -212,9 +212,9 @@ class BeritaController {
 }
 ```
 
-### Responsive Design
+### Desain Responsif
 ```css
-/* Mobile First Approach */
+/* Pendekatan Mobile First */
 
 /* Base styles untuk mobile */
 .container {
@@ -243,7 +243,7 @@ class BeritaController {
 }
 ```
 
-### Card Pattern (Digunakan di Seluruh Aplikasi)
+### Pola Card (Digunakan di Seluruh Aplikasi)
 ```css
 .card {
     border: none;
@@ -259,9 +259,9 @@ class BeritaController {
 }
 ```
 
-## 🎭 Component Patterns
+## 🎭 Pola Komponen
 
-### Form Pattern
+### Pola Form
 ```html
 <div class="form-group">
     <label for="field_name" class="form-label">
@@ -277,7 +277,7 @@ class BeritaController {
 </div>
 ```
 
-### Alert Pattern
+### Pola Alert
 ```php
 <?php if (!empty($error)): ?>
     <div class="alert alert-danger" role="alert">
@@ -294,7 +294,7 @@ class BeritaController {
 <?php endif; ?>
 ```
 
-### Modal Pattern
+### Pola Modal
 ```html
 <div id="myModal" class="modal-custom">
     <div class="modal-content">
@@ -312,7 +312,7 @@ class BeritaController {
 </div>
 ```
 
-### Data Grid Pattern
+### Pola Data Grid
 ```html
 <div class="info-grid">
     <?php if (!empty($data['items'])): ?>
@@ -335,9 +335,9 @@ class BeritaController {
 </div>
 ```
 
-## 🔒 Security Best Practices
+## 🔒 Praktik Keamanan Terbaik
 
-### XSS Prevention
+### Pencegahan XSS
 ```php
 // SELALU escape output
 <?php echo htmlspecialchars($user_input, ENT_QUOTES, 'UTF-8'); ?>
@@ -351,7 +351,7 @@ const data = <?= htmlspecialchars(json_encode($data), ENT_QUOTES, 'UTF-8') ?>;
 </script>
 ```
 
-### File Upload Validation
+### Validasi Unggahan File
 ```php
 // Validasi tipe file
 $allowed_types = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -374,7 +374,7 @@ $extension = pathinfo($_FILES['upload']['name'], PATHINFO_EXTENSION);
 $filename = $nik . '_' . $type . '_' . $timestamp . '.' . $extension;
 ```
 
-### SQL Injection Prevention
+### Pencegahan SQL Injection
 ```php
 // SELALU gunakan prepared statements
 $stmt = $conn->prepare("SELECT * FROM users WHERE email = ? AND status = ?");
@@ -382,9 +382,9 @@ $stmt->bind_param("ss", $email, $status);
 $stmt->execute();
 ```
 
-## 📱 Responsive Behavior
+## 📱 Perilaku Responsif
 
-### Breakpoints (Sesuai Bootstrap 5)
+### Breakpoint (Sesuai Bootstrap 5)
 ```
 - Extra Small (xs): < 576px (Mobile)
 - Small (sm): ≥ 576px (Large Mobile)
@@ -393,7 +393,7 @@ $stmt->execute();
 - Extra Large (xl): ≥ 1200px (Large Desktop)
 ```
 
-### Mobile Menu Pattern
+### Pola Menu Mobile
 ```javascript
 // Toggle mobile menu
 document.getElementById('mobileMenuBtn').addEventListener('click', function() {
@@ -410,7 +410,7 @@ document.addEventListener('click', function(event) {
 });
 ```
 
-## 🎬 Animation Guidelines
+## 🎬 Panduan Animasi
 
 ### AOS (Animate On Scroll)
 ```html
@@ -430,7 +430,7 @@ AOS.init({
 </script>
 ```
 
-### CSS Transitions
+### Transisi CSS
 ```css
 /* Konsisten gunakan timing yang sama */
 .element {
@@ -444,9 +444,9 @@ AOS.init({
 }
 ```
 
-## 📊 Data Handling
+## 📊 Penanganan Data
 
-### Passing Data ke View
+### Mengirim Data ke View
 ```php
 // Controller
 $data = [
@@ -467,7 +467,7 @@ $data = [
 include 'views/beranda/index.php';
 ```
 
-### Loop Pattern
+### Pola Loop
 ```php
 <?php foreach($data['items'] as $index => $item): ?>
     <div class="item" data-index="<?= $index ?>">
@@ -477,7 +477,7 @@ include 'views/beranda/index.php';
 <?php endforeach; ?>
 ```
 
-## 🌐 Internationalization (Bahasa Indonesia)
+## 🌐 Internasionalisasi (Bahasa Indonesia)
 
 ### Format Tanggal
 ```php
@@ -507,9 +507,9 @@ $messages = [
 ];
 ```
 
-## ⚡ Performance Best Practices
+## ⚡ Praktik Performa Terbaik
 
-### Loading States
+### Status Loading
 ```javascript
 // Tampilkan loading saat proses
 const button = document.querySelector('.btn-submit');
@@ -525,7 +525,7 @@ setTimeout(() => {
 }, 1000);
 ```
 
-### Lazy Loading untuk Image
+### Lazy Loading untuk Gambar
 ```html
 <img src="placeholder.jpg"
      data-src="actual-image.jpg"

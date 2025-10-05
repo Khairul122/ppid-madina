@@ -7,39 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 <?php include('template/header.php'); ?>
 
-<style>
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border-radius: 0.5rem;
-}
-
-.card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    font-weight: 600;
-    color: #495057;
-}
-
-.form-label {
-    color: #495057;
-    font-weight: 500;
-}
-
-.page-header {
-    background: white;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border-left: 4px solid #6c757d;
-}
-
-.text-muted {
-    color: #6c757d !important;
-}
-</style>
-
 <body class="with-welcome-text">
   <div class="container-scroller">
     <?php include 'template/navbar.php'; ?>
@@ -113,10 +80,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <label for="komponen_tujuan" class="form-label">
                             Komponen Tujuan <span class="text-danger">*</span>
                           </label>
-                          <select class="form-select" name="komponen_tujuan" id="komponen_tujuan_edit" required>
-                            <option value="">-- Loading komponen tujuan... --</option>
+                          <select class="form-select" name="komponen_tujuan" required>
+                            <option value="">-- Pilih Komponen Tujuan --</option>
+                            <?php if (!empty($skpd_list)): ?>
+                              <?php foreach ($skpd_list as $skpd): ?>
+                                <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>" <?php echo ($permohonan['komponen_tujuan'] ?? '') == $skpd['nama_skpd'] ? 'selected' : ''; ?>>
+                                  <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
+                                </option>
+                              <?php endforeach; ?>
+                            <?php endif; ?>
                           </select>
-                          <small class="text-muted">Komponen akan muncul setelah memilih tujuan permohonan</small>
                         </div>
 
                         <!-- Judul Dokumen -->
@@ -145,18 +118,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           </label>
                           <textarea class="form-control" name="tujuan_penggunaan_informasi" rows="3" required
                                     placeholder="Jelaskan untuk apa informasi ini akan digunakan"><?php echo htmlspecialchars($permohonan['tujuan_penggunaan_informasi'] ?? ''); ?></textarea>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                          <label for="status" class="form-label">
-                            Status Permohonan
-                          </label>
-                          <select class="form-select" name="status">
-                            <option value="Diproses" <?php echo ($permohonan['status'] == 'Diproses') ? 'selected' : ''; ?>>Sedang Diproses</option>
-                            <option value="Selesai" <?php echo ($permohonan['status'] == 'Selesai') ? 'selected' : ''; ?>>Selesai</option>
-                            <option value="Ditolak" <?php echo ($permohonan['status'] == 'Ditolak') ? 'selected' : ''; ?>>Ditolak</option>
-                          </select>
                         </div>
                         
                         <!-- Sumber Media -->
@@ -277,52 +238,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         });
       }, false);
     })();
-
-    // Handle tujuan permohonan change to update komponen tujuan
-    $('#tujuan_permohonan_edit').on('change', function() {
-      const selectedTujuan = $(this).val();
-      const komponenSelect = $('#komponen_tujuan_edit');
-      const currentKomponen = '<?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? ''); ?>';
-
-      // Clear previous options
-      komponenSelect.html('<option value="">-- Loading... --</option>');
-
-      if (selectedTujuan === '') {
-        komponenSelect.html('<option value="">-- Pilih tujuan permohonan terlebih dahulu --</option>');
-        return;
-      }
-
-      // Make AJAX request to get komponen list
-      $.ajax({
-        url: 'index.php?controller=permohonanadmin&action=getKomponen',
-        method: 'GET',
-        data: { tujuan_permohonan: selectedTujuan },
-        dataType: 'json',
-        success: function(response) {
-          if (response.success && response.data.length > 0) {
-            let options = '<option value="">-- Pilih Komponen Tujuan --</option>';
-            response.data.forEach(function(komponen) {
-              const selected = komponen.nama_tujuan_permohonan === currentKomponen ? 'selected' : '';
-              options += `<option value="${komponen.nama_tujuan_permohonan}" ${selected}>${komponen.nama_tujuan_permohonan}</option>`;
-            });
-            komponenSelect.html(options);
-          } else {
-            komponenSelect.html('<option value="">-- Tidak ada komponen tersedia --</option>');
-          }
-        },
-        error: function() {
-          komponenSelect.html('<option value="">-- Error loading komponen --</option>');
-          alert('Gagal memuat komponen tujuan. Silakan refresh halaman.');
-        }
-      });
-    });
-
-    // Load komponen on page load if tujuan is already selected
-    $(document).ready(function() {
-      if ($('#tujuan_permohonan_edit').val() !== '') {
-        $('#tujuan_permohonan_edit').trigger('change');
-      }
-    });
   </script>
 </body>
 

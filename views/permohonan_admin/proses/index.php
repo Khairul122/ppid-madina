@@ -22,11 +22,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
               <div class="page-header mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
                   <div class="mb-2 mb-md-0">
-                    <h4 class="page-title mb-1 text-dark">Disposisi Permohonan</h4>
+                    <h4 class="page-title mb-1 text-dark">Permohonan Diproses</h4>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 fs-6">
                         <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=index" class="text-decoration-none">Meja Layanan</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Disposisi</li>
+                        <li class="breadcrumb-item active" aria-current="page">Diproses</li>
                       </ol>
                     </nav>
                   </div>
@@ -62,16 +62,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <div class="col-9">
                           <div class="d-flex align-items-center align-self-start">
                             <h3 class="mb-0"><?php echo $stats['total'] ?? 0; ?></h3>
-                            <p class="text-success ms-2 mb-0 font-weight-medium">Total</p>
+                            <p class="text-warning ms-2 mb-0 font-weight-medium">Total</p>
                           </div>
                         </div>
                         <div class="col-3">
-                          <div class="icon icon-box-success">
+                          <div class="icon icon-box-warning">
                             <span class="mdi mdi-file-document-box-outline icon-item"></span>
                           </div>
                         </div>
                       </div>
-                      <h6 class="text-muted font-weight-normal">Total Disposisi</h6>
+                      <h6 class="text-muted font-weight-normal">Total Diproses</h6>
                     </div>
                   </div>
                 </div>
@@ -81,7 +81,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="row">
                         <div class="col-9">
                           <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0"><?php echo $stats['disposisi'] ?? 0; ?></h3>
+                            <h3 class="mb-0"><?php echo $stats['diproses'] ?? 0; ?></h3>
                             <p class="text-warning ms-2 mb-0 font-weight-medium">Proses</p>
                           </div>
                         </div>
@@ -91,47 +91,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           </div>
                         </div>
                       </div>
-                      <h6 class="text-muted font-weight-normal">Sedang Disposisi</h6>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-9">
-                          <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0"><?php echo $stats['selesai'] ?? 0; ?></h3>
-                            <p class="text-success ms-2 mb-0 font-weight-medium">Selesai</p>
-                          </div>
-                        </div>
-                        <div class="col-3">
-                          <div class="icon icon-box-success">
-                            <span class="mdi mdi-check-circle-outline icon-item"></span>
-                          </div>
-                        </div>
-                      </div>
-                      <h6 class="text-muted font-weight-normal">Sudah Selesai</h6>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-9">
-                          <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0"><?php echo $stats['ditolak'] ?? 0; ?></h3>
-                            <p class="text-danger ms-2 mb-0 font-weight-medium">Ditolak</p>
-                          </div>
-                        </div>
-                        <div class="col-3">
-                          <div class="icon icon-box-danger">
-                            <span class="mdi mdi-close-circle-outline icon-item"></span>
-                          </div>
-                        </div>
-                      </div>
-                      <h6 class="text-muted font-weight-normal">Permohonan Ditolak</h6>
+                      <h6 class="text-muted font-weight-normal">Sedang Diproses</h6>
                     </div>
                   </div>
                 </div>
@@ -142,19 +102,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 <div class="card-body">
                   <form method="GET" action="index.php" class="row g-3">
                     <input type="hidden" name="controller" value="permohonanadmin">
-                    <input type="hidden" name="action" value="disposisiIndex">
-
-                    <div class="col-md-3">
-                      <label class="form-label">Status</label>
-                      <select name="status" class="form-select">
-                        <option value="all" <?php echo ($status === 'all') ? 'selected' : ''; ?>>Semua Status</option>
-                        <option value="Disposisi" <?php echo ($status === 'Disposisi') ? 'selected' : ''; ?>>Disposisi</option>
-                      </select>
-                    </div>
+                    <input type="hidden" name="action" value="prosesIndex">
 
                     <div class="col-md-4">
                       <label class="form-label">Pencarian</label>
-                      <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nomor, nama, atau judul..." value="<?php echo htmlspecialchars($search); ?>">
+                      <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nomor, nama, atau judul..." value="<?php echo htmlspecialchars($search ?? ''); ?>">
                     </div>
 
                     <div class="col-md-2">
@@ -166,7 +118,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                     <div class="col-md-2">
                       <label class="form-label">&nbsp;</label>
-                      <a href="index.php?controller=permohonanadmin&action=disposisiIndex" class="btn btn-outline-secondary d-block w-100">
+                      <a href="index.php?controller=permohonanadmin&action=prosesIndex" class="btn btn-outline-secondary d-block w-100">
                         <i class="fas fa-refresh me-1"></i>Reset
                       </a>
                     </div>
@@ -179,7 +131,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 <div class="card-header bg-light border-bottom">
                   <h5 class="card-title mb-0 text-dark fw-normal">
                     <i class="fas fa-list me-2 text-primary"></i>
-                    Daftar Disposisi Permohonan
+                    Daftar Permohonan Diproses
                   </h5>
                 </div>
                 <div class="card-body">
@@ -220,29 +172,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                 </div>
                               </td>
                               <td>
-                                <span class="badge bg-info"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? ''); ?></span>
+                                <span class="badge bg-info"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? '-'); ?></span>
                               </td>
                               <td>
-                                <?php
-                                $status = $permohonan['status'] ?? 'Diproses';
-                                $statusClass = '';
-                                switch ($status) {
-                                  case 'Selesai':
-                                  case 'approved':
-                                    $statusClass = 'bg-success';
-                                    break;
-                                  case 'Ditolak':
-                                  case 'rejected':
-                                    $statusClass = 'bg-danger';
-                                    break;
-                                  case 'Disposisi':
-                                    $statusClass = 'bg-warning text-dark';
-                                    break;
-                                  default:
-                                    $statusClass = 'bg-secondary';
-                                }
-                                ?>
-                                <span class="badge <?php echo $statusClass; ?>"><?php echo htmlspecialchars($status); ?></span>
+                                <span class="badge bg-warning text-dark">Diproses</span>
                               </td>
                               <td>
                                 <small class="text-muted">
@@ -251,7 +184,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                               </td>
                               <td>
                                 <div class="btn-group" role="group">
-                                  <a href="index.php?controller=permohonanadmin&action=disposisiView&id=<?php echo $permohonan['id_permohonan']; ?>"
+                                  <a href="index.php?controller=permohonanadmin&action=prosesDetail&id=<?php echo $permohonan['id_permohonan']; ?>"
                                      class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
@@ -259,10 +192,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                      class="btn btn-success btn-sm" title="Cetak PDF" target="_blank">
                                     <i class="fas fa-file-pdf"></i>
                                   </a>
-                                  <button type="button" class="btn btn-danger btn-sm" title="Hapus"
-                                          onclick="confirmDelete(<?php echo $permohonan['id_permohonan']; ?>)">
-                                    <i class="fas fa-trash"></i>
-                                  </button>
                                 </div>
                               </td>
                             </tr>
@@ -277,7 +206,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <ul class="pagination justify-content-center">
                           <?php if ($page > 1): ?>
                             <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanadmin&action=disposisiIndex&page=<?php echo ($page - 1); ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">
+                              <a class="page-link" href="?controller=permohonanadmin&action=prosesIndex&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-left"></i>
                               </a>
                             </li>
@@ -285,7 +214,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                           <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
                             <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                              <a class="page-link" href="?controller=permohonanadmin&action=disposisiIndex&page=<?php echo $i; ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">
+                              <a class="page-link" href="?controller=permohonanadmin&action=prosesIndex&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <?php echo $i; ?>
                               </a>
                             </li>
@@ -293,7 +222,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                           <?php if ($page < $total_pages): ?>
                             <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanadmin&action=disposisiIndex&page=<?php echo ($page + 1); ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">
+                              <a class="page-link" href="?controller=permohonanadmin&action=prosesIndex&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-right"></i>
                               </a>
                             </li>
@@ -312,8 +241,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                   <?php else: ?>
                     <div class="text-center py-5">
                       <i class="fas fa-inbox text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                      <h5 class="text-muted mt-3">Tidak ada data disposisi</h5>
-                      <p class="text-muted">Belum ada permohonan yang masuk disposisi.</p>
+                      <h5 class="text-muted mt-3">Tidak ada data permohonan diproses</h5>
+                      <p class="text-muted">Belum ada permohonan dengan status diproses.</p>
                     </div>
                   <?php endif; ?>
                 </div>
@@ -329,12 +258,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   <?php include 'template/script.php'; ?>
 
   <script>
-    function confirmDelete(id) {
-      if (confirm('Apakah Anda yakin ingin menghapus permohonan ini?\n\nData yang dihapus tidak dapat dikembalikan.')) {
-        window.location.href = 'index.php?controller=permohonanadmin&action=delete&id=' + id;
-      }
-    }
-
     // Auto dismiss alerts after 5 seconds
     setTimeout(function() {
       const alerts = document.querySelectorAll('.alert');
@@ -460,11 +383,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       color: white;
     }
 
-    .btn-danger {
-      background-color: var(--gov-danger);
-      color: white;
-    }
-
     .btn-outline-secondary {
       border: 1.5px solid var(--gov-secondary);
       color: var(--gov-secondary);
@@ -485,19 +403,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       justify-content: center;
     }
 
-    .icon-box-success {
-      background-color: rgba(16, 185, 129, 0.1);
-      color: var(--gov-success);
-    }
-
     .icon-box-warning {
       background-color: rgba(245, 158, 11, 0.1);
       color: var(--gov-warning);
-    }
-
-    .icon-box-danger {
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--gov-danger);
     }
 
     .form-control,

@@ -27,6 +27,13 @@ class AjukanPermohonanController {
             $_SESSION['user_nik'] = $user_data['nik'];
         }
 
+        // Get SKPD data for dropdown
+        require_once 'models/SKPDModel.php';
+        global $database;
+        $db = $database->getConnection();
+        $skpdModel = new SKPDModel($db);
+        $skpd_list = $skpdModel->getAllSKPD();
+
         // Handle form submission
         $error = '';
         $success = '';
@@ -48,6 +55,7 @@ class AjukanPermohonanController {
         $nama_lengkap = $user_data['nama_lengkap'] ?? $_SESSION['username'] ?? 'Pengguna';
         $status_pengguna = $user_data['status_pengguna'] ?? 'publik';
         $current_datetime = date('d F Y H:i');
+        $skpd_list = $skpd_list; // Pastikan $skpd_list tersedia untuk view
 
         include 'views/ajukan_permohonan/index.php';
     }

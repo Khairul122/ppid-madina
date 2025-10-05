@@ -807,5 +807,20 @@ class PermohonanAdminModel
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }    // Get SKPD data by name
+    public function getSKPDDataByName($skpd_name)
+    {
+        if (empty($skpd_name)) {
+            return null;
+        }
+
+        $query = "SELECT * FROM " . $this->table_skpd . " WHERE nama_skpd = :nama_skpd LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':nama_skpd', $skpd_name);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
+
+?>

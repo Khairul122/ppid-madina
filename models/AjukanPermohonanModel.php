@@ -1,6 +1,6 @@
 <?php
 class AjukanPermohonanModel {
-    private $conn;
+    public $conn;
     private $table_name = "permohonan";
 
     public function __construct($db) {
@@ -14,6 +14,9 @@ class AjukanPermohonanModel {
 
             // Generate nomor permohonan unik
             $no_permohonan = $this->generateNoPermohonan();
+
+            // Hitung 7 hari kerja dan konversi ke jumlah hari kalender
+            $sisa_jatuh_tempo = $this->calculateWorkingDaysAsCalendarDays(7);
 
             // Handle file uploads
             $upload_foto_identitas = null;
@@ -29,21 +32,23 @@ class AjukanPermohonanModel {
 
             // Insert permohonan
             $query = "INSERT INTO " . $this->table_name . "
-                      (id_user, no_permohonan, tujuan_permohonan, komponen_tujuan, judul_dokumen,
-                       tujuan_penggunaan_informasi, upload_foto_identitas, upload_data_pedukung)
-                      VALUES (:id_user, :no_permohonan, :tujuan_permohonan, :komponen_tujuan, :judul_dokumen,
-                              :tujuan_penggunaan_informasi, :upload_foto_identitas, :upload_data_pendukung)";
+                      (id_user, no_permohonan, sisa_jatuh_tempo, tujuan_permohonan, komponen_tujuan, judul_dokumen,
+                       tujuan_penggunaan_informasi, upload_foto_identitas, upload_data_pedukung, status)
+                      VALUES (:id_user, :no_permohonan, :sisa_jatuh_tempo, :tujuan_permohonan, :komponen_tujuan, :judul_dokumen,
+                              :tujuan_penggunaan_informasi, :upload_foto_identitas, :upload_data_pendukung, :status)";
 
             $stmt = $this->conn->prepare($query);
 
             $stmt->bindParam(':id_user', $data['id_user']);
             $stmt->bindParam(':no_permohonan', $no_permohonan);
+            $stmt->bindParam(':sisa_jatuh_tempo', $sisa_jatuh_tempo);
             $stmt->bindParam(':tujuan_permohonan', $data['tujuan_permohonan']);
             $stmt->bindParam(':komponen_tujuan', $data['komponen_tujuan']);
             $stmt->bindParam(':judul_dokumen', $data['judul_dokumen']);
             $stmt->bindParam(':tujuan_penggunaan_informasi', $data['tujuan_penggunaan_informasi']);
             $stmt->bindParam(':upload_foto_identitas', $upload_foto_identitas);
             $stmt->bindParam(':upload_data_pendukung', $upload_data_pendukung);
+            $stmt->bindValue(':status', 'Masuk');
 
             $result = $stmt->execute();
 
@@ -269,6 +274,27 @@ class AjukanPermohonanModel {
                 'rejected' => 0
             ];
         }
+    }
+
+    // Method untuk menghitung 7 hari kerja (Senin-Jumat) dan mengembalikan jumlah hari kalender
+    private function calculateWorkingDaysAsCalendarDays($workingDaysToAdd) {
+        $startDate = new \DateTime();
+        $currentDate = clone $startDate;
+        $addedWorkingDays = 0;
+        
+        // Hitung maju sampai mendapatkan jumlah hari kerja yang dibutuhkan
+        while ($addedWorkingDays < $workingDaysToAdd) {
+            $currentDate->modify('+1 day');
+            // Cek apakah hari ini weekday (Senin=1, Selasa=2, ..., Jumat=5)
+            $dayOfWeek = $currentDate->format('N');
+            if ($dayOfWeek < 6) { // 1=Monday, 5=Friday
+                $addedWorkingDays++;
+            }
+        }
+        
+        // Hitung selisih hari kalender antara tanggal awal dan tanggal akhir
+        $interval = $startDate->diff($currentDate);
+        return $interval->days;
     }
 }
 ?>

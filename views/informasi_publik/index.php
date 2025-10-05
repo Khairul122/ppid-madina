@@ -157,7 +157,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                           class="form-check-input"
                                           type="checkbox"
                                           role="switch"
-                                          name="has_sub_informasi_publik"
+                                          name="has_sub_informasi"
                                           id="hasSubInformasi_<?php echo $informasi['id_informasi_publik']; ?>"
                                           onchange="toggleSubInformasi(<?php echo $informasi['id_informasi_publik']; ?>)"
                                           <?php echo !empty($informasi['sub_informasi_publik']) ? 'checked' : ''; ?>>
@@ -304,7 +304,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       class="form-check-input"
                       type="checkbox"
                       role="switch"
-                      name="has_sub_informasi_publik"
+                      name="has_sub_informasi"
                       id="hasSubInformasiNew"
                       onchange="toggleSubInformasiNew()">
                     <label class="form-check-label fw-semibold" for="hasSubInformasiNew">
