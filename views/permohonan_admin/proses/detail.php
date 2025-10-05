@@ -253,6 +253,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                            class="btn btn-warning btn-lg" target="_blank">
                           <i class="fas fa-file-contract me-2"></i>Bukti Proses
                         </a>
+
+                        <!-- Ubah Status ke Selesai -->
+                        <button type="button" class="btn btn-success btn-lg" id="btn-selesai" data-id="<?php echo $permohonan['id_permohonan']; ?>">
+                          <i class="fas fa-check-circle me-2"></i>Selesai
+                        </button>
+                      </div>
+
+                      <div class="alert alert-info mt-3 mb-0" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small><strong>Catatan:</strong> Klik tombol "Selesai" setelah permohonan telah diproses dan dokumen siap diberikan kepada pemohon.</small>
                       </div>
                     </div>
                   </div>
@@ -329,6 +339,60 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   </div>
 
   <?php include 'template/script.php'; ?>
+
+  <script>
+    // Handle button ubah status ke selesai
+    $('#btn-selesai').on('click', function() {
+      const id = $(this).data('id');
+
+      if (confirm('Apakah Anda yakin ingin mengubah status permohonan ini menjadi SELESAI?')) {
+        // Disable button to prevent double click
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Memproses...');
+
+        $.ajax({
+          url: 'index.php?controller=permohonanadmin&action=updateStatus',
+          type: 'POST',
+          data: {
+            id: id,
+            status: 'Selesai'
+          },
+          dataType: 'json',
+          success: function(response) {
+            console.log('Update status response:', response);
+
+            let result;
+            if (typeof response === 'object') {
+              result = response;
+            } else {
+              try {
+                result = JSON.parse(response);
+              } catch (e) {
+                console.error('Error parsing JSON:', e);
+                alert('Error: Response tidak valid dari server');
+                $('#btn-selesai').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Ubah Status ke Selesai');
+                return;
+              }
+            }
+
+            if (result.success) {
+              alert('Status berhasil diubah menjadi SELESAI');
+              // Redirect ke halaman index diproses
+              window.location.href = 'index.php?controller=permohonanadmin&action=diprosesIndex';
+            } else {
+              alert('Gagal mengubah status: ' + result.message);
+              $('#btn-selesai').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Ubah Status ke Selesai');
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX error:', error);
+            console.log('Response Text:', xhr.responseText);
+            alert('Terjadi kesalahan saat mengubah status: ' + error);
+            $('#btn-selesai').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Ubah Status ke Selesai');
+          }
+        });
+      }
+    });
+  </script>
 
   <style>
     /* Government Standard Styling */
