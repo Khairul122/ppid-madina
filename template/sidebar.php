@@ -62,9 +62,11 @@ function hasRole($allowedRoles)
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">List Permohonan</a>
             </li>
-            
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'disposisi') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=disposisiIndex">Permohonan Disposisi</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'diproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=diprosesIndex">Permohonan Diproses</a>
             </li>
           </ul>
         </div>

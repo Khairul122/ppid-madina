@@ -26,13 +26,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 fs-6">
                         <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=index" class="text-decoration-none">Meja Layanan</a></li>
-                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=prosesIndex" class="text-decoration-none">Diproses</a></li>
+                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=diprosesIndex" class="text-decoration-none">Diproses</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Detail</li>
                       </ol>
                     </nav>
                   </div>
                   <div class="d-flex flex-column flex-sm-row gap-2">
-                    <a href="index.php?controller=permohonanadmin&action=prosesIndex" class="btn btn-outline-secondary btn-sm">
+                    <a href="index.php?controller=permohonanadmin&action=diprosesIndex" class="btn btn-outline-secondary btn-sm">
                       <i class="fas fa-arrow-left me-1"></i>Kembali
                     </a>
                   </div>
@@ -252,11 +252,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <button class="btn btn-outline-warning btn-lg" onclick="previewBuktiProses()">
                           <i class="fas fa-file-contract me-2"></i>Preview Bukti Proses
                         </button>
-                      </div>
-
-                      <div class="alert alert-info mt-3 mb-0" role="alert">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <small><strong>Catatan:</strong> Bukti proses akan tersedia setelah permohonan diproses lebih lanjut.</small>
                       </div>
                     </div>
                   </div>

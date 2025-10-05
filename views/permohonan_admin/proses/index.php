@@ -53,56 +53,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 </div>
               <?php endif; ?>
 
-              <!-- Statistics Cards -->
-              <div class="row mb-4">
-                <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-9">
-                          <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0"><?php echo $stats['total'] ?? 0; ?></h3>
-                            <p class="text-warning ms-2 mb-0 font-weight-medium">Total</p>
-                          </div>
-                        </div>
-                        <div class="col-3">
-                          <div class="icon icon-box-warning">
-                            <span class="mdi mdi-file-document-box-outline icon-item"></span>
-                          </div>
-                        </div>
-                      </div>
-                      <h6 class="text-muted font-weight-normal">Total Diproses</h6>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
-                  <div class="card">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-9">
-                          <div class="d-flex align-items-center align-self-start">
-                            <h3 class="mb-0"><?php echo $stats['diproses'] ?? 0; ?></h3>
-                            <p class="text-warning ms-2 mb-0 font-weight-medium">Proses</p>
-                          </div>
-                        </div>
-                        <div class="col-3">
-                          <div class="icon icon-box-warning">
-                            <span class="mdi mdi-clock-outline icon-item"></span>
-                          </div>
-                        </div>
-                      </div>
-                      <h6 class="text-muted font-weight-normal">Sedang Diproses</h6>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <!-- Filters -->
               <div class="card mb-4">
                 <div class="card-body">
                   <form method="GET" action="index.php" class="row g-3">
                     <input type="hidden" name="controller" value="permohonanadmin">
-                    <input type="hidden" name="action" value="prosesIndex">
+                    <input type="hidden" name="action" value="diprosesIndex">
 
                     <div class="col-md-4">
                       <label class="form-label">Pencarian</label>
@@ -118,7 +74,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                     <div class="col-md-2">
                       <label class="form-label">&nbsp;</label>
-                      <a href="index.php?controller=permohonanadmin&action=prosesIndex" class="btn btn-outline-secondary d-block w-100">
+                      <a href="index.php?controller=permohonanadmin&action=diprosesIndex" class="btn btn-outline-secondary d-block w-100">
                         <i class="fas fa-refresh me-1"></i>Reset
                       </a>
                     </div>
@@ -184,7 +140,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                               </td>
                               <td>
                                 <div class="btn-group" role="group">
-                                  <a href="index.php?controller=permohonanadmin&action=prosesDetail&id=<?php echo $permohonan['id_permohonan']; ?>"
+                                  <a href="index.php?controller=permohonanadmin&action=diprosesDetail&id=<?php echo $permohonan['id_permohonan']; ?>"
                                      class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
@@ -206,7 +162,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <ul class="pagination justify-content-center">
                           <?php if ($page > 1): ?>
                             <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanadmin&action=prosesIndex&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <a class="page-link" href="?controller=permohonanadmin&action=diprosesIndex&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-left"></i>
                               </a>
                             </li>
@@ -214,7 +170,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                           <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
                             <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                              <a class="page-link" href="?controller=permohonanadmin&action=prosesIndex&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <a class="page-link" href="?controller=permohonanadmin&action=diprosesIndex&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <?php echo $i; ?>
                               </a>
                             </li>
@@ -222,7 +178,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                           <?php if ($page < $total_pages): ?>
                             <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanadmin&action=prosesIndex&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <a class="page-link" href="?controller=permohonanadmin&action=diprosesIndex&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-right"></i>
                               </a>
                             </li>

@@ -1044,4 +1044,65 @@ class PermohonanAdminController
         }
         exit();
     }
+
+    // PROSES METHODS
+
+    // Display diproses index
+    public function diprosesIndex()
+    {
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+        // Get permohonan with status "Diproses" ONLY
+        $proses_status = ['Diproses'];
+        $permohonan_list = $this->permohonanAdminModel->getProsesPermohonan($limit, $offset, $search, $proses_status);
+        $total_records = $this->permohonanAdminModel->countProsesPermohonan($search, $proses_status);
+        $total_pages = ($total_records > 0) ? ceil($total_records / $limit) : 0;
+
+        // Get proses specific stats
+        $stats = $this->permohonanAdminModel->getProsesStats();
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        // Debug: Log the query results
+        error_log("Diproses Index - Total Records: " . $total_records);
+        error_log("Diproses Index - Permohonan List Count: " . count($permohonan_list));
+
+        include 'views/permohonan_admin/proses/index.php';
+    }
+
+    // Display diproses detail
+    public function diprosesDetail()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=diprosesIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=diprosesIndex');
+            exit();
+        }
+
+        // Check if this is a proses-related permohonan (status Diproses)
+        if ($permohonan['status'] !== 'Diproses') {
+            $_SESSION['error_message'] = 'Permohonan ini bukan dalam status diproses';
+            header('Location: index.php?controller=permohonanadmin&action=diprosesIndex');
+            exit();
+        }
+
+        include 'views/permohonan_admin/proses/detail.php';
+    }
 }

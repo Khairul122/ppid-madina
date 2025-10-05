@@ -821,6 +821,151 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    // Get permohonan with specific proses status for admin with pagination
+    public function getProsesPermohonan($limit = 10, $offset = 0, $search = '', $proses_status = [])
+    {
+        try {
+            $whereClause = "WHERE 1=1";
+            $params = [];
+
+            // Add proses status filtering - HARDCODED to Diproses only
+            if (!empty($proses_status)) {
+                $status_placeholders = [];
+                for ($i = 0; $i < count($proses_status); $i++) {
+                    $placeholder = ':proses_status_' . $i;
+                    $status_placeholders[] = $placeholder;
+                    $params[$placeholder] = $proses_status[$i];
+                }
+                $whereClause .= " AND p.status IN (" . implode(',', $status_placeholders) . ")";
+            }
+
+            if (!empty($search)) {
+                $whereClause .= " AND (p.no_permohonan LIKE :search
+                                 OR p.tujuan_permohonan LIKE :search
+                                 OR p.judul_dokumen LIKE :search
+                                 OR p.kandungan_informasi LIKE :search
+                                 OR bp.nama_lengkap LIKE :search
+                                 OR bp.nik LIKE :search)";
+                $params[':search'] = '%' . $search . '%';
+            }
+
+            $query = "SELECT p.*, u.username, u.email as user_email,
+                             bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                             bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                             bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                             bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                      FROM " . $this->table_permohonan . " p
+                      JOIN " . $this->table_users . " u ON p.id_user = u.id_user
+                      LEFT JOIN " . $this->table_biodata . " bp ON u.id_biodata = bp.id_biodata
+                      " . $whereClause . "
+                      ORDER BY p.created_at DESC
+                      LIMIT :limit OFFSET :offset";
+
+            $stmt = $this->conn->prepare($query);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
+            error_log("getProsesPermohonan Query: " . $query);
+            error_log("getProsesPermohonan Params: " . print_r($params, true));
+
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("getProsesPermohonan Results Count: " . count($results));
+
+            return $results;
+        } catch (Exception $e) {
+            error_log("Error in getProsesPermohonan: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Count total permohonan with specific proses status for pagination
+    public function countProsesPermohonan($search = '', $proses_status = [])
+    {
+        try {
+            $whereClause = "WHERE 1=1";
+            $params = [];
+
+            // Add proses status filtering - HARDCODED to Diproses only
+            if (!empty($proses_status)) {
+                $status_placeholders = [];
+                for ($i = 0; $i < count($proses_status); $i++) {
+                    $placeholder = ':proses_status_' . $i;
+                    $status_placeholders[] = $placeholder;
+                    $params[$placeholder] = $proses_status[$i];
+                }
+                $whereClause .= " AND p.status IN (" . implode(',', $status_placeholders) . ")";
+            }
+
+            if (!empty($search)) {
+                $whereClause .= " AND (p.no_permohonan LIKE :search
+                                 OR p.tujuan_permohonan LIKE :search
+                                 OR p.judul_dokumen LIKE :search
+                                 OR bp.nama_lengkap LIKE :search
+                                 OR bp.nik LIKE :search)";
+                $params[':search'] = '%' . $search . '%';
+            }
+
+            $query = "SELECT COUNT(*) as total
+                      FROM " . $this->table_permohonan . " p
+                      JOIN " . $this->table_users . " u ON p.id_user = u.id_user
+                      LEFT JOIN " . $this->table_biodata . " bp ON u.id_biodata = bp.id_biodata
+                      " . $whereClause;
+
+            $stmt = $this->conn->prepare($query);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            error_log("countProsesPermohonan Query: " . $query);
+            error_log("countProsesPermohonan Params: " . print_r($params, true));
+
+            $stmt->execute();
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total = $result['total'] ?? 0;
+
+            error_log("countProsesPermohonan Total: " . $total);
+
+            return $total;
+        } catch (Exception $e) {
+            error_log("Error in countProsesPermohonan: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    // Get statistics for proses dashboard
+    public function getProsesStats()
+    {
+        try {
+            $query = "SELECT
+                        COUNT(*) as total,
+                        SUM(CASE WHEN status = 'Diproses' THEN 1 ELSE 0 END) as diproses
+                      FROM " . $this->table_permohonan . "
+                      WHERE status = 'Diproses'";
+
+            $stmt = $this->conn->prepare($query);
+
+            error_log("getProsesStats Query: " . $query);
+
+            $stmt->execute();
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            error_log("getProsesStats Result: " . print_r($result, true));
+
+            return $result ? $result : ['total' => 0, 'diproses' => 0];
+        } catch (Exception $e) {
+            error_log("Error in getProsesStats: " . $e->getMessage());
+            return ['total' => 0, 'diproses' => 0];
+        }
+    }
 }
 
 ?>
