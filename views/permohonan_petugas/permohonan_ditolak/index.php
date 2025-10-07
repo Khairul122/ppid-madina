@@ -1,29 +1,31 @@
 <?php
 // Check if user is logged in and has petugas role
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
-    header('Location: index.php?controller=auth&action=login');
-    exit();
+  header('Location: index.php?controller=auth&action=login');
+  exit();
 }
 ?>
 
-<?php include 'template/header.php'; ?>
+<?php include('template/header.php'); ?>
 
 <body class="with-welcome-text">
   <div class="container-scroller">
     <?php include 'template/navbar.php'; ?>
-
     <div class="container-fluid page-body-wrapper">
+      <?php include 'template/setting_panel.php'; ?>
       <?php include 'template/sidebar_petugas.php'; ?>
-
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">
             <div class="col-12">
+
               <!-- Page Header -->
               <div class="page-header mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
                   <div class="mb-2 mb-md-0">
-                    <h4 class="page-title mb-1 text-dark">Permohonan Ditolak</h4>
+                    <h4 class="page-title mb-1 text-dark">
+                      <i class="fas fa-times-circle me-2 text-danger"></i>Permohonan Ditolak
+                    </h4>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 fs-6">
                         <li class="breadcrumb-item"><a href="index.php?controller=user&action=index" class="text-decoration-none">Dashboard</a></li>
@@ -31,7 +33,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                       </ol>
                     </nav>
                   </div>
-                  <div class="d-flex flex-column flex-sm-row gap-2">
+                  <div class="d-flex gap-2">
                     <a href="index.php?controller=user&action=index" class="btn btn-outline-secondary btn-sm">
                       <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
                     </a>
@@ -54,12 +56,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                 </div>
               <?php endif; ?>
 
+              <!-- Info Box -->
+              <div class="alert alert-info mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-info-circle me-3" style="font-size: 1.5rem;"></i>
+                  <div>
+                    <strong>Informasi:</strong> Halaman ini khusus menampilkan permohonan dengan status <span class="badge bg-danger">Ditolak</span> saja.
+                  </div>
+                </div>
+              </div>
+
               <!-- Filters -->
               <div class="card mb-4">
                 <div class="card-body">
                   <form method="GET" action="index.php" class="row g-3">
                     <input type="hidden" name="controller" value="permohonanpetugas">
-                    <input type="hidden" name="action" value="permohonanDitolak">
+                    <input type="hidden" name="action" value="ditolakIndex">
 
                     <div class="col-md-4">
                       <label class="form-label">Pencarian</label>
@@ -75,7 +87,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
 
                     <div class="col-md-2">
                       <label class="form-label">&nbsp;</label>
-                      <a href="index.php?controller=permohonanpetugas&action=permohonanDitolak" class="btn btn-outline-secondary d-block w-100">
+                      <a href="index.php?controller=permohonanpetugas&action=ditolakIndex" class="btn btn-outline-secondary d-block w-100">
                         <i class="fas fa-refresh me-1"></i>Reset
                       </a>
                     </div>
@@ -85,30 +97,33 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
 
               <!-- Data Table -->
               <div class="card">
-                <div class="card-header bg-light border-bottom">
-                  <h5 class="card-title mb-0 text-dark fw-normal">
-                    <i class="fas fa-list me-2 text-primary"></i>
-                    Daftar Permohonan Ditolak
-                  </h5>
-                </div>
                 <div class="card-body">
-                  <?php if (!empty($permohonan_list)): ?>
-                    <div class="table-responsive">
-                      <table class="table table-hover">
-                        <thead class="table-light">
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Tanggal</th>
+                          <th>Tanggal Jatuh Tempo</th>
+                          <th>Tujuan Permohonan</th>
+                          <th>Nama Pemohon</th>
+                          <th>Komponen Tujuan</th>
+                          <th>Status</th>
+                          <th>Sumber Media</th>
+                          <th>Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php if (empty($permohonan_list)): ?>
                           <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">No. Permohonan</th>
-                            <th scope="col">Pemohon</th>
-                            <th scope="col">Judul Dokumen</th>
-                            <th scope="col">SKPD Tujuan</th>
-                            <th scope="col">Alasan Penolakan</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Tanggal</th>
-                            <th scope="col">Aksi</th>
+                            <td colspan="9" class="text-center">
+                              <div class="py-4">
+                                <i class="fas fa-inbox text-muted" style="font-size: 48px; opacity: 0.3;"></i>
+                                <p class="mt-2 text-muted">Tidak ada data permohonan ditolak</p>
+                              </div>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
+                        <?php else: ?>
                           <?php
                           $no = $offset + 1;
                           foreach ($permohonan_list as $permohonan):
@@ -116,91 +131,91 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                             <tr>
                               <td><?php echo $no++; ?></td>
                               <td>
-                                <span class="badge bg-primary"><?php echo htmlspecialchars($permohonan['no_permohonan'] ?? ''); ?></span>
+                                <?php 
+                                // Format tanggal dari created_at
+                                if ($permohonan['created_at']) {
+                                  $date = date_create($permohonan['created_at']);
+                                  echo $date ? date_format($date, 'd/m/Y') : 'N/A';
+                                } else {
+                                  echo 'N/A';
+                                }
+                                ?>
                               </td>
                               <td>
-                                <div class="d-flex flex-column">
-                                  <span class="fw-medium"><?php echo htmlspecialchars($permohonan['nama_lengkap'] ?? $permohonan['username']); ?></span>
-                                  <small class="text-muted"><?php echo htmlspecialchars($permohonan['email'] ?? ''); ?></small>
-                                </div>
+                                <?php 
+                                // Hitung tanggal jatuh tempo dari created_at + sisa_jatuh_tempo hari
+                                if ($permohonan['created_at'] && isset($permohonan['sisa_jatuh_tempo'])) {
+                                    $createdDate = new DateTime($permohonan['created_at']);
+                                    $interval = new DateInterval('P'.$permohonan['sisa_jatuh_tempo'].'D');
+                                    $dueDate = clone $createdDate;
+                                    $dueDate->add($interval);
+                                    echo $dueDate->format('d/m/Y');
+                                } else {
+                                    echo 'N/A';
+                                }
+                                ?>
                               </td>
                               <td>
-                                <div class="text-truncate" style="max-width: 200px;" title="<?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? ''); ?>">
-                                  <?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? ''); ?>
-                                </div>
+                                <?php echo htmlspecialchars($permohonan['tujuan_permohonan'] ?? ''); ?>
                               </td>
                               <td>
-                                <span class="badge bg-info"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? '-'); ?></span>
+                                <?php echo htmlspecialchars($permohonan['nama_lengkap'] ?? $permohonan['username']); ?>
                               </td>
                               <td>
-                                <span class="badge bg-warning text-dark"><?php echo htmlspecialchars($permohonan['alasan_penolakan'] ?? '-'); ?></span>
+                                <span class="badge bg-info text-dark">
+                                  <?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? ''); ?>
+                                </span>
                               </td>
                               <td>
                                 <span class="badge bg-danger">Ditolak</span>
                               </td>
                               <td>
-                                <small class="text-muted">
-                                  <?php echo date('d/m/Y H:i', strtotime($permohonan['created_at'] ?? 'now')); ?>
-                                </small>
+                                <?php echo htmlspecialchars($permohonan['sumber_media'] ?? ''); ?>
                               </td>
                               <td>
                                 <div class="btn-group" role="group">
-                                  <a href="index.php?controller=permohonanpetugas&action=permohonanDitolakView&id=<?php echo $permohonan['id_permohonan']; ?>"
-                                     class="btn btn-primary btn-sm" title="Lihat Detail">
+                                  <a href="index.php?controller=permohonanpetugas&action=ditolakView&id=<?php echo $permohonan['id_permohonan']; ?>"
+                                     class="btn btn-sm btn-info" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
                                 </div>
                               </td>
                             </tr>
                           <?php endforeach; ?>
-                        </tbody>
-                      </table>
-                    </div>
+                        <?php endif; ?>
+                      </tbody>
+                    </table>
+                  </div>
 
-                    <!-- Pagination -->
-                    <?php if ($total_pages > 1): ?>
-                      <nav aria-label="Page navigation" class="mt-4">
-                        <ul class="pagination justify-content-center">
-                          <?php if ($page > 1): ?>
-                            <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
-                                <i class="fas fa-chevron-left"></i>
-                              </a>
-                            </li>
-                          <?php endif; ?>
+                  <!-- Pagination -->
+                  <?php if ($total_pages > 1): ?>
+                    <nav aria-label="Page navigation" class="mt-4">
+                      <ul class="pagination justify-content-center">
+                        <?php if ($page > 1): ?>
+                          <li class="page-item">
+                            <a class="page-link" href="index.php?controller=permohonanpetugas&action=ditolakIndex&page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <i class="fas fa-chevron-left"></i>
+                            </a>
+                          </li>
+                        <?php endif; ?>
 
-                          <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
-                            <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                              <a class="page-link" href="?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
-                                <?php echo $i; ?>
-                              </a>
-                            </li>
-                          <?php endfor; ?>
+                        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
+                          <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
+                            <a class="page-link" href="index.php?controller=permohonanpetugas&action=ditolakIndex&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <?php echo $i; ?>
+                            </a>
+                          </li>
+                        <?php endfor; ?>
 
-                          <?php if ($page < $total_pages): ?>
-                            <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
-                                <i class="fas fa-chevron-right"></i>
-                              </a>
-                            </li>
-                          <?php endif; ?>
-                        </ul>
-                      </nav>
-
-                      <div class="text-center mt-3">
-                        <small class="text-muted">
-                          Menampilkan <?php echo min($offset + 1, $total_records); ?> - <?php echo min($offset + $limit, $total_records); ?>
-                          dari <?php echo $total_records; ?> data
-                        </small>
-                      </div>
-                    <?php endif; ?>
-
-                  <?php else: ?>
-                    <div class="text-center py-5">
-                      <i class="fas fa-inbox text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                      <h5 class="text-muted mt-3">Tidak ada data permohonan ditolak</h5>
-                      <p class="text-muted">Belum ada permohonan dengan status ditolak yang ditujukan ke SKPD Anda.</p>
-                    </div>
+                        <?php if ($page < $total_pages): ?>
+                          <li class="page-item">
+                            <a class="page-link" href="index.php?controller=permohonanpetugas&action=ditolakIndex&page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <i class="fas fa-chevron-right"></i>
+                            </a>
+                          </li>
+                        <?php endif; ?>
+                      </ul>
+                    </nav>
                   <?php endif; ?>
                 </div>
               </div>
@@ -211,265 +226,502 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
       </div>
     </div>
   </div>
+</div>
 
-  <?php include 'template/script.php'; ?>
+<?php include 'template/script.php'; ?>
 
-  <style>
-    /* Government Standard Styling */
-    :root {
-      --gov-primary: #2563eb;
-      --gov-secondary: #64748b;
-      --gov-success: #10b981;
-      --gov-danger: #ef4444;
-      --gov-warning: #f59e0b;
-      --gov-light: #f8fafc;
-      --gov-dark: #1e293b;
-      --gov-border: #e2e8f0;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--gov-dark);
-      background-color: #f1f5f9;
-    }
-
-    .page-header {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 8px;
-      border: 1px solid var(--gov-border);
-      margin-bottom: 1.5rem;
-    }
-
-    .page-title {
-      color: var(--gov-dark);
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .breadcrumb {
-      background: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .breadcrumb-item a {
-      color: var(--gov-secondary);
-      text-decoration: none;
-    }
-
-    .breadcrumb-item.active {
-      color: var(--gov-dark);
-    }
-
-    .card {
-      border: 1px solid var(--gov-border);
-      border-radius: 8px;
-      background: white;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }
-
-    .card-header {
-      background-color: #f8fafc;
-      border-bottom: 1px solid var(--gov-border);
-      padding: 1rem 1.5rem;
-    }
-
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    .card-body {
-      padding: 1.5rem;
-      background: white;
-    }
-
-    .badge {
-      font-size: 0.75rem;
-      padding: 0.5rem 1rem;
-      font-weight: 500;
-      border-radius: 6px;
-    }
-
-    .bg-primary {
-      background-color: var(--gov-primary) !important;
-      color: white;
-    }
-
-    .bg-success {
-      background-color: var(--gov-success) !important;
-      color: white;
-    }
-
-    .bg-warning {
-      background-color: var(--gov-warning) !important;
-      color: white;
-    }
-
-    .bg-danger {
-      background-color: var(--gov-danger) !important;
-      color: white;
-    }
-
-    .bg-info {
-      background-color: #0ea5e9 !important;
-      color: white;
-    }
-
-    .bg-secondary {
-      background-color: var(--gov-secondary) !important;
-      color: white;
-    }
-
-    .btn {
-      font-weight: 500;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-      border: none;
-    }
-
-    .btn-primary {
-      background-color: var(--gov-primary);
-      color: white;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-primary:hover {
-      background-color: #1d4ed8;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-outline-secondary {
-      border: 1.5px solid var(--gov-secondary);
-      color: var(--gov-secondary);
-      background-color: white;
-    }
-
-    .btn-outline-secondary:hover {
-      background-color: var(--gov-secondary);
-      color: white;
-      transform: translateY(-1px);
-    }
-
-    .form-control,
-    .form-select {
-      border: 1.5px solid var(--gov-border);
-      border-radius: 6px;
-      padding: 0.75rem 1rem;
-      background-color: white;
-      color: var(--gov-dark);
-      transition: all 0.2s ease;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      border-color: var(--gov-primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-      background-color: white;
-    }
-
-    .table th {
-      background-color: var(--gov-light);
-      border-color: var(--gov-border);
-      color: var(--gov-dark);
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.875rem;
-      letter-spacing: 0.5px;
-    }
-
-    .table td {
-      border-color: var(--gov-border);
-      vertical-align: middle;
-    }
-
-    .pagination .page-link {
-      color: var(--gov-secondary);
-      border: 1px solid var(--gov-border);
-      background: white;
-    }
-
-    .pagination .page-link:hover {
-      background-color: var(--gov-light);
-      border-color: var(--gov-primary);
-      color: var(--gov-primary);
-    }
-
-    .pagination .page-item.active .page-link {
-      background-color: var(--gov-primary);
-      border-color: var(--gov-primary);
-      color: white;
-    }
-
-    .alert {
-      border-radius: 8px;
-      border: none;
-    }
-
-    .alert-success {
-      background-color: #f0fdf4;
-      color: #15803d;
-      border-left: 4px solid var(--gov-success);
-    }
-
-    .alert-danger {
-      background-color: #fef2f2;
-      color: #dc2626;
-      border-left: 4px solid var(--gov-danger);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .container-fluid {
-        padding: 1rem;
-      }
-
-      .page-header {
-        padding: 1rem;
-      }
-
-      .card-body {
-        padding: 1rem;
-      }
-
-      .table-responsive {
-        border-radius: 8px;
-      }
-    }
-
-    @media (max-width: 576px) {
-      .page-title {
-        font-size: 1.5rem;
-      }
-
-      .breadcrumb {
-        font-size: 0.875rem;
-      }
-    }
-
-    /* Animation */
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .card {
-      transition: box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-  </style>
-
-  <script>
-    // Auto hide alerts after 5 seconds
+<script>
+  // Auto hide alerts after 5 seconds
+  $(document).ready(function() {
     setTimeout(function() {
       $('.alert').fadeOut('slow');
     }, 5000);
-  </script>
+  });
+</script>
+
+<style>
+  /* Government Standard Styling */
+  :root {
+    --gov-primary: #2563eb;
+    --gov-secondary: #64748b;
+    --gov-success: #10b981;
+    --gov-danger: #ef4444;
+    --gov-warning: #f59e0b;
+    --gov-light: #f8fafc;
+    --gov-dark: #1e293b;
+    --gov-border: #e2e8f0;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--gov-dark);
+    background-color: #f1f5f9;
+  }
+
+  .page-header {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--gov-border);
+    margin-bottom: 1.5rem;
+  }
+
+  .page-title {
+    color: var(--gov-dark);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .breadcrumb {
+    background: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .breadcrumb-item a {
+    color: var(--gov-secondary);
+    text-decoration: none;
+  }
+
+  .breadcrumb-item.active {
+    color: var(--gov-dark);
+  }
+
+  .stats-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--gov-border);
+    background: white;
+  }
+
+  .stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .stats-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+  }
+
+  .stats-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gov-dark);
+    line-height: 1;
+  }
+
+  .stats-label {
+    color: var(--gov-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
+
+  .card {
+    border: 1px solid var(--gov-border);
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header {
+    background-color: #f8fafc;
+    border-bottom: 1px solid var(--gov-border);
+    padding: 1rem 1.5rem;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+    background: white;
+  }
+
+  .info-item {
+    margin-bottom: 1.5rem;
+  }
+
+  .info-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: var(--gov-dark);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .info-value {
+    color: var(--gov-dark);
+    font-size: 1rem;
+    line-height: 1.5;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .badge {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+  }
+
+  .bg-primary {
+    background-color: var(--gov-primary) !important;
+    color: white;
+  }
+
+  .bg-success {
+    background-color: var(--gov-success) !important;
+    color: white;
+  }
+
+  .bg-warning {
+    background-color: var(--gov-warning) !important;
+    color: white;
+  }
+
+  .bg-danger {
+    background-color: var(--gov-danger) !important;
+    color: white;
+  }
+
+  .bg-info {
+    background-color: #0ea5e9 !important;
+    color: white;
+  }
+
+  .bg-secondary {
+    background-color: var(--gov-secondary) !important;
+    color: white;
+  }
+
+  .btn {
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: none;
+  }
+
+  .btn-primary {
+    background-color: var(--gov-primary);
+    color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-success {
+    background-color: var(--gov-success);
+    color: white;
+  }
+
+  .btn-success:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+  }
+
+  .btn-info {
+    background-color: #0ea5e9;
+    color: white;
+  }
+
+  .btn-info:hover {
+    background-color: #0284c7;
+    transform: translateY(-1px);
+  }
+
+  .btn-warning {
+    background-color: var(--gov-warning);
+    color: white;
+  }
+
+  .btn-warning:hover {
+    background-color: #d97706;
+    transform: translateY(-1px);
+  }
+
+  .btn-danger {
+    background-color: var(--gov-danger);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-primary {
+    border: 1.5px solid var(--gov-primary);
+    color: var(--gov-primary);
+    background-color: white;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: var(--gov-primary);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-info {
+    border: 1.5px solid #0ea5e9;
+    color: #0ea5e9;
+    background-color: white;
+  }
+
+  .btn-outline-info:hover {
+    background-color: #0ea5e9;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-secondary {
+    border: 1.5px solid var(--gov-secondary);
+    color: var(--gov-secondary);
+    background-color: white;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: var(--gov-secondary);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .form-control,
+  .form-select {
+    border: 1.5px solid var(--gov-border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    color: var(--gov-dark);
+    transition: all 0.2s ease;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--gov-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background-color: white;
+  }
+
+  .form-control-lg {
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .form-label {
+    color: var(--gov-dark);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .profile-photo-container {
+    display: inline-block;
+    position: relative;
+  }
+
+  .profile-photo-container img {
+    border: 3px solid var(--gov-border);
+  }
+
+  .photo-container img {
+    border: 2px solid var(--gov-border);
+  }
+
+  .d-grid {
+    display: grid !important;
+  }
+
+  .gap-2 {
+    gap: 0.5rem !important;
+  }
+
+  .gap-3 {
+    gap: 1rem !important;
+  }
+
+  .text-muted {
+    color: #94a3b8 !important;
+  }
+
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .table th {
+    background-color: #f8fafc;
+    border-bottom: 2px solid var(--gov-border);
+    font-weight: 600;
+    color: var(--gov-dark);
+    font-size: 0.875rem;
+    padding: 1rem 0.75rem;
+  }
+
+  .table td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: #fafafa;
+  }
+
+  .pagination .page-link {
+    color: var(--gov-secondary);
+    border: 1px solid var(--gov-border);
+    background: white;
+  }
+
+  .pagination .page-link:hover {
+    background-color: var(--gov-light);
+    border-color: var(--gov-primary);
+    color: var(--gov-primary);
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: var(--gov-primary);
+    border-color: var(--gov-primary);
+    color: white;
+  }
+
+  .alert {
+    border-radius: 8px;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .alert-success {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border-left: 4px solid var(--gov-success);
+  }
+
+  .alert-danger {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border-left: 4px solid var(--gov-danger);
+  }
+
+  .alert-info {
+    background-color: #f0f9ff;
+    color: #0369a1;
+    border-left: 4px solid #0ea5e9;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+
+    .col-lg-8,
+    .col-lg-4 {
+      margin-bottom: 2rem;
+    }
+
+    .card-body {
+      padding: 1rem;
+    }
+
+    .page-header {
+      padding: 1rem;
+    }
+
+    .table-responsive {
+      border-radius: 8px;
+    }
+
+    .stats-number {
+      font-size: 1.5rem;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .btn-group .btn {
+      width: 100%;
+      margin: 0;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-title {
+      font-size: 1.5rem;
+    }
+
+    .breadcrumb {
+      font-size: 0.875rem;
+    }
+
+    .card-body {
+      padding: 1rem;
+    }
+
+    .stats-card .card-body {
+      padding: 1rem;
+    }
+
+    .stats-icon {
+      font-size: 1.5rem;
+    }
+
+    .stats-number {
+      font-size: 1.25rem;
+    }
+
+    .d-flex.gap-2 {
+      flex-direction: column;
+      gap: 0.5rem !important;
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  /* Animation */
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .card {
+    transition: box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+</style>
 
 </body>
 

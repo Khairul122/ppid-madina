@@ -166,15 +166,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                   <?php else: ?>
                                     <div class="mb-3">
                                       <label class="form-label fw-bold">Text</label>
-
-                                      <!-- Quill WYSIWYG Editor -->
-                                      <div id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>_quill" class="quill-editor-container" style="height: 400px;">
-                                      </div>
+                                      <div id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>" class="quill-editor" style="height: 400px;"></div>
                                       <textarea
                                         name="isi_text"
-                                        id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>"
-                                        class="form-control tinymce-editor d-none"
-                                        rows="15"><?php echo htmlspecialchars_decode($profile['isi']); ?></textarea>
+                                        id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>_hidden"
+                                        class="d-none"><?php echo htmlspecialchars_decode($profile['isi']); ?></textarea>
                                     </div>
                                   <?php endif; ?>
 
@@ -237,32 +233,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 </div>
               </div>
             </div>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label class="form-label fw-bold">Jenis Konten</label>
-                <select class="form-select" name="content_type" id="contentTypeSelect" onchange="toggleContentFields()">
-                  <option value="text">Teks (Menggunakan Editor)</option>
-                  <option value="pdf">File (PDF atau Gambar)</option>
-                </select>
-              </div>
-            </div>
-            
-            <div id="textContentField">
-              <label class="form-label fw-bold">Isi Konten</label>
-              <!-- Quill WYSIWYG Editor -->
-              <div id="newEditor_quill" class="quill-editor-container" style="height: 400px;">
-              </div>
-              <textarea
-                name="isi_text"
-                id="newEditor"
-                class="form-control tinymce-editor d-none"
-                rows="15"></textarea>
-            </div>
-            
-            <div id="fileContentField" style="display: none;">
-              <label class="form-label fw-bold">Upload File</label>
-              <input type="file" name="isi" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp" />
-              <small class="text-muted">Pilih file PDF atau gambar</small>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Isi Konten (Text Editor)</label>
+              <div id="newEditor" class="quill-editor" style="height: 400px;"></div>
+              <textarea name="isi_text" id="newEditor_hidden" class="d-none"></textarea>
+              <small class="text-muted">Gunakan toolbar untuk format text, upload gambar, dan sisipkan file</small>
             </div>
           </div>
           <div class="modal-footer">
@@ -277,150 +253,386 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   <?php include 'template/script.php'; ?>
 
   <!-- Quill WYSIWYG Editor -->
-  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+  <style>
+    /* Custom styling untuk Quill */
+    .quill-editor {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+
+    .ql-toolbar {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .ql-container {
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .ql-editor {
+      min-height: 350px;
+      padding: 15px;
+    }
+
+    .ql-editor.ql-blank::before {
+      color: #adb5bd;
+      font-style: italic;
+    }
+
+    /* Custom button untuk file upload */
+    .ql-file {
+      width: 28px !important;
+      height: 24px !important;
+    }
+
+    .ql-file::before {
+      content: '📎';
+      font-size: 16px;
+      line-height: 24px;
+    }
+
+    .ql-file:hover {
+      color: #06c;
+      cursor: pointer;
+    }
+
+    /* Tooltip untuk button file */
+    .ql-file::after {
+      content: 'Upload File (PDF, DOC, etc)';
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 1000;
+    }
+
+    .ql-file:hover::after {
+      opacity: 1;
+    }
+  </style>
+
   <script>
-    // Store all Quill editors
+    // Store all Quill instances
     let quillEditors = {};
 
-    // Function to toggle content fields based on content type
-    function toggleContentFields() {
-      const contentType = document.getElementById('contentTypeSelect').value;
-      const textContentField = document.getElementById('textContentField');
-      const fileContentField = document.getElementById('fileContentField');
-      
-      if (contentType === 'text') {
-        textContentField.style.display = 'block';
-        fileContentField.style.display = 'none';
-      } else if (contentType === 'pdf') {
-        textContentField.style.display = 'none';
-        fileContentField.style.display = 'block';
-      }
+    // Function untuk handle upload file (PDF, DOC, etc) di Quill
+    function createFileHandler(quillInstance) {
+      return function() {
+        console.log('File handler called');
+
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar');
+
+        console.log('File input created, opening file picker...');
+        input.click();
+
+        input.onchange = async () => {
+          const file = input.files[0];
+
+          if (!file) {
+            console.log('No file selected');
+            return;
+          }
+
+          console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+          // Validasi ukuran file (max 10MB)
+          if (file.size > 10 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 10MB');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          console.log('Uploading file...');
+
+          try {
+            const response = await fetch('index.php?controller=profile&action=uploadFile', {
+              method: 'POST',
+              body: formData
+            });
+
+            console.log('Response status:', response.status);
+
+            const result = await response.json();
+            console.log('Upload result:', result);
+
+            if (result.success) {
+              // Insert file as link with icon
+              const range = quillInstance.getSelection(true) || { index: 0 };
+              const fileName = result.filename || file.name;
+
+              // Insert icon and filename as link
+              const linkText = '📎 ' + fileName;
+              quillInstance.insertText(range.index, linkText, 'link', result.url);
+              quillInstance.insertText(range.index + linkText.length, ' ');
+              quillInstance.setSelection(range.index + linkText.length + 1);
+
+              console.log('File link inserted into editor');
+              alert('File berhasil diupload: ' + fileName);
+            } else {
+              console.error('Upload failed:', result.message);
+              alert('Gagal upload file: ' + result.message);
+            }
+          } catch (error) {
+            console.error('Upload error:', error);
+            alert('Error saat upload file: ' + error.message);
+          }
+        };
+      };
     }
-    
-    // Initialize Quill editor for a specific element
-    function initializeQuillEditor(elementId, content = '') {
-      // If editor already exists, destroy it first
+
+    // Function untuk handle upload image di Quill
+    function createImageHandler(quillInstance) {
+      return function() {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
+
+        input.onchange = async () => {
+          const file = input.files[0];
+          if (!file) return;
+
+          // Validasi ukuran file (max 5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 5MB');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('image', file);
+
+          try {
+            const response = await fetch('index.php?controller=profile&action=uploadImage', {
+              method: 'POST',
+              body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              // Get selection and insert image
+              const range = quillInstance.getSelection(true);
+              quillInstance.insertEmbed(range.index, 'image', result.url);
+              quillInstance.setSelection(range.index + 1);
+            } else {
+              alert('Gagal upload image: ' + result.message);
+            }
+          } catch (error) {
+            alert('Error saat upload image: ' + error.message);
+          }
+        };
+      };
+    }
+
+    // Initialize Quill editor
+    function initializeQuillEditor(elementId, hiddenTextareaId, initialContent = '') {
+      const container = document.getElementById(elementId);
+
+      if (!container) {
+        console.error('Container not found:', elementId);
+        return null;
+      }
+
+      console.log('Initializing Quill for:', elementId);
+
+      // Destroy existing instance if any
       if (quillEditors[elementId]) {
+        console.log('Destroying existing instance:', elementId);
         quillEditors[elementId] = null;
       }
-      
-      // Create new Quill editor
-      const quill = new Quill(`#${elementId}`, {
-        theme: 'snow',
-        modules: {
-          toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{'list': 'ordered'}, {'list': 'bullet'}],
-            ['link', 'image'],
-            ['clean']
-          ]
-        },
-        placeholder: 'Tulis konten di sini...'
-      });
-      
-      // Set initial content if provided
-      if (content) {
-        quill.root.innerHTML = content;
-      }
-      
-      // Store reference to editor
-      quillEditors[elementId] = quill;
-      
-      return quill;
-    }
-    
-    // Function to get content from Quill editor
-    function getQuillContent(elementId) {
-      const quill = quillEditors[elementId];
-      if (quill) {
-        return quill.root.innerHTML;
-      }
-      return '';
-    }
-    
-    // Initialize Quill editors for all textareas with tinymce-editor class
-    function initializeQuillEditors() {
-      // Initialize existing editors
-      document.querySelectorAll('.tinymce-editor').forEach(function(textarea) {
-        const elementId = textarea.id;
-        const content = textarea.value || textarea.innerHTML;
-        
-        // Replace textarea with div for Quill
-        const quillContainer = document.createElement('div');
-        quillContainer.id = elementId + '_quill';
-        quillContainer.className = 'quill-editor-container';
-        quillContainer.style.height = '400px';
-        
-        textarea.parentNode.insertBefore(quillContainer, textarea);
-        textarea.style.display = 'none';
-        
-        // Initialize Quill editor
-        const quill = initializeQuillEditor(quillContainer.id, content);
-        
-        // Update hidden textarea when content changes
-        quill.on('text-change', function() {
-          textarea.value = quill.root.innerHTML;
+
+      try {
+        // Create Quill instance
+        const quill = new Quill(`#${elementId}`, {
+          theme: 'snow',
+          modules: {
+            toolbar: [
+              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+              [{ 'font': [] }],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'script': 'sub'}, { 'script': 'super' }],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'indent': '-1'}, { 'indent': '+1' }],
+              [{ 'align': [] }],
+              ['link', 'image', 'video', 'file'],
+              ['clean']
+            ]
+          },
+          placeholder: 'Tulis konten di sini...'
         });
-      });
-    }
-    
-    // Initialize Quill for the new editor in modal
-    function initializeNewEditor() {
-      const newEditor = document.getElementById('newEditor');
-      if (newEditor) {
-        // Replace textarea with div for Quill
-        const quillContainer = document.createElement('div');
-        quillContainer.id = 'newEditor_quill';
-        quillContainer.className = 'quill-editor-container';
-        quillContainer.style.height = '400px';
-        
-        newEditor.parentNode.insertBefore(quillContainer, newEditor);
-        newEditor.style.display = 'none';
-        
-        // Initialize Quill editor
-        const quill = initializeQuillEditor(quillContainer.id);
-        
-        // Update hidden textarea when content changes
-        quill.on('text-change', function() {
-          newEditor.value = quill.root.innerHTML;
-        });
+
+        console.log('Quill instance created for:', elementId);
+
+        // Set custom handlers after Quill is created
+        const toolbar = quill.getModule('toolbar');
+        if (toolbar) {
+          toolbar.addHandler('file', createFileHandler(quill));
+          toolbar.addHandler('image', createImageHandler(quill));
+          console.log('Handlers added for:', elementId);
+        }
+
+        // Set initial content
+        if (initialContent) {
+          quill.root.innerHTML = initialContent;
+        }
+
+        // Sync with hidden textarea
+        const hiddenTextarea = document.getElementById(hiddenTextareaId);
+        if (hiddenTextarea) {
+          quill.on('text-change', function() {
+            hiddenTextarea.value = quill.root.innerHTML;
+          });
+        }
+
+        // Store instance
+        quillEditors[elementId] = quill;
+
+        console.log('Quill initialized successfully for:', elementId);
+        return quill;
+      } catch (error) {
+        console.error('Error initializing Quill:', error);
+        return null;
       }
     }
-    
-    // Destroy Quill editors when modal is closed
-    function destroyQuillEditors() {
+
+    // Initialize all Quill editors
+    function initializeAllQuillEditors() {
+      // Initialize existing profile editors
+      document.querySelectorAll('.quill-editor').forEach(function(element) {
+        const editorId = element.id;
+
+        // Skip if element doesn't have an ID
+        if (!editorId) return;
+
+        // Skip if already initialized
+        if (quillEditors[editorId]) return;
+
+        const hiddenTextareaId = editorId + '_hidden';
+        const hiddenTextarea = document.getElementById(hiddenTextareaId);
+        const initialContent = hiddenTextarea ? hiddenTextarea.value : '';
+
+        initializeQuillEditor(editorId, hiddenTextareaId, initialContent);
+      });
+    }
+
+    // Destroy all Quill editors
+    function destroyAllQuillEditors() {
       Object.keys(quillEditors).forEach(function(key) {
-        quillEditors[key] = null;
+        if (quillEditors[key]) {
+          quillEditors[key] = null;
+        }
       });
       quillEditors = {};
     }
-    
-    // Initialize Quill after DOM is loaded
+
+    // Document ready
     document.addEventListener('DOMContentLoaded', function() {
-      initializeQuillEditors();
-      
-      // Initialize Quill for the new editor in modal
+      // Initialize on page load
       setTimeout(function() {
-        initializeNewEditor();
-      }, 500);
-    });
-    
-    // Reinitialize Quill when switching tabs
-    document.addEventListener('shown.bs.tab', function(event) {
-      setTimeout(function() {
-        initializeQuillEditors();
-      }, 100);
-    });
-    
-    // Destroy Quill when modal is closed
-    document.getElementById('addProfileModal').addEventListener('hidden.bs.modal', function() {
-      destroyQuillEditors();
-      
-      setTimeout(function() {
-        initializeNewEditor();
-      }, 100);
+        initializeAllQuillEditors();
+      }, 300);
+
+      // Reinitialize when tab changes
+      document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function(tabButton) {
+        tabButton.addEventListener('shown.bs.tab', function() {
+          setTimeout(function() {
+            initializeAllQuillEditors();
+          }, 150);
+        });
+      });
+
+      // Reinitialize when accordion opens
+      document.querySelectorAll('.collapse').forEach(function(collapse) {
+        collapse.addEventListener('shown.bs.collapse', function() {
+          setTimeout(function() {
+            initializeAllQuillEditors();
+          }, 150);
+        });
+      });
+
+      // Modal events
+      const addProfileModal = document.getElementById('addProfileModal');
+      if (addProfileModal) {
+        // Initialize when modal opens
+        addProfileModal.addEventListener('shown.bs.modal', function() {
+          console.log('Modal opened, initializing Quill editor...');
+
+          // Destroy existing newEditor if any
+          if (quillEditors['newEditor']) {
+            console.log('Destroying existing newEditor');
+            quillEditors['newEditor'] = null;
+          }
+
+          // Wait for modal animation to complete
+          setTimeout(function() {
+            const editorElement = document.getElementById('newEditor');
+            console.log('Editor element found:', editorElement);
+
+            if (editorElement) {
+              // Clear any existing Quill instance
+              editorElement.innerHTML = '';
+
+              // Initialize new editor
+              initializeQuillEditor('newEditor', 'newEditor_hidden', '');
+              console.log('Quill editor initialized');
+            } else {
+              console.error('newEditor element not found!');
+            }
+          }, 300);
+        });
+
+        // Destroy and reset when modal closes
+        addProfileModal.addEventListener('hidden.bs.modal', function() {
+          console.log('Modal closed, cleaning up...');
+
+          // Destroy editor
+          if (quillEditors['newEditor']) {
+            quillEditors['newEditor'] = null;
+          }
+
+          // Clear editor container
+          const editorElement = document.getElementById('newEditor');
+          if (editorElement) {
+            editorElement.innerHTML = '';
+          }
+
+          // Reset form
+          const form = addProfileModal.querySelector('form');
+          if (form) {
+            form.reset();
+          }
+
+          // Clear hidden textarea
+          const hiddenTextarea = document.getElementById('newEditor_hidden');
+          if (hiddenTextarea) {
+            hiddenTextarea.value = '';
+          }
+        });
+      }
     });
   </script>
 </body>

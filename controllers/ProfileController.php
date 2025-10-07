@@ -98,7 +98,6 @@ class ProfileController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nama_kategori = trim($_POST['keterangan'] ?? ''); // Kategori yang dipilih (PPID/DAERAH)
             $keterangan = trim($_POST['keterangan_baru'] ?? ''); // Nama keterangan baru
-            $content_type = $_POST['content_type'] ?? 'text'; // Default to text
             $isi = '';
 
             // Validasi input
@@ -114,32 +113,12 @@ class ProfileController {
                 exit();
             }
 
-            // Handle content based on type
-            if ($content_type === 'pdf') {
-                // Handle PDF upload
-                if (!empty($_FILES['isi']['name'])) {
-                    $uploadResult = $this->profileModel->handleFileUpload($_FILES['isi'], $keterangan);
-                    
-                    if ($uploadResult['success']) {
-                        $isi = $uploadResult['filepath'];
-                    } else {
-                        $_SESSION['error'] = $uploadResult['message'];
-                        header('Location: index.php?controller=profile');
-                        exit();
-                    }
-                } else {
-                    $_SESSION['error'] = 'File PDF harus diupload!';
-                    header('Location: index.php?controller=profile');
-                    exit();
-                }
-            } else {
-                // Handle text content
-                $isi = trim($_POST['isi_text'] ?? '');
-                if (empty($isi)) {
-                    $_SESSION['error'] = 'Isi konten harus diisi!';
-                    header('Location: index.php?controller=profile');
-                    exit();
-                }
+            // Handle text content from Quill editor
+            $isi = trim($_POST['isi_text'] ?? '');
+            if (empty($isi)) {
+                $_SESSION['error'] = 'Isi konten harus diisi!';
+                header('Location: index.php?controller=profile');
+                exit();
             }
 
             // Simpan data profile baru
@@ -218,6 +197,157 @@ class ProfileController {
 
         // Load view
         include 'views/profile/detail_public.php';
+    }
+
+    // Method untuk upload gambar dari Quill
+    public function uploadImage() {
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            // Validasi session
+            if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+                throw new Exception('Unauthorized access');
+            }
+
+            if (!isset($_FILES['image'])) {
+                throw new Exception('No image uploaded');
+            }
+
+            $file = $_FILES['image'];
+
+            // Cek error upload
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('Upload error');
+            }
+
+            // Validasi tipe file
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($mimeType, $allowedTypes)) {
+                throw new Exception('Invalid file type. Only JPG, PNG, GIF, WEBP allowed');
+            }
+
+            // Validasi ukuran file (max 5MB)
+            if ($file['size'] > 5 * 1024 * 1024) {
+                throw new Exception('File too large. Maximum 5MB allowed');
+            }
+
+            // Setup direktori upload
+            $uploadDir = 'uploads/profile_images/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Generate nama file unik
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $filename = time() . '_' . uniqid() . '.' . $extension;
+            $filepath = $uploadDir . $filename;
+
+            // Upload file
+            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+                throw new Exception('Failed to upload file');
+            }
+
+            // Return URL
+            echo json_encode([
+                'success' => true,
+                'url' => $filepath,
+                'message' => 'Image uploaded successfully'
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+
+        exit();
+    }
+
+    // Method untuk upload file (PDF, DOC, etc) dari Quill
+    public function uploadFile() {
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            // Validasi session
+            if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+                throw new Exception('Unauthorized access');
+            }
+
+            if (!isset($_FILES['file'])) {
+                throw new Exception('No file uploaded');
+            }
+
+            $file = $_FILES['file'];
+
+            // Cek error upload
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('Upload error');
+            }
+
+            // Validasi tipe file
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+
+            $allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-powerpoint',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'application/zip',
+                'application/x-rar-compressed'
+            ];
+
+            if (!in_array($mimeType, $allowedTypes)) {
+                throw new Exception('Invalid file type. Only PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, ZIP, RAR allowed');
+            }
+
+            // Validasi ukuran file (max 10MB)
+            if ($file['size'] > 10 * 1024 * 1024) {
+                throw new Exception('File too large. Maximum 10MB allowed');
+            }
+
+            // Setup direktori upload
+            $uploadDir = 'uploads/profile_files/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            // Generate nama file unik
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $originalName = pathinfo($file['name'], PATHINFO_FILENAME);
+            $filename = time() . '_' . uniqid() . '_' . $originalName . '.' . $extension;
+            $filepath = $uploadDir . $filename;
+
+            // Upload file
+            if (!move_uploaded_file($file['tmp_name'], $filepath)) {
+                throw new Exception('Failed to upload file');
+            }
+
+            // Return URL
+            echo json_encode([
+                'success' => true,
+                'url' => $filepath,
+                'filename' => $originalName . '.' . $extension,
+                'message' => 'File uploaded successfully'
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+
+        exit();
     }
 
     // Method untuk upload gambar dari TinyMCE
