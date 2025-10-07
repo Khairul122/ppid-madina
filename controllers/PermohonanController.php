@@ -217,5 +217,70 @@ class PermohonanController {
         fclose($output);
         exit();
     }
+
+    public function submitLayananKepuasan() {
+        if (!isset($_SESSION['user_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error_message'] = 'Akses tidak valid';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        // Validasi input
+        $required_fields = ['id_permohonan', 'nama', 'umur', 'provinsi', 'kota', 'permohonan_informasi', 'rating'];
+        foreach ($required_fields as $field) {
+            if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
+                $_SESSION['error_message'] = 'Semua field wajib diisi';
+                header('Location: index.php?controller=permohonan&action=index');
+                exit();
+            }
+        }
+
+        // Validasi permohonan milik user
+        $permohonan = $this->permohonanModel->getPermohonanById($_POST['id_permohonan'], $_SESSION['user_id']);
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        // Validasi umur dan rating
+        $umur = intval($_POST['umur']);
+        $rating = intval($_POST['rating']);
+
+        if ($umur < 17 || $umur > 100) {
+            $_SESSION['error_message'] = 'Umur harus antara 17-100 tahun';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        if ($rating < 1 || $rating > 5) {
+            $_SESSION['error_message'] = 'Rating harus antara 1-5';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        // Siapkan data untuk disimpan
+        $data = [
+            'id_permohonan' => $_POST['id_permohonan'],
+            'nama' => trim($_POST['nama']),
+            'umur' => $umur,
+            'provinsi' => trim($_POST['provinsi']),
+            'kota' => trim($_POST['kota']),
+            'permohonan_informasi' => trim($_POST['permohonan_informasi']),
+            'rating' => $rating
+        ];
+
+        // Simpan ke database
+        $result = $this->permohonanModel->saveLayananKepuasan($data);
+
+        if ($result['success']) {
+            $_SESSION['success_message'] = $result['message'];
+        } else {
+            $_SESSION['error_message'] = $result['message'];
+        }
+
+        header('Location: index.php?controller=permohonan&action=index');
+        exit();
+    }
 }
 ?>

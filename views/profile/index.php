@@ -167,11 +167,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                     <div class="mb-3">
                                       <label class="form-label fw-bold">Text</label>
 
-                                      <!-- TinyMCE Editor -->
+                                      <!-- Quill WYSIWYG Editor -->
+                                      <div id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>_quill" class="quill-editor-container" style="height: 400px;">
+                                      </div>
                                       <textarea
                                         name="isi_text"
                                         id="editor_<?php echo $profile['id_profile']; ?>_<?php echo strtolower(str_replace(' ', '-', $category)); ?>"
-                                        class="form-control tinymce-editor"
+                                        class="form-control tinymce-editor d-none"
                                         rows="15"><?php echo htmlspecialchars_decode($profile['isi']); ?></textarea>
                                     </div>
                                   <?php endif; ?>
@@ -247,11 +249,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             
             <div id="textContentField">
               <label class="form-label fw-bold">Isi Konten</label>
-              <!-- TinyMCE Editor -->
+              <!-- Quill WYSIWYG Editor -->
+              <div id="newEditor_quill" class="quill-editor-container" style="height: 400px;">
+              </div>
               <textarea
                 name="isi_text"
                 id="newEditor"
-                class="form-control"
+                class="form-control tinymce-editor d-none"
                 rows="15"></textarea>
             </div>
             
@@ -272,9 +276,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
   <?php include 'template/script.php'; ?>
 
-  <!-- TinyMCE Editor -->
-  <script src="https://cdn.tiny.cloud/1/z0t4wwtn9a2wpsk59ee400jsup9j2wusunqyvvezelo6imd8/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+  <!-- Quill WYSIWYG Editor -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
   <script>
+    // Store all Quill editors
+    let quillEditors = {};
+
     // Function to toggle content fields based on content type
     function toggleContentFields() {
       const contentType = document.getElementById('contentTypeSelect').value;
@@ -290,256 +298,128 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       }
     }
     
-    // Initialize TinyMCE for all textareas with tinymce-editor class with file picker
-    function initializeTinyMCE() {
-      tinymce.init({
-        selector: '.tinymce-editor',
-        height: 400,
-        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-        file_picker_types: 'file image media',
-        file_picker_callback: function(cb, value, meta) {
-          var input = document.createElement('input');
-          input.setAttribute('type', 'file');
-
-          // Set accept attribute based on file type
-          if (meta.filetype === 'image') {
-            input.setAttribute('accept', 'image/*');
-          } else if (meta.filetype === 'media') {
-            input.setAttribute('accept', 'video/*,audio/*');
-          } else {
-            input.setAttribute('accept', '.pdf,.doc,.docx');
-          }
-
-          input.onchange = function() {
-            var file = this.files[0];
-            var formData = new FormData();
-            formData.append('file', file);
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-            xhr.onload = function() {
-              if (xhr.status === 200) {
-                console.log('Raw response:', xhr.responseText);
-                try {
-                  var response = JSON.parse(xhr.responseText);
-                  console.log('Parsed response:', response);
-
-                  if (response && response.success === true) {
-                    if (response.url) {
-                      console.log('Upload success, URL:', response.url);
-                      cb(response.url, { title: file.name });
-                    } else if (response.location) {
-                      console.log('Upload success, location:', response.location);
-                      cb(response.location, { title: file.name });
-                    } else {
-                      console.error('No URL in response');
-                      alert('No URL returned from server');
-                    }
-                  } else {
-                    var errorMsg = response && response.message ? response.message : 'Upload failed';
-                    console.error('Upload failed:', errorMsg);
-                    alert(errorMsg);
-                  }
-                } catch (e) {
-                  console.error('JSON parse error:', e, 'Response:', xhr.responseText);
-                  alert('Invalid response from server: ' + e.message);
-                }
-              } else if (xhr.status === 403) {
-                alert('Session expired or unauthorized. Please refresh the page.');
-              } else {
-                console.error('HTTP Error:', xhr.status);
-                alert('HTTP Error: ' + xhr.status);
-              }
-            };
-
-            xhr.onerror = function() {
-              console.error('Network error during file upload');
-              alert('File upload failed due to a network error.');
-            };
-
-            xhr.send(formData);
-          };
-
-          input.click();
-        }
+    // Initialize Quill editor for a specific element
+    function initializeQuillEditor(elementId, content = '') {
+      // If editor already exists, destroy it first
+      if (quillEditors[elementId]) {
+        quillEditors[elementId] = null;
+      }
+      
+      // Create new Quill editor
+      const quill = new Quill(`#${elementId}`, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{'list': 'ordered'}, {'list': 'bullet'}],
+            ['link', 'image'],
+            ['clean']
+          ]
+        },
+        placeholder: 'Tulis konten di sini...'
+      });
+      
+      // Set initial content if provided
+      if (content) {
+        quill.root.innerHTML = content;
+      }
+      
+      // Store reference to editor
+      quillEditors[elementId] = quill;
+      
+      return quill;
+    }
+    
+    // Function to get content from Quill editor
+    function getQuillContent(elementId) {
+      const quill = quillEditors[elementId];
+      if (quill) {
+        return quill.root.innerHTML;
+      }
+      return '';
+    }
+    
+    // Initialize Quill editors for all textareas with tinymce-editor class
+    function initializeQuillEditors() {
+      // Initialize existing editors
+      document.querySelectorAll('.tinymce-editor').forEach(function(textarea) {
+        const elementId = textarea.id;
+        const content = textarea.value || textarea.innerHTML;
+        
+        // Replace textarea with div for Quill
+        const quillContainer = document.createElement('div');
+        quillContainer.id = elementId + '_quill';
+        quillContainer.className = 'quill-editor-container';
+        quillContainer.style.height = '400px';
+        
+        textarea.parentNode.insertBefore(quillContainer, textarea);
+        textarea.style.display = 'none';
+        
+        // Initialize Quill editor
+        const quill = initializeQuillEditor(quillContainer.id, content);
+        
+        // Update hidden textarea when content changes
+        quill.on('text-change', function() {
+          textarea.value = quill.root.innerHTML;
+        });
       });
     }
-
-    // Initialize TinyMCE after DOM is loaded
+    
+    // Initialize Quill for the new editor in modal
+    function initializeNewEditor() {
+      const newEditor = document.getElementById('newEditor');
+      if (newEditor) {
+        // Replace textarea with div for Quill
+        const quillContainer = document.createElement('div');
+        quillContainer.id = 'newEditor_quill';
+        quillContainer.className = 'quill-editor-container';
+        quillContainer.style.height = '400px';
+        
+        newEditor.parentNode.insertBefore(quillContainer, newEditor);
+        newEditor.style.display = 'none';
+        
+        // Initialize Quill editor
+        const quill = initializeQuillEditor(quillContainer.id);
+        
+        // Update hidden textarea when content changes
+        quill.on('text-change', function() {
+          newEditor.value = quill.root.innerHTML;
+        });
+      }
+    }
+    
+    // Destroy Quill editors when modal is closed
+    function destroyQuillEditors() {
+      Object.keys(quillEditors).forEach(function(key) {
+        quillEditors[key] = null;
+      });
+      quillEditors = {};
+    }
+    
+    // Initialize Quill after DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
-      initializeTinyMCE();
-
-      // Initialize TinyMCE for the new editor in modal
+      initializeQuillEditors();
+      
+      // Initialize Quill for the new editor in modal
       setTimeout(function() {
-        if (!tinymce.get('newEditor')) {
-          tinymce.init({
-            selector: '#newEditor',
-            height: 400,
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-            file_picker_types: 'file image media',
-            file_picker_callback: function(cb, value, meta) {
-              var input = document.createElement('input');
-              input.setAttribute('type', 'file');
-
-              // Set accept attribute based on file type
-              if (meta.filetype === 'image') {
-                input.setAttribute('accept', 'image/*');
-              } else if (meta.filetype === 'media') {
-                input.setAttribute('accept', 'video/*,audio/*');
-              } else {
-                input.setAttribute('accept', '.pdf,.doc,.docx');
-              }
-
-              input.onchange = function() {
-                var file = this.files[0];
-                var formData = new FormData();
-                formData.append('file', file);
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-                xhr.onload = function() {
-                  if (xhr.status === 200) {
-                    console.log('Raw response:', xhr.responseText);
-                    try {
-                      var response = JSON.parse(xhr.responseText);
-                      console.log('Parsed response:', response);
-
-                      if (response && response.success === true) {
-                        if (response.url) {
-                          console.log('Upload success, URL:', response.url);
-                          cb(response.url, { title: file.name });
-                        } else if (response.location) {
-                          console.log('Upload success, location:', response.location);
-                          cb(response.location, { title: file.name });
-                        } else {
-                          console.error('No URL in response');
-                          alert('No URL returned from server');
-                        }
-                      } else {
-                        var errorMsg = response && response.message ? response.message : 'Upload failed';
-                        console.error('Upload failed:', errorMsg);
-                        alert(errorMsg);
-                      }
-                    } catch (e) {
-                      console.error('JSON parse error:', e, 'Response:', xhr.responseText);
-                      alert('Invalid response from server: ' + e.message);
-                    }
-                  } else if (xhr.status === 403) {
-                    alert('Session expired or unauthorized. Please refresh the page.');
-                  } else {
-                    console.error('HTTP Error:', xhr.status);
-                    alert('HTTP Error: ' + xhr.status);
-                  }
-                };
-
-                xhr.onerror = function() {
-                  console.error('Network error during file upload');
-                  alert('File upload failed due to a network error.');
-                };
-
-                xhr.send(formData);
-              };
-
-              input.click();
-            }
-          });
-        }
+        initializeNewEditor();
       }, 500);
     });
-
-    // Reinitialize TinyMCE when switching tabs
+    
+    // Reinitialize Quill when switching tabs
     document.addEventListener('shown.bs.tab', function(event) {
       setTimeout(function() {
-        initializeTinyMCE();
+        initializeQuillEditors();
       }, 100);
     });
-
-    // Destroy TinyMCE when modal is closed
+    
+    // Destroy Quill when modal is closed
     document.getElementById('addProfileModal').addEventListener('hidden.bs.modal', function() {
-      if (tinymce.get('newEditor')) {
-        tinymce.get('newEditor').remove();
-      }
-
+      destroyQuillEditors();
+      
       setTimeout(function() {
-        if (!tinymce.get('newEditor')) {
-          tinymce.init({
-            selector: '#newEditor',
-            height: 400,
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-            file_picker_types: 'file image media',
-            file_picker_callback: function(cb, value, meta) {
-              var input = document.createElement('input');
-              input.setAttribute('type', 'file');
-
-              // Set accept attribute based on file type
-              if (meta.filetype === 'image') {
-                input.setAttribute('accept', 'image/*');
-              } else if (meta.filetype === 'media') {
-                input.setAttribute('accept', 'video/*,audio/*');
-              } else {
-                input.setAttribute('accept', '.pdf,.doc,.docx');
-              }
-
-              input.onchange = function() {
-                var file = this.files[0];
-                var formData = new FormData();
-                formData.append('file', file);
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'index.php?controller=profile&action=upload_image');
-
-                xhr.onload = function() {
-                  if (xhr.status === 200) {
-                    console.log('Raw response:', xhr.responseText);
-                    try {
-                      var response = JSON.parse(xhr.responseText);
-                      console.log('Parsed response:', response);
-
-                      if (response && response.success === true) {
-                        if (response.url) {
-                          console.log('Upload success, URL:', response.url);
-                          cb(response.url, { title: file.name });
-                        } else if (response.location) {
-                          console.log('Upload success, location:', response.location);
-                          cb(response.location, { title: file.name });
-                        } else {
-                          console.error('No URL in response');
-                          alert('No URL returned from server');
-                        }
-                      } else {
-                        var errorMsg = response && response.message ? response.message : 'Upload failed';
-                        console.error('Upload failed:', errorMsg);
-                        alert(errorMsg);
-                      }
-                    } catch (e) {
-                      console.error('JSON parse error:', e, 'Response:', xhr.responseText);
-                      alert('Invalid response from server: ' + e.message);
-                    }
-                  } else if (xhr.status === 403) {
-                    alert('Session expired or unauthorized. Please refresh the page.');
-                  } else {
-                    console.error('HTTP Error:', xhr.status);
-                    alert('HTTP Error: ' + xhr.status);
-                  }
-                };
-
-                xhr.onerror = function() {
-                  console.error('Network error during file upload');
-                  alert('File upload failed due to a network error.');
-                };
-
-                xhr.send(formData);
-              };
-
-              input.click();
-            }
-          });
-        }
+        initializeNewEditor();
       }, 100);
     });
   </script>

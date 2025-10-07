@@ -102,6 +102,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <thead>
                         <tr>
                           <th>No</th>
+                          <th>No Permohonan</th>
                           <th>Tanggal</th>
                           <th>Tanggal Jatuh Tempo</th>
                           <th>Tujuan Permohonan</th>
@@ -115,7 +116,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <tbody>
                         <?php if (empty($permohonan_list)): ?>
                           <tr>
-                            <td colspan="9" class="text-center">
+                            <td colspan="10" class="text-center">
                               <div class="py-4">
                                 <i class="mdi mdi-file-document-outline" style="font-size: 48px; color: #ccc;"></i>
                                 <p class="mt-2 text-muted">Tidak ada data permohonan</p>
@@ -125,16 +126,36 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <?php else: ?>
                           <?php
                           $no = ($page - 1) * $limit + 1;
+                          // Array untuk nama hari dan bulan dalam bahasa Indonesia
+                          $hari_indonesia = array('Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu');
+                          $bulan_indonesia = array(
+                            1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+                          );
+
                           foreach ($permohonan_list as $permohonan):
                           ?>
                             <tr>
                               <td><?php echo $no++; ?></td>
                               <td>
-                                <?php 
-                                // Format tanggal dari created_at
+                                <span class="badge bg-primary">
+                                  <?php echo htmlspecialchars($permohonan['no_permohonan'] ?? 'N/A'); ?>
+                                </span>
+                              </td>
+                              <td>
+                                <?php
+                                // Format tanggal Indonesia dari created_at
                                 if ($permohonan['created_at']) {
                                   $date = date_create($permohonan['created_at']);
-                                  echo $date ? date_format($date, 'd/m/Y') : 'N/A';
+                                  if ($date) {
+                                    $hari = $hari_indonesia[date_format($date, 'w')];
+                                    $tanggal = date_format($date, 'j');
+                                    $bulan = $bulan_indonesia[date_format($date, 'n')];
+                                    $tahun = date_format($date, 'Y');
+                                    echo $hari . ', ' . $tanggal . ' ' . $bulan . ' ' . $tahun;
+                                  } else {
+                                    echo 'N/A';
+                                  }
                                 } else {
                                   echo 'N/A';
                                 }

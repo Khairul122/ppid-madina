@@ -362,22 +362,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             <input type="hidden" name="status" value="Disposisi">
 
             <div class="mb-3">
-              <label for="tujuan_permohonan" class="form-label fw-bold">Tujuan Permohonan <span class="text-danger">*</span></label>
-              <select name="tujuan_permohonan" id="tujuan_permohonan" class="form-select" required>
-                <option value="">-- Pilih Tujuan Permohonan --</option>
+              <label for="komponen_tujuan" class="form-label fw-bold">Komponen Tujuan / SKPD <span class="text-danger">*</span></label>
+              <select name="komponen_tujuan" id="komponen_tujuan" class="form-select" required>
+                <option value="">-- Pilih SKPD Tujuan --</option>
               </select>
               <div class="form-text text-muted">
-                <i class="fas fa-info-circle me-1"></i>Memuat...
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="komponen_tujuan" class="form-label fw-bold">Komponen Tujuan <span class="text-danger">*</span></label>
-              <select name="komponen_tujuan" id="komponen_tujuan" class="form-select" required disabled>
-                <option value="">-- Pilih Tujuan Permohonan Terlebih Dahulu --</option>
-              </select>
-              <div class="form-text text-muted">
-                <i class="fas fa-info-circle me-1"></i>Pilih tujuan permohonan terlebih dahulu untuk menampilkan daftar SKPD
+                <i class="fas fa-info-circle me-1"></i>Memuat daftar SKPD...
               </div>
             </div>
 
@@ -428,12 +418,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           <div class="card bg-light">
             <div class="card-body">
               <h6 class="card-title">Detail Disposisi:</h6>
-              <div class="row">
-                <div class="col-sm-5"><strong>Tujuan Permohonan:</strong></div>
-                <div class="col-sm-7" id="confirm-kategori">-</div>
-              </div>
-              <div class="row">
-                <div class="col-sm-5"><strong>Komponen Tujuan:</strong></div>
+              <div class="row mb-2">
+                <div class="col-sm-5"><strong>SKPD Tujuan:</strong></div>
                 <div class="col-sm-7" id="confirm-komponen">-</div>
               </div>
               <div class="row" id="confirm-catatan-row" style="display: none;">
@@ -621,28 +607,33 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       }
     });
 
+    // Variabel untuk menyimpan data disposisi sementara
+    let disposisiData = {
+      komponen_tujuan: '',
+      catatan_petugas: ''
+    };
+
     // Handle modal disposisi
     $('#btn-confirm-disposisi').on('click', function() {
-      // Validasi form disposisi
-      const kategori = $('#tujuan_permohonan').val();
+      // Validasi form disposisi - hanya komponen_tujuan yang wajib
       const komponen = $('#komponen_tujuan').val();
       const catatan = $('#catatan_petugas').val();
 
-      if (!kategori) {
-        alert('Tujuan Permohonan harus dipilih!');
+      if (!komponen) {
+        alert('SKPD Tujuan harus dipilih!');
         return;
       }
 
-      if (!komponen) {
-        alert('Komponen tujuan harus dipilih!');
-        return;
-      }
+      // Simpan data ke variabel global sebelum modal ditutup
+      disposisiData.komponen_tujuan = komponen;
+      disposisiData.catatan_petugas = catatan;
+
+      console.log('Data disposisi disimpan:', disposisiData);
 
       // Tutup modal disposisi dan tampilkan modal konfirmasi
       $('#disposisiModal').modal('hide');
 
       // Set data konfirmasi
-      $('#confirm-kategori').text(kategori);
       $('#confirm-komponen').text(komponen);
 
       if (catatan.trim()) {
@@ -658,21 +649,36 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
     // Handle submit disposisi
     $('#btn-submit-disposisi').on('click', function() {
+      // Ambil nilai dari variabel global yang sudah disimpan
+      const komponenTujuan = disposisiData.komponen_tujuan;
+      const catatanPetugas = disposisiData.catatan_petugas;
+      const idPermohonan = $('input[name="id"]').val();
+
+      // Debug: log nilai sebelum dikirim
+      console.log('=== DEBUG DISPOSISI ===');
+      console.log('ID Permohonan:', idPermohonan);
+      console.log('Komponen Tujuan:', komponenTujuan);
+      console.log('Catatan Petugas:', catatanPetugas);
+      console.log('Dari disposisiData:', disposisiData);
+
+      // Validasi sekali lagi sebelum kirim
+      if (!komponenTujuan || komponenTujuan.trim() === '') {
+        alert('SKPD Tujuan tidak boleh kosong!');
+        $('#confirmDisposisiModal').modal('hide');
+        $('#disposisiModal').modal('show');
+        return;
+      }
+
       const formData = new FormData();
-
-      // Data dari form utama
-      formData.append('id', $('input[name="id"]').val());
+      formData.append('id', idPermohonan);
       formData.append('status', 'Disposisi');
+      formData.append('komponen_tujuan', komponenTujuan);
+      formData.append('catatan_petugas', catatanPetugas);
 
-      // Data dari modal disposisi
-      formData.append('tujuan_permohonan', $('#tujuan_permohonan').val());
-      formData.append('komponen_tujuan', $('#komponen_tujuan').val());
-      formData.append('catatan_petugas', $('#catatan_petugas').val());
-
-      // Debug: log form data
-      console.log('Disposisi form data:');
+      // Debug: log form data yang akan dikirim
+      console.log('Form data yang dikirim:');
       for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
+        console.log(pair[0] + ': "' + pair[1] + '"');
       }
 
       $.ajax({
@@ -712,7 +718,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           $('#confirmDisposisiModal').modal('hide');
 
           if (result.success) {
-            alert('Permohonan berhasil' + $('#komponen_tujuan').val());
+            alert('Permohonan berhasil didisposisi ke ' + komponenTujuan);
             location.reload();
           } else {
             alert('Gagal melakukan disposisi: ' + result.message);
@@ -730,14 +736,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     // Reset modal ketika ditutup
     $('#disposisiModal').on('hidden.bs.modal', function () {
       $('#disposisi-form')[0].reset();
+      $('#komponen_tujuan').empty().append('<option value="">-- Pilih SKPD Tujuan --</option>');
     });
 
     $('#confirmDisposisiModal').on('hidden.bs.modal', function () {
-      // Jika modal konfirmasi ditutup tanpa submit, reset status select
+      // Jika modal konfirmasi ditutup tanpa submit, reset status select dan data disposisi
       $('#status-select').val($('#status-select option:selected').data('current-status') || 'Diproses');
+
+      // Reset disposisi data
+      disposisiData = {
+        komponen_tujuan: '',
+        catatan_petugas: ''
+      };
     });
 
-    // Load SKPD data dinamis
+    // Load SKPD data dinamis - langsung load semua SKPD
     function loadSKPDData() {
       $.ajax({
         url: 'index.php?controller=permohonanadmin&action=getSKPDData',
@@ -745,77 +758,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         dataType: 'json',
         success: function(response) {
           if (response.success) {
-            // Simpan data SKPD untuk penggunaan selanjutnya
-            window.skpdData = response.data;
+            // Populate dropdown komponen_tujuan dengan semua SKPD
+            const komponenSelect = $('#komponen_tujuan');
+            komponenSelect.empty();
+            komponenSelect.append('<option value="">-- Pilih SKPD Tujuan --</option>');
 
-            // Populate kategori dropdown
-            const kategoriSelect = $('#tujuan_permohonan');
-            kategoriSelect.empty();
-            kategoriSelect.append('<option value="">-- Pilih Tujuan Permohonan --</option>');
+            // Tambahkan semua SKPD ke dropdown
+            if (response.data.skpd_list && response.data.skpd_list.length > 0) {
+              response.data.skpd_list.forEach(function(skpd) {
+                komponenSelect.append(`<option value="${skpd.nama_skpd}">${skpd.nama_skpd}</option>`);
+              });
 
-            response.data.categories.forEach(function(category) {
-              kategoriSelect.append(`<option value="${category}">${category}</option>`);
-            });
-
-            // Update form text
-            $('#tujuan_permohonan').parent().find('.form-text').html(
-            
-            );
+              // Update form text
+              $('#komponen_tujuan').parent().find('.form-text').html(
+                `<i class="fas fa-check-circle me-1 text-success"></i>Ditemukan ${response.data.skpd_list.length} SKPD`
+              );
+            } else {
+              $('#komponen_tujuan').parent().find('.form-text').html(
+                '<i class="fas fa-exclamation-triangle me-1 text-warning"></i>Tidak ada SKPD tersedia'
+              );
+            }
           } else {
             console.error('Gagal memuat data SKPD:', response.message);
-            $('#tujuan_permohonan').parent().find('.form-text').html(
-              '<i class="fas fa-exclamation-triangle me-1 text-warning"></i>Gagal memuat kategori: ' + response.message
+            $('#komponen_tujuan').parent().find('.form-text').html(
+              '<i class="fas fa-exclamation-triangle me-1 text-warning"></i>Gagal memuat SKPD: ' + response.message
             );
           }
         },
         error: function(xhr, status, error) {
           console.error('Error loading SKPD data:', error);
-          $('#tujuan_permohonan').parent().find('.form-text').html(
-            '<i class="fas fa-exclamation-triangle me-1 text-danger"></i>Error memuat kategori dari server'
+          $('#komponen_tujuan').parent().find('.form-text').html(
+            '<i class="fas fa-exclamation-triangle me-1 text-danger"></i>Error memuat SKPD dari server'
           );
         }
       });
     }
 
-    // Handle perubahan kategori
-    $('#tujuan_permohonan').on('change', function() {
-      const selectedCategory = $(this).val();
-      const komponenSelect = $('#komponen_tujuan');
-
-      if (!selectedCategory) {
-        komponenSelect.prop('disabled', true);
-        komponenSelect.empty();
-        komponenSelect.append('<option value="">-- Pilih Tujuan Permohonan Terlebih Dahulu --</option>');
-        return;
-      }
-
-      // Filter SKPD berdasarkan kategori yang dipilih
-      if (window.skpdData && window.skpdData.skpd_list) {
-        const filteredSKPD = window.skpdData.skpd_list.filter(function(skpd) {
-          return skpd.kategori === selectedCategory;
-        });
-
-        komponenSelect.empty();
-        komponenSelect.append('<option value="">-- Pilih Dinas/Komponen --</option>');
-
-        filteredSKPD.forEach(function(skpd) {
-          komponenSelect.append(`<option value="${skpd.nama_skpd}">${skpd.nama_skpd}</option>`);
-        });
-
-        komponenSelect.prop('disabled', false);
-
-        // Update form text
-        $('#komponen_tujuan').parent().find('.form-text').html(
-          `<i class="fas fa-info-circle me-1"></i>Ditemukan ${filteredSKPD.length} SKPD untuk kategori "${selectedCategory}"`
-        );
-      }
-    });
-
     // Load data SKPD saat modal disposisi dibuka
     $('#disposisiModal').on('show.bs.modal', function() {
-      if (!window.skpdData) {
-        loadSKPDData();
-      }
+      loadSKPDData();
     });
 
     // Handle submit penolakan

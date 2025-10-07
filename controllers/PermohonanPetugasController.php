@@ -1301,7 +1301,39 @@ class PermohonanPetugasController
     // Alias for permohonanDitolak (to match the pattern of other index functions)
     public function ditolakIndex()
     {
+        // Logging untuk debugging
+        error_log("ditolakIndex called");
+        error_log("Session user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
+        error_log("Session role: " . ($_SESSION['role'] ?? 'NOT SET'));
+        
+        // Pastikan pengguna adalah petugas
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
+            error_log("Access denied - not a petugas");
+            $_SESSION['error_message'] = 'Akses ditolak. Hanya petugas yang dapat mengakses halaman ini.';
+            header('Location: index.php?controller=auth&action=login');
+            exit();
+        }
+        
         $this->permohonanDitolak();
+    }
+
+    // Alias for permohonanDitolakView (to match the pattern of diprosesView and selesaiView)
+    public function ditolakView()
+    {
+        // Logging untuk debugging
+        error_log("ditolakView called");
+        error_log("Session user_id: " . ($_SESSION['user_id'] ?? 'NOT SET'));
+        error_log("Session role: " . ($_SESSION['role'] ?? 'NOT SET'));
+        
+        // Pastikan pengguna adalah petugas
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
+            error_log("Access denied - not a petugas");
+            $_SESSION['error_message'] = 'Akses ditolak. Hanya petugas yang dapat mengakses halaman ini.';
+            header('Location: index.php?controller=auth&action=login');
+            exit();
+        }
+        
+        $this->permohonanDitolakView();
     }
 
     // Display permohonan ditolak detail view

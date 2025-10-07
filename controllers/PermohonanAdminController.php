@@ -443,19 +443,28 @@ class PermohonanAdminController
 
             // Handle special status updates
             if ($status === 'Disposisi') {
-                // Validate disposisi-specific fields
-                if (!isset($_POST['tujuan_permohonan']) || !isset($_POST['komponen_tujuan'])) {
-                    $this->sendJsonResponse(['success' => false, 'message' => 'Tujuan permohonan dan komponen tujuan harus diisi']);
+                // Debug: log data yang diterima
+                error_log("=== DEBUG DISPOSISI CONTROLLER ===");
+                error_log("POST data: " . print_r($_POST, true));
+                error_log("komponen_tujuan isset: " . (isset($_POST['komponen_tujuan']) ? 'YES' : 'NO'));
+                error_log("komponen_tujuan value: " . ($_POST['komponen_tujuan'] ?? 'NULL'));
+                error_log("komponen_tujuan empty: " . (empty(trim($_POST['komponen_tujuan'] ?? '')) ? 'YES' : 'NO'));
+
+                // Validate disposisi-specific fields - hanya komponen_tujuan yang wajib
+                if (!isset($_POST['komponen_tujuan']) || empty(trim($_POST['komponen_tujuan']))) {
+                    error_log("VALIDATION FAILED: komponen_tujuan is empty");
+                    $this->sendJsonResponse(['success' => false, 'message' => 'Komponen tujuan harus diisi']);
                     return;
                 }
 
                 $updateData = [
                     'id_permohonan' => $id,
                     'status' => $status,
-                    'tujuan_permohonan' => trim($_POST['tujuan_permohonan']),
                     'komponen_tujuan' => trim($_POST['komponen_tujuan']),
                     'catatan_petugas' => isset($_POST['catatan_petugas']) ? trim($_POST['catatan_petugas']) : ''
                 ];
+
+                error_log("Update data: " . print_r($updateData, true));
 
                 $result = $this->permohonanAdminModel->updatePermohonanWithDisposisi($updateData);
             } elseif ($status === 'Ditolak') {

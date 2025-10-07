@@ -241,5 +241,41 @@ class PermohonanModel {
             'message' => 'Permohonan tidak ditemukan'
         ];
     }
+
+    public function saveLayananKepuasan($data) {
+        try {
+            $query = "INSERT INTO layanan_kepuasan
+                      (id_permohonan, nama, umur, provinsi, kota, permohonan_informasi, rating, created_at)
+                      VALUES
+                      (:id_permohonan, :nama, :umur, :provinsi, :kota, :permohonan_informasi, :rating, NOW())";
+
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(':id_permohonan', $data['id_permohonan']);
+            $stmt->bindParam(':nama', $data['nama']);
+            $stmt->bindParam(':umur', $data['umur']);
+            $stmt->bindParam(':provinsi', $data['provinsi']);
+            $stmt->bindParam(':kota', $data['kota']);
+            $stmt->bindParam(':permohonan_informasi', $data['permohonan_informasi']);
+            $stmt->bindParam(':rating', $data['rating']);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Penilaian layanan kepuasan berhasil disimpan'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Gagal menyimpan penilaian layanan kepuasan'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+        }
+    }
 }
 ?>

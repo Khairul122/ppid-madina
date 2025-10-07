@@ -213,9 +213,10 @@ class PermohonanAdminModel
     public function updatePermohonanWithDisposisi($data)
     {
         try {
+            // Hanya update komponen_tujuan, status, dan catatan_petugas
+            // tujuan_permohonan tidak diupdate (tetap menggunakan nilai lama)
             $query = "UPDATE " . $this->table_permohonan . "
                       SET status = :status,
-                          tujuan_permohonan = :tujuan_permohonan,
                           komponen_tujuan = :komponen_tujuan,
                           catatan_petugas = :catatan_petugas,
                           updated_at = NOW()
@@ -223,7 +224,6 @@ class PermohonanAdminModel
 
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':status', $data['status']);
-            $stmt->bindParam(':tujuan_permohonan', $data['tujuan_permohonan']);
             $stmt->bindParam(':komponen_tujuan', $data['komponen_tujuan']);
             $stmt->bindParam(':catatan_petugas', $data['catatan_petugas']);
             $stmt->bindParam(':id_permohonan', $data['id_permohonan']);
