@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
   header('Location: index.php?controller=auth&action=login');
   exit();
 }
@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php include 'template/sidebar_petugas.php'; ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row justify-content-center">
@@ -22,23 +22,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
               <div class="page-header mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
                   <div class="mb-2 mb-md-0">
-                    <h4 class="page-title mb-1 text-dark">Detail Disposisi Permohonan</h4>
+                    <h4 class="page-title mb-1 text-dark">Detail Permohonan Diproses</h4>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 fs-6">
-                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=index" class="text-decoration-none">Meja Layanan</a></li>
-                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=disposisiIndex" class="text-decoration-none">Disposisi</a></li>
+                        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanpetugas&action=diprosesIndex" class="text-decoration-none">Diproses</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Detail</li>
                       </ol>
                     </nav>
                   </div>
                   <div class="d-flex flex-column flex-sm-row gap-2">
-                    <a href="index.php?controller=permohonanadmin&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-success btn-sm" target="_blank">
-                      <i class="fas fa-file-pdf me-1"></i>Cetak Bukti Permohonan
-                    </a>
-                    <a href="index.php?controller=permohonanadmin&action=edit&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-warning btn-sm">
-                      <i class="fas fa-edit me-1"></i>Edit
-                    </a>
-                    <a href="index.php?controller=permohonanadmin&action=disposisiIndex" class="btn btn-outline-secondary btn-sm">
+                    <a href="index.php?controller=permohonanpetugas&action=diprosesIndex" class="btn btn-outline-secondary btn-sm">
                       <i class="fas fa-arrow-left me-1"></i>Kembali
                     </a>
                   </div>
@@ -71,26 +65,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <div class="info-item">
                             <label class="info-label">Status Permohonan</label>
                             <div class="info-value">
-                              <?php
-                              $status = $permohonan['status'] ?? 'Diproses';
-                              $statusClass = '';
-                              switch ($status) {
-                                case 'Selesai':
-                                case 'approved':
-                                  $statusClass = 'bg-success';
-                                  break;
-                                case 'Ditolak':
-                                case 'rejected':
-                                  $statusClass = 'bg-danger';
-                                  break;
-                                case 'Disposisi':
-                                  $statusClass = 'bg-warning text-dark';
-                                  break;
-                                default:
-                                  $statusClass = 'bg-secondary';
-                              }
-                              ?>
-                              <span class="badge <?php echo $statusClass; ?> fs-6 px-3 py-2"><?php echo htmlspecialchars($status); ?></span>
+                              <span class="badge bg-warning text-dark fs-6 px-3 py-2">Diproses</span>
                             </div>
                           </div>
                         </div>
@@ -99,7 +74,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <div class="info-item">
                             <label class="info-label">SKPD Tujuan</label>
                             <div class="info-value">
-                              <span class="badge bg-info fs-6 px-3 py-2"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? ''); ?></span>
+                              <span class="badge bg-info fs-6 px-3 py-2"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? '-'); ?></span>
                             </div>
                           </div>
                         </div>
@@ -113,14 +88,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <div class="col-12">
                           <div class="info-item">
-                            <label class="info-label">Kandungan Informasi</label>
-                            <div class="info-value"><?php echo nl2br(htmlspecialchars($permohonan['kandungan_informasi'] ?? '')); ?></div>
-                          </div>
-                        </div>
-
-                        <div class="col-12">
-                          <div class="info-item">
-                            <label class="info-label">Tujuan Penggunaan Informasi</label>
+                            <label class="info-label">Kandungan Informasi / Tujuan Penggunaan</label>
                             <div class="info-value"><?php echo nl2br(htmlspecialchars($permohonan['tujuan_penggunaan_informasi'] ?? '')); ?></div>
                           </div>
                         </div>
@@ -136,9 +104,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <div class="col-md-6">
                           <div class="info-item">
-                            <label class="info-label">Sisa Jatuh Tempo</label>
+                            <label class="info-label">Tanggal Permohonan</label>
                             <div class="info-value">
-                              <span class="badge bg-secondary fs-6 px-3 py-2"><?php echo htmlspecialchars($permohonan['sisa_jatuh_tempo'] ?? '0'); ?> hari</span>
+                              <?php echo date('d/m/Y H:i', strtotime($permohonan['created_at'] ?? 'now')); ?>
                             </div>
                           </div>
                         </div>
@@ -184,6 +152,54 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           </div>
                         </div>
 
+                        <div class="col-md-4">
+                          <div class="info-item">
+                            <label class="info-label">Jenis Kelamin</label>
+                            <div class="info-value"><?php echo htmlspecialchars($permohonan['jenis_kelamin'] ?? '-'); ?></div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-4">
+                          <div class="info-item">
+                            <label class="info-label">Usia</label>
+                            <div class="info-value"><?php echo htmlspecialchars($permohonan['usia'] ?? '-'); ?> tahun</div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-4">
+                          <div class="info-item">
+                            <label class="info-label">Pendidikan</label>
+                            <div class="info-value"><?php echo htmlspecialchars($permohonan['pendidikan'] ?? '-'); ?></div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="info-item">
+                            <label class="info-label">Pekerjaan</label>
+                            <div class="info-value"><?php echo htmlspecialchars($permohonan['pekerjaan'] ?? '-'); ?></div>
+                          </div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="info-item">
+                            <label class="info-label">Status Pemohon</label>
+                            <div class="info-value">
+                              <span class="badge <?php echo ($permohonan['status_pengguna'] ?? '') === 'lembaga' ? 'bg-primary' : 'bg-secondary'; ?> fs-6 px-3 py-2">
+                                <?php echo htmlspecialchars(ucfirst($permohonan['status_pengguna'] ?? 'pribadi')); ?>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <?php if (($permohonan['status_pengguna'] ?? '') === 'lembaga'): ?>
+                          <div class="col-12">
+                            <div class="info-item">
+                              <label class="info-label">Nama Lembaga/Organisasi</label>
+                              <div class="info-value"><?php echo htmlspecialchars($permohonan['nama_lembaga'] ?? ''); ?></div>
+                            </div>
+                          </div>
+                        <?php endif; ?>
+
                         <div class="col-12">
                           <div class="info-item">
                             <label class="info-label">Alamat Lengkap</label>
@@ -202,59 +218,54 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                   </div>
                 </div>
 
-                <!-- Actions & Files -->
+                <!-- Status & Files -->
                 <div class="col-lg-4">
-                  <!-- Update Status -->
+                  <!-- Aksi Dokumen -->
                   <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-header bg-light border-bottom">
-                      <h5 class="card-title mb-0 text-dark fw-normal">
-                        <i class="fas fa-edit me-2 text-primary"></i>
-                        Update Status
+                    <div class="card-header bg-warning border-bottom">
+                      <h5 class="card-title mb-0 text-white fw-normal">
+                        <i class="fas fa-file-download me-2"></i>
+                        Aksi Dokumen
                       </h5>
                     </div>
                     <div class="card-body p-4">
-                      <form id="status-form">
-                        <input type="hidden" name="id" value="<?php echo $permohonan['id_permohonan']; ?>">
-                        <div class="mb-3">
-                          <label class="form-label text-dark fw-medium">Status Permohonan</label>
-                          <select name="status" class="form-select form-control-lg" id="status-select">
-                            <option value="Diproses">Diproses</option>
-                          </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 btn-lg">
-                          <i class="fas fa-save me-1"></i>Update Status
-                        </button>
-                      </form>
+                      <div class="d-grid gap-3">
+                        <!-- Download Foto Identitas -->
+                        <?php if (!empty($permohonan['upload_foto_identitas'])): ?>
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_foto_identitas']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                             class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-camera me-2"></i>Download Foto Identitas
+                          </a>
+                        <?php else: ?>
+                          <button class="btn btn-outline-secondary btn-lg" disabled>
+                            <i class="fas fa-camera me-2"></i>Foto Identitas Tidak Ada
+                          </button>
+                        <?php endif; ?>
 
-                      <div class="mt-4">
-                        <button type="button" class="btn btn-warning w-100 btn-lg" id="perpanjang-jatuh-tempo" data-id="<?php echo $permohonan['id_permohonan']; ?>">
-                          <i class="fas fa-calendar-plus me-1"></i>Perpanjang Jatuh Tempo 7 Hari Kerja
+                        <!-- Preview Surat Bukti Permohonan -->
+                        <a href="index.php?controller=permohonanpetugas&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+                           class="btn btn-success btn-lg" target="_blank">
+                          <i class="fas fa-file-pdf me-2"></i>Surat Bukti Permohonan
+                        </a>
+
+                        <!-- Preview Bukti Proses -->
+                        <a href="index.php?controller=permohonanpetugas&action=generateBuktiProsesPDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+                           class="btn btn-warning btn-lg" target="_blank">
+                          <i class="fas fa-file-contract me-2"></i>Bukti Proses
+                        </a>
+
+                        <!-- Ubah Status ke Selesai -->
+                        <button type="button" class="btn btn-success btn-lg" id="btn-selesai" data-id="<?php echo $permohonan['id_permohonan']; ?>">
+                          <i class="fas fa-check-circle me-2"></i>Selesai
                         </button>
+                      </div>
+
+                      <div class="alert alert-info mt-3 mb-0" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small><strong>Catatan:</strong> Klik tombol "Selesai" setelah permohonan telah diproses dan dokumen siap diberikan kepada pemohon.</small>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Foto Identitas -->
-                  <?php if (!empty($permohonan['upload_foto_identitas'])): ?>
-                    <div class="card shadow-sm border-0 mb-4">
-                      <div class="card-header bg-light border-bottom">
-                        <h5 class="card-title mb-0 text-dark fw-normal">
-                          <i class="fas fa-camera me-2 text-primary"></i>
-                          Foto Identitas
-                        </h5>
-                      </div>
-                      <div class="card-body p-4 text-center">
-                        <div class="photo-container mb-3">
-                          <img src="<?php echo htmlspecialchars($permohonan['upload_foto_identitas']); ?>"
-                            class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 300px; object-fit: cover;" alt="Foto Identitas">
-                        </div>
-                        <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_foto_identitas']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
-                           class="btn btn-outline-primary btn-sm">
-                          <i class="fas fa-download me-1"></i>Download Foto Identitas
-                        </a>
-                      </div>
-                    </div>
-                  <?php endif; ?>
 
                   <!-- Foto Profile -->
                   <?php if (!empty($permohonan['foto_profile'])): ?>
@@ -274,32 +285,32 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     </div>
                   <?php endif; ?>
 
-                  <!-- File Downloads -->
-                  <div class="card shadow-sm border-0 mb-4">
+                  <!-- File Pendukung Lainnya -->
+                  <div class="card shadow-sm border-0">
                     <div class="card-header bg-light border-bottom">
                       <h5 class="card-title mb-0 text-dark fw-normal">
-                        <i class="fas fa-download me-2 text-primary"></i>
-                        File Dokumen
+                        <i class="fas fa-paperclip me-2 text-primary"></i>
+                        Dokumen Pendukung
                       </h5>
                     </div>
                     <div class="card-body p-4">
                       <div class="d-grid gap-2">
                         <?php if (!empty($permohonan['upload_ktp'])): ?>
-                          <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_ktp']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_ktp']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                             class="btn btn-outline-primary">
                             <i class="fas fa-id-card me-2"></i>Download KTP
                           </a>
                         <?php endif; ?>
 
                         <?php if (!empty($permohonan['upload_akta'])): ?>
-                          <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_akta']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_akta']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                             class="btn btn-outline-primary">
                             <i class="fas fa-certificate me-2"></i>Download Akta Lembaga
                           </a>
                         <?php endif; ?>
 
                         <?php if (!empty($permohonan['upload_data_pedukung'])): ?>
-                          <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_data_pedukung']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_data_pedukung']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                             class="btn btn-outline-info">
                             <i class="fas fa-file-upload me-2"></i>Download Data Pendukung
                           </a>
@@ -307,41 +318,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <?php if (
                           empty($permohonan['upload_ktp']) && empty($permohonan['upload_akta']) &&
-                          empty($permohonan['upload_foto_identitas']) && empty($permohonan['upload_data_pedukung'])
+                          empty($permohonan['upload_data_pedukung'])
                         ): ?>
                           <div class="text-center py-4">
                             <i class="fas fa-file-alt text-muted" style="font-size: 3rem; opacity: 0.3;"></i>
-                            <p class="text-muted mt-3 mb-0">Tidak ada file upload</p>
+                            <p class="text-muted mt-3 mb-0">Tidak ada dokumen pendukung</p>
                           </div>
                         <?php endif; ?>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Action Buttons -->
-                  <div class="card shadow-sm border-0">
-                    <div class="card-header bg-light border-bottom">
-                      <h5 class="card-title mb-0 text-dark fw-normal">
-                        <i class="fas fa-cogs me-2 text-primary"></i>
-                        Aksi Disposisi
-                      </h5>
-                    </div>
-                    <div class="card-body p-4">
-                      <div class="d-grid gap-2">
-                        <a href="index.php?controller=permohonanadmin&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
-                           class="btn btn-success" target="_blank">
-                          <i class="fas fa-file-pdf me-2"></i>Bukti Permohonan (PDF)
-                        </a>
-
-                        <?php if (!empty($permohonan['upload_foto_identitas'])): ?>
-                          <button type="button" class="btn btn-info" onclick="showPhotoModal('<?php echo htmlspecialchars($permohonan['upload_foto_identitas']); ?>')">
-                            <i class="fas fa-camera me-2"></i>Lihat Foto Identitas
-                          </button>
-                        <?php endif; ?>
-
-                        <button type="button" class="btn btn-danger" onclick="confirmDelete(<?php echo $permohonan['id_permohonan']; ?>)">
-                          <i class="fas fa-trash me-2"></i>Hapus Permohonan
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -355,113 +338,60 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
   </div>
 
-  <!-- Photo Modal -->
-  <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="photoModalLabel">Foto Identitas</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center">
-          <img id="modalPhoto" src="" class="img-fluid rounded" alt="Foto Identitas" style="max-width: 100%; max-height: 70vh;">
-        </div>
-        <div class="modal-footer">
-          <a id="downloadPhotoBtn" href="#" class="btn btn-primary" target="_blank">
-            <i class="fas fa-download me-1"></i>Download
-          </a>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
   <?php include 'template/script.php'; ?>
 
   <script>
-    // Handle status update
-    $('#status-form').on('submit', function(e) {
-      e.preventDefault();
-
-      const formData = new FormData(this);
-
-      // Debug: log form data
-      console.log('Form data:');
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
-      }
-
-      $.ajax({
-        url: 'index.php?controller=permohonanadmin&action=updateStatus',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        dataType: 'json',
-        success: function(response) {
-          console.log('Raw response:', response);
-          if (response.success) {
-            alert('Status berhasil diupdate ke Diterima');
-            location.reload();
-          } else {
-            alert('Gagal mengupdate status: ' + response.message);
-          }
-        },
-        error: function(xhr, status, error) {
-          console.error('AJAX error:', error);
-          console.log('Response Text:', xhr.responseText);
-          alert('Terjadi kesalahan saat mengupdate status: ' + error);
-        }
-      });
-    });
-
-    // Handle perpanjang jatuh tempo
-    $('#perpanjang-jatuh-tempo').on('click', function() {
+    // Handle button ubah status ke selesai
+    $('#btn-selesai').on('click', function() {
       const id = $(this).data('id');
 
-      if (confirm('Apakah Anda yakin ingin memperpanjang jatuh tempo permohonan ini 7 hari kerja?')) {
+      if (confirm('Apakah Anda yakin ingin mengubah status permohonan ini menjadi SELESAI?')) {
+        // Disable button to prevent double click
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Memproses...');
+
         $.ajax({
-          url: 'index.php?controller=permohonanadmin&action=perpanjangJatuhTempo',
+          url: 'index.php?controller=permohonanpetugas&action=updateStatus',
           type: 'POST',
           data: {
-            id: id
+            id: id,
+            status: 'Selesai'
           },
           dataType: 'json',
           success: function(response) {
-            console.log('Perpanjang response:', response);
-            if (response.success) {
-              alert('Jatuh tempo berhasil diperpanjang');
-              location.reload();
+            console.log('Update status response:', response);
+
+            let result;
+            if (typeof response === 'object') {
+              result = response;
             } else {
-              alert('Gagal memperpanjang jatuh tempo: ' + response.message);
+              try {
+                result = JSON.parse(response);
+              } catch (e) {
+                console.error('Error parsing JSON:', e);
+                alert('Error: Response tidak valid dari server');
+                $('#btn-selesai').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Selesai');
+                return;
+              }
+            }
+
+            if (result.success) {
+              alert('Status berhasil diubah menjadi SELESAI');
+              // Redirect ke halaman index diproses
+              window.location.href = 'index.php?controller=permohonanpetugas&action=diprosesIndex';
+            } else {
+              alert('Gagal mengubah status: ' + result.message);
+              $('#btn-selesai').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Selesai');
             }
           },
           error: function(xhr, status, error) {
-            console.error('Perpanjang AJAX error:', error);
+            console.error('AJAX error:', error);
             console.log('Response Text:', xhr.responseText);
-            alert('Terjadi kesalahan saat memperpanjang jatuh tempo: ' + error);
+            alert('Terjadi kesalahan saat mengubah status: ' + error);
+            $('#btn-selesai').prop('disabled', false).html('<i class="fas fa-check-circle me-2"></i>Selesai');
           }
         });
       }
     });
-
-    // Show photo modal
-    function showPhotoModal(photoSrc) {
-      document.getElementById('modalPhoto').src = photoSrc;
-      document.getElementById('downloadPhotoBtn').href = 'index.php?controller=permohonanadmin&action=downloadFile&file=' +
-        encodeURIComponent(photoSrc.split('/').pop()) + '&id=<?php echo $permohonan['id_permohonan']; ?>';
-
-      const modal = new bootstrap.Modal(document.getElementById('photoModal'));
-      modal.show();
-    }
-
-    // Confirm delete
-    function confirmDelete(id) {
-      if (confirm('Apakah Anda yakin ingin menghapus permohonan ini?\n\nData yang dihapus tidak dapat dikembalikan dan akan menghapus semua data terkait termasuk user dan biodata.')) {
-        window.location.href = 'index.php?controller=permohonanadmin&action=delete&id=' + id;
-      }
-    }
   </script>
 
   <style>
@@ -581,7 +511,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
     .bg-warning {
       background-color: var(--gov-warning) !important;
-      color: white;
     }
 
     .bg-danger {
@@ -618,46 +547,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
-    .btn-success {
-      background-color: var(--gov-success);
-      color: white;
-    }
-
-    .btn-success:hover {
-      background-color: #059669;
-      transform: translateY(-1px);
-    }
-
-    .btn-info {
-      background-color: #0ea5e9;
-      color: white;
-    }
-
-    .btn-info:hover {
-      background-color: #0284c7;
-      transform: translateY(-1px);
-    }
-
-    .btn-warning {
-      background-color: var(--gov-warning);
-      color: white;
-    }
-
-    .btn-warning:hover {
-      background-color: #d97706;
-      transform: translateY(-1px);
-    }
-
-    .btn-danger {
-      background-color: var(--gov-danger);
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background-color: #dc2626;
-      transform: translateY(-1px);
-    }
-
     .btn-outline-primary {
       border: 1.5px solid var(--gov-primary);
       color: var(--gov-primary);
@@ -679,6 +568,28 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     .btn-outline-info:hover {
       background-color: #0ea5e9;
       color: white;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline-warning {
+      border: 1.5px solid var(--gov-warning);
+      color: var(--gov-warning);
+      background-color: white;
+    }
+
+    .btn-outline-warning:hover {
+      background-color: var(--gov-warning);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .btn-success {
+      background-color: var(--gov-success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #059669;
       transform: translateY(-1px);
     }
 
@@ -704,34 +615,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       font-size: 0.875rem;
     }
 
-    .form-control,
-    .form-select {
-      border: 1.5px solid var(--gov-border);
-      border-radius: 6px;
-      padding: 0.75rem 1rem;
-      background-color: white;
-      color: var(--gov-dark);
-      transition: all 0.2s ease;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      border-color: var(--gov-primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-      background-color: white;
-    }
-
-    .form-control-lg {
-      padding: 0.875rem 1.25rem;
-      font-size: 1rem;
-    }
-
-    .form-label {
-      color: var(--gov-dark);
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-    }
-
     .profile-photo-container {
       display: inline-block;
       position: relative;
@@ -739,10 +622,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
     .profile-photo-container img {
       border: 3px solid var(--gov-border);
-    }
-
-    .photo-container img {
-      border: 2px solid var(--gov-border);
     }
 
     .d-grid {
@@ -753,6 +632,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       gap: 0.5rem !important;
     }
 
+    .gap-3 {
+      gap: 1rem !important;
+    }
+
     .text-muted {
       color: #94a3b8 !important;
     }
@@ -761,20 +644,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
     }
 
-    /* Modal Styles */
-    .modal-content {
+    .alert {
       border-radius: 8px;
       border: none;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header {
-      background-color: var(--gov-light);
-      border-bottom: 1px solid var(--gov-border);
-    }
-
-    .modal-footer {
-      border-top: 1px solid var(--gov-border);
     }
 
     /* Responsive Design */
@@ -823,10 +695,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
       .d-flex.gap-2 .btn {
         width: 100%;
-      }
-
-      .modal-dialog {
-        margin: 1rem;
       }
     }
 

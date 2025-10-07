@@ -1,0 +1,148 @@
+<?php
+// Fungsi untuk memeriksa apakah menu aktif
+function isActivePetugas($controller, $action = null)
+{
+  $currentController = isset($_GET['controller']) ? $_GET['controller'] : '';
+  $currentAction = isset($_GET['action']) ? $_GET['action'] : '';
+
+  if ($action === null) {
+    return $currentController === $controller;
+  }
+  return $currentController === $controller && $currentAction === $action;
+}
+
+// Fungsi untuk memeriksa apakah dropdown aktif
+function isDropdownActivePetugas($controllers)
+{
+  $currentController = isset($_GET['controller']) ? $_GET['controller'] : '';
+  return is_array($controllers) ? in_array($currentController, $controllers) : $currentController === $controllers;
+}
+?>
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+  <ul class="nav">
+    <!-- Dashboard -->
+    <li class="nav-item">
+      <a class="nav-link <?php echo isActivePetugas('user', 'index') ? 'active' : ''; ?>" href="index.php?controller=user&action=index">
+        <i class="fa fa-home menu-icon fa-sm"></i>
+        <span class="menu-title">Dashboard</span>
+      </a>
+    </li>
+
+    <!-- Download Panduan -->
+    <li class="nav-item">
+      <a class="nav-link" href="index.php?controller=download&action=download" target="_blank">
+        <i class="fa fa-download menu-icon fa-sm"></i>
+        <span class="menu-title">Download Panduan</span>
+      </a>
+    </li>
+
+    <!-- Permohonan - Meja Layanan Petugas -->
+    <li class="nav-item">
+      <div class="nav-link <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
+        <i class="fa fa-desktop menu-icon fa-sm"></i>
+        <span class="menu-title">Permohonan</span>
+        <i class="menu-arrow"></i>
+      </div>
+      <div class="collapse <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'show' : ''; ?>" id="mejalayananDropdown">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'mejaLayanan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=mejaLayanan">Meja Layanan</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">Permohonan Masuk SKPD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'disposisiIndex') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=disposisiIndex">Permohonan Disposisi</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'diprosesIndex') || isActivePetugas('permohonanpetugas', 'permohonanDiproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=diprosesIndex">Permohonan Diproses</a>
+          </li>
+            <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">Permohonan Selesai</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- Dokumen Informasi Publik Pemda -->
+    <li class="nav-item">
+      <div class="nav-link <?php echo isDropdownActivePetugas(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#informasiPublikDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'true' : 'false'; ?>" aria-controls="informasiPublikDropdown">
+        <i class="fa fa-file-text-o menu-icon fa-sm"></i>
+        <span class="menu-title">Dokumen Informasi<br>Publik Pemda</span>
+        <i class="menu-arrow"></i>
+      </div>
+      <div class="collapse <?php echo isDropdownActivePetugas(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'show' : ''; ?>" id="informasiPublikDropdown">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('kategoriBerkala') ? 'active' : ''; ?>" href="index.php?controller=kategoriBerkala&action=index">Kategori Berkala</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('kategoriSertaMerta') ? 'active' : ''; ?>" href="index.php?controller=kategoriSertaMerta&action=index">Kategori Serta Merta</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('kategoriSetiapSaat') ? 'active' : ''; ?>" href="index.php?controller=kategoriSetiapSaat&action=index">Kategori Setiap Saat</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+
+    <!-- Master Jenis Dokumen Pemda -->
+    <li class="nav-item">
+      <a class="nav-link <?php echo isActivePetugas('dokumenPemda') ? 'active' : ''; ?>" href="index.php?controller=dokumenPemda&action=index">
+        <i class="fa fa-download menu-icon fa-sm"></i>
+        <span class="menu-title">Master Jenis<br>Dokumen Pemda</span>
+      </a>
+    </li>
+
+    <!-- Berita -->
+    <li class="nav-item">
+      <div class="nav-link <?php echo isDropdownActivePetugas(['berita']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#beritaDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['berita']) ? 'true' : 'false'; ?>" aria-controls="beritaDropdown">
+        <i class="fa fa-newspaper-o menu-icon fa-sm"></i>
+        <span class="menu-title">Berita</span>
+        <i class="menu-arrow"></i>
+      </div>
+      <div class="collapse <?php echo isDropdownActivePetugas(['berita']) ? 'show' : ''; ?>" id="beritaDropdown">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('berita', 'index') ? 'active' : ''; ?>" href="index.php?controller=berita&action=index">List Berita</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('berita', 'create') ? 'active' : ''; ?>" href="index.php?controller=berita&action=create">Tambah Berita</a>
+          </li>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+
+<script>
+  // Fungsi untuk menangani aktifasi item menu saat dibuka dari dropdown
+  document.addEventListener('DOMContentLoaded', function() {
+    // Membuka dropdown otomatis jika ada item aktif didalamnya
+    const activeItems = document.querySelectorAll('.sub-menu .nav-link.active');
+    activeItems.forEach(function(item) {
+      const parentCollapse = item.closest('.collapse');
+      if (parentCollapse) {
+        parentCollapse.classList.add('show');
+        // Update aria-expanded attribute juga
+        const correspondingToggle = document.querySelector('[href="#' + parentCollapse.id + '"]');
+        if (correspondingToggle) {
+          correspondingToggle.setAttribute('aria-expanded', 'true');
+        }
+      }
+    });
+
+    // Menangani klik pada mobile untuk menutup sidebar
+    const sidebarLinks = document.querySelectorAll('#sidebar .nav-link');
+    sidebarLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
+        // Menutup sidebar di mobile setelah klik
+        if (window.innerWidth < 992) {
+          document.body.classList.remove('sidebar-icon-only');
+        }
+      });
+    });
+  });
+</script>

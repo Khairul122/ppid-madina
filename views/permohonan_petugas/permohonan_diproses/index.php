@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
   header('Location: index.php?controller=auth&action=login');
   exit();
 }
@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php include 'template/sidebar_petugas.php'; ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">
@@ -22,17 +22,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
               <div class="page-header mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
                   <div class="mb-2 mb-md-0">
-                    <h4 class="page-title mb-1 text-dark">Permohonan Ditolak</h4>
+                    <h4 class="page-title mb-1 text-dark">Permohonan Diproses - <?php echo htmlspecialchars($petugas_skpd['nama_skpd'] ?? ''); ?></h4>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 fs-6">
-                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=index" class="text-decoration-none">Meja Layanan</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Ditolak</li>
+                        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Diproses</li>
                       </ol>
                     </nav>
                   </div>
                   <div class="d-flex gap-2">
-                    <a href="index.php?controller=permohonanadmin&action=index" class="btn btn-outline-secondary btn-sm">
-                      <i class="fas fa-arrow-left me-1"></i>Kembali ke Meja Layanan
+                    <a href="index.php?controller=user&action=index" class="btn btn-outline-secondary btn-sm">
+                      <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
                     </a>
                   </div>
                 </div>
@@ -57,8 +57,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
               <div class="card mb-4">
                 <div class="card-body">
                   <form method="GET" action="index.php" class="row g-3">
-                    <input type="hidden" name="controller" value="permohonanadmin">
-                    <input type="hidden" name="action" value="ditolakIndex">
+                    <input type="hidden" name="controller" value="permohonanpetugas">
+                    <input type="hidden" name="action" value="diprosesIndex">
 
                     <div class="col-md-4">
                       <label class="form-label">Pencarian</label>
@@ -74,7 +74,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                     <div class="col-md-2">
                       <label class="form-label">&nbsp;</label>
-                      <a href="index.php?controller=permohonanadmin&action=ditolakIndex" class="btn btn-outline-secondary d-block w-100">
+                      <a href="index.php?controller=permohonanpetugas&action=diprosesIndex" class="btn btn-outline-secondary d-block w-100">
                         <i class="fas fa-refresh me-1"></i>Reset
                       </a>
                     </div>
@@ -87,7 +87,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 <div class="card-header bg-light border-bottom">
                   <h5 class="card-title mb-0 text-dark fw-normal">
                     <i class="fas fa-list me-2 text-primary"></i>
-                    Daftar Permohonan Ditolak
+                    Daftar Permohonan Diproses
                   </h5>
                 </div>
                 <div class="card-body">
@@ -101,7 +101,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                             <th scope="col">Pemohon</th>
                             <th scope="col">Judul Dokumen</th>
                             <th scope="col">SKPD Tujuan</th>
-                            <th scope="col">Alasan Penolakan</th>
                             <th scope="col">Status</th>
                             <th scope="col">Tanggal</th>
                             <th scope="col">Aksi</th>
@@ -132,10 +131,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                 <span class="badge bg-info"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? '-'); ?></span>
                               </td>
                               <td>
-                                <span class="badge bg-warning text-dark"><?php echo htmlspecialchars($permohonan['alasan_penolakan'] ?? '-'); ?></span>
-                              </td>
-                              <td>
-                                <span class="badge bg-danger">Ditolak</span>
+                                <span class="badge bg-warning text-dark">Diproses</span>
                               </td>
                               <td>
                                 <small class="text-muted">
@@ -144,7 +140,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                               </td>
                               <td>
                                 <div class="btn-group" role="group">
-                                  <a href="index.php?controller=permohonanadmin&action=ditolakDetail&id=<?php echo $permohonan['id_permohonan']; ?>"
+                                  <a href="index.php?controller=permohonanpetugas&action=diprosesView&id=<?php echo $permohonan['id_permohonan']; ?>"
                                      class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
@@ -162,7 +158,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <ul class="pagination justify-content-center">
                           <?php if ($page > 1): ?>
                             <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanadmin&action=ditolakIndex&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <a class="page-link" href="?controller=permohonanpetugas&action=diprosesIndex&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-left"></i>
                               </a>
                             </li>
@@ -170,7 +166,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                           <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
                             <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                              <a class="page-link" href="?controller=permohonanadmin&action=ditolakIndex&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <a class="page-link" href="?controller=permohonanpetugas&action=diprosesIndex&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <?php echo $i; ?>
                               </a>
                             </li>
@@ -178,7 +174,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                           <?php if ($page < $total_pages): ?>
                             <li class="page-item">
-                              <a class="page-link" href="?controller=permohonanadmin&action=ditolakIndex&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
+                              <a class="page-link" href="?controller=permohonanpetugas&action=diprosesIndex&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-right"></i>
                               </a>
                             </li>
@@ -197,8 +193,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                   <?php else: ?>
                     <div class="text-center py-5">
                       <i class="fas fa-inbox text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                      <h5 class="text-muted mt-3">Tidak ada data permohonan ditolak</h5>
-                      <p class="text-muted">Belum ada permohonan dengan status ditolak.</p>
+                      <h5 class="text-muted mt-3">Tidak ada data permohonan diproses</h5>
+                      <p class="text-muted">Belum ada permohonan dengan status diproses di SKPD Anda.</p>
                     </div>
                   <?php endif; ?>
                 </div>
@@ -359,9 +355,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       justify-content: center;
     }
 
-    .icon-box-danger {
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--gov-danger);
+    .icon-box-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--gov-warning);
     }
 
     .form-control,

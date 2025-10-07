@@ -14,7 +14,7 @@ $title = 'Dashboard Petugas - PPID Mandailing';
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php include 'template/sidebar_petugas.php'; ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="page-header">

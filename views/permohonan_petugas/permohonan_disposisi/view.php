@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
   header('Location: index.php?controller=auth&action=login');
   exit();
 }
@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php include 'template/sidebar_petugas.php'; ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row justify-content-center">
@@ -25,20 +25,20 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     <h4 class="page-title mb-1 text-dark">Detail Disposisi Permohonan</h4>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 fs-6">
-                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=index" class="text-decoration-none">Meja Layanan</a></li>
-                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanadmin&action=disposisiIndex" class="text-decoration-none">Disposisi</a></li>
+                        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="index.php?controller=permohonanpetugas&action=disposisiIndex" class="text-decoration-none">Disposisi</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Detail</li>
                       </ol>
                     </nav>
                   </div>
                   <div class="d-flex flex-column flex-sm-row gap-2">
-                    <a href="index.php?controller=permohonanadmin&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-success btn-sm" target="_blank">
+                    <a href="index.php?controller=permohonanpetugas&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-success btn-sm" target="_blank">
                       <i class="fas fa-file-pdf me-1"></i>Cetak Bukti Permohonan
                     </a>
-                    <a href="index.php?controller=permohonanadmin&action=edit&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-warning btn-sm">
+                    <a href="index.php?controller=permohonanpetugas&action=edit&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-warning btn-sm">
                       <i class="fas fa-edit me-1"></i>Edit
                     </a>
-                    <a href="index.php?controller=permohonanadmin&action=disposisiIndex" class="btn btn-outline-secondary btn-sm">
+                    <a href="index.php?controller=permohonanpetugas&action=disposisiIndex" class="btn btn-outline-secondary btn-sm">
                       <i class="fas fa-arrow-left me-1"></i>Kembali
                     </a>
                   </div>
@@ -248,7 +248,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <img src="<?php echo htmlspecialchars($permohonan['upload_foto_identitas']); ?>"
                             class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 300px; object-fit: cover;" alt="Foto Identitas">
                         </div>
-                        <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_foto_identitas']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                        <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_foto_identitas']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                            class="btn btn-outline-primary btn-sm">
                           <i class="fas fa-download me-1"></i>Download Foto Identitas
                         </a>
@@ -285,21 +285,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     <div class="card-body p-4">
                       <div class="d-grid gap-2">
                         <?php if (!empty($permohonan['upload_ktp'])): ?>
-                          <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_ktp']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_ktp']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                             class="btn btn-outline-primary">
                             <i class="fas fa-id-card me-2"></i>Download KTP
                           </a>
                         <?php endif; ?>
 
                         <?php if (!empty($permohonan['upload_akta'])): ?>
-                          <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_akta']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_akta']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                             class="btn btn-outline-primary">
                             <i class="fas fa-certificate me-2"></i>Download Akta Lembaga
                           </a>
                         <?php endif; ?>
 
                         <?php if (!empty($permohonan['upload_data_pedukung'])): ?>
-                          <a href="index.php?controller=permohonanadmin&action=downloadFile&file=<?php echo basename($permohonan['upload_data_pedukung']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
+                          <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_data_pedukung']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
                             class="btn btn-outline-info">
                             <i class="fas fa-file-upload me-2"></i>Download Data Pendukung
                           </a>
@@ -328,7 +328,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                     </div>
                     <div class="card-body p-4">
                       <div class="d-grid gap-2">
-                        <a href="index.php?controller=permohonanadmin&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+                        <a href="index.php?controller=permohonanpetugas&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
                            class="btn btn-success" target="_blank">
                           <i class="fas fa-file-pdf me-2"></i>Bukti Permohonan (PDF)
                         </a>
@@ -393,7 +393,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       }
 
       $.ajax({
-        url: 'index.php?controller=permohonanadmin&action=updateStatus',
+        url: 'index.php?controller=permohonanpetugas&action=updateStatus',
         type: 'POST',
         data: formData,
         processData: false,
@@ -422,7 +422,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
       if (confirm('Apakah Anda yakin ingin memperpanjang jatuh tempo permohonan ini 7 hari kerja?')) {
         $.ajax({
-          url: 'index.php?controller=permohonanadmin&action=perpanjangJatuhTempo',
+          url: 'index.php?controller=permohonanpetugas&action=perpanjangJatuhTempo',
           type: 'POST',
           data: {
             id: id
@@ -449,7 +449,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     // Show photo modal
     function showPhotoModal(photoSrc) {
       document.getElementById('modalPhoto').src = photoSrc;
-      document.getElementById('downloadPhotoBtn').href = 'index.php?controller=permohonanadmin&action=downloadFile&file=' +
+      document.getElementById('downloadPhotoBtn').href = 'index.php?controller=permohonanpetugas&action=downloadFile&file=' +
         encodeURIComponent(photoSrc.split('/').pop()) + '&id=<?php echo $permohonan['id_permohonan']; ?>';
 
       const modal = new bootstrap.Modal(document.getElementById('photoModal'));
@@ -459,7 +459,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     // Confirm delete
     function confirmDelete(id) {
       if (confirm('Apakah Anda yakin ingin menghapus permohonan ini?\n\nData yang dihapus tidak dapat dikembalikan dan akan menghapus semua data terkait termasuk user dan biodata.')) {
-        window.location.href = 'index.php?controller=permohonanadmin&action=delete&id=' + id;
+        window.location.href = 'index.php?controller=permohonanpetugas&action=delete&id=' + id;
       }
     }
   </script>

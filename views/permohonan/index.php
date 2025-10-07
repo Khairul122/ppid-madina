@@ -906,28 +906,7 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
       <?php endif; ?>
 
       <!-- Statistics -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3 class="stat-number"><?php echo $stats['total']; ?></h3>
-          <p class="stat-label">Total Permohonan</p>
-        </div>
-        <div class="stat-card pending">
-          <h3 class="stat-number"><?php echo $stats['pending']; ?></h3>
-          <p class="stat-label">Menunggu</p>
-        </div>
-        <div class="stat-card process">
-          <h3 class="stat-number"><?php echo $stats['process'] ?? 0; ?></h3>
-          <p class="stat-label">Diproses</p>
-        </div>
-        <div class="stat-card approved">
-          <h3 class="stat-number"><?php echo $stats['approved']; ?></h3>
-          <p class="stat-label">Disetujui</p>
-        </div>
-        <div class="stat-card rejected">
-          <h3 class="stat-number"><?php echo $stats['rejected']; ?></h3>
-          <p class="stat-label">Ditolak</p>
-        </div>
-      </div>
+     
 
       <!-- Filters -->
       <div class="filters-section">
@@ -949,6 +928,8 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
               <option value="process" <?php echo ($status ?? '') === 'process' ? 'selected' : ''; ?>>Diproses</option>
               <option value="approved" <?php echo ($status ?? '') === 'approved' ? 'selected' : ''; ?>>Disetujui</option>
               <option value="rejected" <?php echo ($status ?? '') === 'rejected' ? 'selected' : ''; ?>>Ditolak</option>
+              <option value="selesai" <?php echo ($status ?? '') === 'selesai' ? 'selected' : ''; ?>>Selesai</option>
+              <option value="ditolak" <?php echo ($status ?? '') === 'ditolak' ? 'selected' : ''; ?>>Ditolak</option>
             </select>
 
             <a href="index.php?controller=permohonan&action=export&format=csv&status=<?php echo $status ?? 'all'; ?>" class="btn btn-success">
@@ -969,15 +950,18 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
                 <h3 class="permohonan-number"><?php echo htmlspecialchars($permohonan['no_permohonan']); ?></h3>
                 <p class="permohonan-date">Diajukan: <?php echo date('d M Y', strtotime($permohonan['created_at'] ?? 'now')); ?></p>
               </div>
-              <span class="status-badge status-<?php echo $permohonan['status'] ?? 'pending'; ?>">
+              <span class="status-badge status-<?php echo strtolower($permohonan['status'] ?? 'pending'); ?>">
                 <?php
                 $statusText = $permohonan['status'] ?? 'pending';
-                switch($statusText) {
+                switch(strtolower($statusText)) {
                   case 'pending': echo '⏳ Menunggu'; break;
                   case 'process': echo '🔄 Diproses'; break;
+                  case 'diproses': echo '🔄 Diproses'; break;
                   case 'approved': echo '✅ Disetujui'; break;
+                  case 'selesai': echo '✅ Selesai'; break;
                   case 'rejected': echo '❌ Ditolak'; break;
-                  default: echo '⏳ Menunggu';
+                  case 'ditolak': echo '❌ Ditolak'; break;
+                  default: echo '⏳ ' . ucfirst($statusText);
                 }
                 ?>
               </span>
@@ -1001,6 +985,17 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
                   <i class="fas fa-gavel"></i>
                   Ajukan Keberatan
                 </button>
+
+                <?php
+                // Tampilkan tombol Layanan Kepuasan hanya untuk permohonan dengan status "Diproses"
+                $currentStatus = $permohonan['status'] ?? null;
+                if ($currentStatus === 'Diproses'):
+                ?>
+                <button type="button" class="btn btn-success btn-sm" onclick="openLayananKepuasanModal('<?php echo $permohonan['id_permohonan']; ?>', '<?php echo htmlspecialchars($permohonan['no_permohonan'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($permohonan['judul_dokumen'], ENT_QUOTES); ?>', '<?php echo date('d M Y', strtotime($permohonan['created_at'] ?? 'now')); ?>')">
+                  <i class="fas fa-star"></i>
+                  Layanan Kepuasan
+                </button>
+                <?php endif; ?>
 
                 <?php
                 $currentStatus = $permohonan['status'] ?? null;
@@ -1148,6 +1143,150 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
     </div>
   </div>
 
+  <!-- Modal Form Layanan Kepuasan -->
+  <div class="modal fade" id="layananKepuasanModal" tabindex="-1" aria-labelledby="layananKepuasanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold" id="layananKepuasanModalLabel">
+            <i class="fas fa-star text-warning me-2"></i>
+            Form Layanan Kepuasan
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form method="POST" action="index.php?controller=permohonan&action=submitLayananKepuasan" id="layananKepuasanForm">
+          <div class="modal-body px-4 py-3">
+            <input type="hidden" name="id_permohonan" id="layanan_id_permohonan">
+            
+            <!-- Informasi Permohonan -->
+            <div class="mb-4">
+              <div class="card border">
+                <div class="card-body">
+                  <h6 class="card-title mb-3">
+                    <i class="fas fa-file-alt text-primary me-2"></i>
+                    Informasi Permohonan
+                  </h6>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-2">
+                        <label class="form-label fw-medium text-dark mb-1">No. Permohonan</label>
+                        <input type="text" class="form-control-plaintext" id="layanan_no_permohonan" readonly>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-2">
+                        <label class="form-label fw-medium text-dark mb-1">Tanggal Permohonan</label>
+                        <input type="text" class="form-control-plaintext" id="layanan_tanggal_permohonan" readonly>
+                      </div>
+                    </div>
+                    <div class="col-md-12">
+                      <div class="mb-2">
+                        <label class="form-label fw-medium text-dark mb-1">Judul Dokumen</label>
+                        <input type="text" class="form-control-plaintext" id="layanan_judul_dokumen" readonly>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data Responden -->
+            <div class="mb-4">
+              <h6 class="mb-3">
+                <i class="fas fa-user text-secondary me-2"></i>
+                Data Responden
+              </h6>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-medium text-dark mb-2">
+                    Nama Lengkap <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" class="form-control form-control-lg" name="nama" id="layanan_nama" required placeholder="Masukkan nama lengkap Anda">
+                  <div class="invalid-feedback">Nama lengkap wajib diisi</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label fw-medium text-dark mb-2">
+                    Umur <span class="text-danger">*</span>
+                  </label>
+                  <input type="number" class="form-control form-control-lg" name="umur" id="layanan_umur" min="17" max="100" required placeholder="Masukkan umur Anda">
+                  <div class="invalid-feedback">Umur wajib diisi (17-100 tahun)</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label fw-medium text-dark mb-2">
+                    Provinsi <span class="text-danger">*</span>
+                  </label>
+                  <select class="form-select form-control-lg" name="provinsi" id="layanan_provinsi" required>
+                    <option value="">-- Pilih Provinsi --</option>
+                  </select>
+                  <div class="invalid-feedback">Provinsi wajib dipilih</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label fw-medium text-dark mb-2">
+                    Kota/Kabupaten <span class="text-danger">*</span>
+                  </label>
+                  <select class="form-select form-control-lg" name="kota" id="layanan_kota" required>
+                    <option value="">-- Pilih Kota/Kabupaten --</option>
+                  </select>
+                  <div class="invalid-feedback">Kota/Kabupaten wajib dipilih</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Penilaian Kepuasan -->
+            <div class="mb-4">
+              <h6 class="mb-3">
+                <i class="fas fa-star-half-alt text-warning me-2"></i>
+                Penilaian Kepuasan
+              </h6>
+              
+              <div class="card border">
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label fw-medium text-dark mb-2">
+                      Permohonan Informasi <span class="text-danger">*</span>
+                    </label>
+                    <textarea class="form-control" name="permohonan_informasi" id="layanan_permohonan_informasi" rows="3" required placeholder="Jelaskan pengalaman Anda dalam proses permohonan informasi ini..."></textarea>
+                    <div class="invalid-feedback">Permohonan informasi wajib diisi</div>
+                  </div>
+                  
+                  <div class="mb-0">
+                    <label class="form-label fw-medium text-dark mb-3">
+                      Rating Pelayanan <span class="text-danger">*</span>
+                    </label>
+                    <div class="rating-stars d-flex justify-content-center gap-2">
+                      <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <button type="button" class="btn btn-outline-warning btn-rating" data-rating="<?php echo $i; ?>">
+                          <i class="fas fa-star fa-2x"></i>
+                        </button>
+                      <?php endfor; ?>
+                    </div>
+                    <input type="hidden" name="rating" id="layanan_rating" required>
+                    <div class="invalid-feedback text-center mt-2">Rating wajib dipilih</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i>
+              Batal
+            </button>
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="fas fa-paper-plane me-1"></i>
+              Kirim Penilaian
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
@@ -1173,6 +1312,98 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
       // Show modal
       const modal = new bootstrap.Modal(document.getElementById('keberatanModal'));
       modal.show();
+    }
+
+    // Function to open layanan kepuasan modal
+      document.getElementById('layanan_id_permohonan').value = permohonanId;
+      document.getElementById('layanan_no_permohonan').value = noPermohonan;
+      document.getElementById('layanan_judul_dokumen').value = judulDokumen;
+      document.getElementById('layanan_tanggal_permohonan').value = tanggalPermohonan;
+      
+      // Clear form
+      document.getElementById('layananKepuasanForm').reset();
+      
+      // Clear rating
+      const ratingInput = document.getElementById('layanan_rating');
+      ratingInput.value = '';
+      const ratingButtons = document.querySelectorAll('.btn-rating');
+      ratingButtons.forEach(btn => {
+        const starIcon = btn.querySelector('i');
+        starIcon.classList.remove('fas', 'fa-star');
+        starIcon.classList.add('far', 'fa-star');
+        btn.classList.remove('active');
+      });
+      
+      // Clear validation
+      document.querySelectorAll('#layananKepuasanForm .is-invalid').forEach(element => {
+        element.classList.remove('is-invalid');
+      });
+      
+      // Load provinces
+      loadProvinces('layanan_provinsi');
+      
+      // Show modal
+      const modal = new bootstrap.Modal(document.getElementById('layananKepuasanModal'));
+      modal.show();
+    
+    
+    // Function to load provinces data
+    function loadProvinces(selectId) {
+      const selectElement = document.getElementById(selectId);
+      if (!selectElement) return;
+      
+      // Clear existing options
+      selectElement.innerHTML = '<option value="">-- Loading provinsi... --</option>';
+      
+      // Fetch provinces data
+      fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+        .then(response => response.json())
+        .then(data => {
+          // Clear loading option
+          selectElement.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
+          
+          // Add provinces to select
+          data.forEach(province => {
+            const option = document.createElement('option');
+            option.value = province.id;
+            option.textContent = province.name;
+            option.setAttribute('data-name', province.name);
+            selectElement.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error loading provinces:', error);
+          selectElement.innerHTML = '<option value="">-- Gagal memuat provinsi --</option>';
+        });
+    }
+    
+    // Function to load cities data based on province
+    function loadCities(provinceId, selectId) {
+      const selectElement = document.getElementById(selectId);
+      if (!selectElement) return;
+      
+      // Clear existing options
+      selectElement.innerHTML = '<option value="">-- Loading kota/kabupaten... --</option>';
+      
+      // Fetch cities data
+      fetch(`https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`)
+        .then(response => response.json())
+        .then(data => {
+          // Clear loading option
+          selectElement.innerHTML = '<option value="">-- Pilih Kota/Kabupaten --</option>';
+          
+          // Add cities to select
+          data.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city.name;
+            option.textContent = city.name;
+            selectElement.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error loading cities:', error);
+          selectElement.innerHTML = '<option value="">-- Gagal memuat kota/kabupaten --</option>';
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -1231,7 +1462,206 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
           this.classList.remove('is-invalid');
         });
       }
-    });
+
+      // Layanan Kepuasan form validation and functionality
+      const layananKepuasanForm = document.getElementById('layananKepuasanForm');
+      if (layananKepuasanForm) {
+        // Handle rating stars
+        const ratingButtons = document.querySelectorAll('.btn-rating');
+        const ratingInput = document.getElementById('layanan_rating');
+        
+        ratingButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const rating = this.getAttribute('data-rating');
+            ratingInput.value = rating;
+            
+            // Update star appearance
+            ratingButtons.forEach(btn => {
+              const starIcon = btn.querySelector('i');
+              if (parseInt(btn.getAttribute('data-rating')) <= parseInt(rating)) {
+                starIcon.classList.remove('far', 'fa-star');
+                starIcon.classList.add('fas', 'fa-star');
+                btn.classList.add('active');
+              } else {
+                starIcon.classList.remove('fas', 'fa-star');
+                starIcon.classList.add('far', 'fa-star');
+                btn.classList.remove('active');
+              }
+            });
+            
+            // Clear validation error
+            ratingInput.classList.remove('is-invalid');
+          });
+        });
+
+        // Form validation
+        layananKepuasanForm.addEventListener('submit', function(e) {
+          let isValid = true;
+          
+          // Validate required fields
+          const requiredFields = [
+            'nama', 'umur', 'provinsi', 'kota', 'permohonan_informasi'
+          ];
+          
+          requiredFields.forEach(fieldName => {
+            const field = document.getElementById(`layanan_${fieldName}`);
+            if (!field.value.trim()) {
+              e.preventDefault();
+              field.classList.add('is-invalid');
+              isValid = false;
+            } else {
+              field.classList.remove('is-invalid');
+            }
+          });
+          
+          // Validate rating
+          if (!ratingInput.value) {
+            e.preventDefault();
+            ratingInput.classList.add('is-invalid');
+            isValid = false;
+          } else {
+            ratingInput.classList.remove('is-invalid');
+          }
+          
+          if (!isValid) {
+            return false;
+          }
+          
+          // Show loading state
+          const submitBtn = this.querySelector('button[type="submit"]');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+          submitBtn.disabled = true;
+        });
+
+        // Clear validation on input
+        layananKepuasanForm.addEventListener('input', function(e) {
+          if (e.target.classList.contains('is-invalid')) {
+            e.target.classList.remove('is-invalid');
+          }
+        });
+      }
+
+      // Function to open layanan kepuasan modal
+        document.getElementById('layanan_id_permohonan').value = permohonanId;
+        document.getElementById('layanan_no_permohonan').value = noPermohonan;
+        document.getElementById('layanan_judul_dokumen').value = judulDokumen;
+        document.getElementById('layanan_tanggal_permohonan').value = tanggalPermohonan;
+        
+        // Clear form
+        document.getElementById('layananKepuasanForm').reset();
+        
+        // Clear rating
+        const ratingInput = document.getElementById('layanan_rating');
+        ratingInput.value = '';
+        const ratingButtons = document.querySelectorAll('.btn-rating');
+        ratingButtons.forEach(btn => {
+          const starIcon = btn.querySelector('i');
+          starIcon.classList.remove('fas', 'fa-star');
+          starIcon.classList.add('far', 'fa-star');
+          btn.classList.remove('active');
+        });
+        
+        // Clear validation
+        document.querySelectorAll('#layananKepuasanForm .is-invalid').forEach(element => {
+          element.classList.remove('is-invalid');
+        });
+        
+        // Load provinces
+        loadProvinces('layanan_provinsi');
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('layananKepuasanModal'));
+        modal.show();
+      }
+
+      // Handle province change for layanan kepuasan
+      document.getElementById('layanan_provinsi').addEventListener('change', function() {
+        const provinceId = this.value;
+        if (provinceId) {
+          loadCities(provinceId, 'layanan_kota');
+        } else {
+          document.getElementById('layanan_kota').innerHTML = '<option value="">-- Pilih Kota/Kabupaten --</option>';
+        }
+      });
+      
+      // Method untuk menghitung 7 hari kerja (Senin-Jumat) dan mengembalikan jumlah hari kalender
+      function calculateWorkingDaysAsCalendarDays(workingDaysToAdd) {
+        const startDate = new Date();
+        const currentDate = new Date(startDate);
+        let addedWorkingDays = 0;
+        
+        // Hitung maju sampai mendapatkan jumlah hari kerja yang dibutuhkan
+        while (addedWorkingDays < workingDaysToAdd) {
+          currentDate.setDate(currentDate.getDate() + 1);
+          // Cek apakah hari ini weekday (Senin=1, Selasa=2, ..., Jumat=5)
+          const dayOfWeek = currentDate.getDay();
+          if (dayOfWeek > 0 && dayOfWeek < 6) { // 1=Monday, 5=Friday (0=Sunday, 6=Saturday)
+            addedWorkingDays++;
+          }
+        }
+        
+        // Hitung selisih hari kalender antara tanggal awal dan tanggal akhir
+        const diffTime = Math.abs(currentDate - startDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+      }
+      
+      // Function to open layanan kepuasan modal
+      function openLayananKepuasanModal(permohonanId, noPermohonan, judulDokumen, tanggalPermohonan) {
+        document.getElementById('layanan_id_permohonan').value = permohonanId;
+        document.getElementById('layanan_no_permohonan').value = noPermohonan;
+        document.getElementById('layanan_judul_dokumen').value = judulDokumen;
+        document.getElementById('layanan_tanggal_permohonan').value = tanggalPermohonan;
+        
+        // Clear form
+        document.getElementById('layananKepuasanForm').reset();
+        
+        // Clear rating
+        const ratingInput = document.getElementById('layanan_rating');
+        ratingInput.value = '';
+        const ratingButtons = document.querySelectorAll('.btn-rating');
+        ratingButtons.forEach(btn => {
+          const starIcon = btn.querySelector('i');
+          starIcon.classList.remove('fas', 'fa-star');
+          starIcon.classList.add('far', 'fa-star');
+          btn.classList.remove('active');
+        });
+        
+        // Clear validation
+        document.querySelectorAll('#layananKepuasanForm .is-invalid').forEach(element => {
+          element.classList.remove('is-invalid');
+        });
+        
+        // Load provinces
+        loadProvinces('layanan_provinsi');
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('layananKepuasanModal'));
+        modal.show();
+      }
+      
+      // Method untuk menghitung 7 hari kerja (Senin-Jumat) dan mengembalikan jumlah hari kalender
+      function calculateWorkingDaysAsCalendarDays(workingDaysToAdd) {
+        const startDate = new Date();
+        const currentDate = new Date(startDate);
+        let addedWorkingDays = 0;
+        
+        // Hitung maju sampai mendapatkan jumlah hari kerja yang dibutuhkan
+        while (addedWorkingDays < workingDaysToAdd) {
+          currentDate.setDate(currentDate.getDate() + 1);
+          // Cek apakah hari ini weekday (Senin=1, Selasa=2, ..., Jumat=5)
+          const dayOfWeek = currentDate.getDay();
+          if (dayOfWeek > 0 && dayOfWeek < 6) { // 1=Monday, 5=Friday (0=Sunday, 6=Saturday)
+            addedWorkingDays++;
+          }
+        }
+        
+        // Hitung selisih hari kalender antara tanggal awal dan tanggal akhir
+        const diffTime = Math.abs(currentDate - startDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+      }
   </script>
 </body>
 

@@ -281,20 +281,20 @@ class AjukanPermohonanModel {
         $startDate = new \DateTime();
         $currentDate = clone $startDate;
         $addedWorkingDays = 0;
+        $calendarDays = 0;
         
         // Hitung maju sampai mendapatkan jumlah hari kerja yang dibutuhkan
         while ($addedWorkingDays < $workingDaysToAdd) {
             $currentDate->modify('+1 day');
+            $calendarDays++;
             // Cek apakah hari ini weekday (Senin=1, Selasa=2, ..., Jumat=5)
             $dayOfWeek = $currentDate->format('N');
-            if ($dayOfWeek < 6) { // 1=Monday, 5=Friday
+            if ($dayOfWeek >= 1 && $dayOfWeek <= 5) { // 1=Monday, 5=Friday
                 $addedWorkingDays++;
             }
         }
         
-        // Hitung selisih hari kalender antara tanggal awal dan tanggal akhir
-        $interval = $startDate->diff($currentDate);
-        return $interval->days;
+        return $calendarDays;
     }
 }
 ?>

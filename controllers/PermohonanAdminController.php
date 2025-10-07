@@ -1732,7 +1732,12 @@ class PermohonanAdminController
         $items = [
             ['Nama Pemohon', $data['nama_lengkap'] ?? $data['username']],
             ['Alamat', $data['alamat'] ?? ''],
-            ['Pekerjaan', $data['pekerjaan'] ?? '-']
+            ['Telepon', $data['no_kontak'] ?? ''],
+            ['Email', $data['email'] ?? ''],
+            ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
+            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
+            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
         ];
 
         foreach ($items as $item) {
@@ -1740,8 +1745,6 @@ class PermohonanAdminController
             $pdf->Cell(5, 6, ':', 0, 0, 'L');
             $pdf->Cell(0, 6, $item[1], 0, 1, 'L');
         }
-
-        $pdf->Ln(1);
 
         // Kandungan Informasi dengan background
         $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
@@ -1775,34 +1778,15 @@ class PermohonanAdminController
         $pdf->Ln(2);
 
         // Alasan Penolakan
-        $alasan_penolakan = !empty($data['alasan_penolakan']) ? $data['alasan_penolakan'] : '-';
+        $alasan_penolakan = $data['catatan_petugas'] ?? 'Permohonan informasi tidak dapat diproses karena tidak sesuai dengan ketentuan peraturan perundang-undangan yang berlaku.';
         $pdf->Cell(50, 6, 'Alasan Penolakan', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
-        $pdf->SetFillColor(255, 235, 59);
-        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetFillColor(211, 211, 211);
         $pdf->Cell(0, 6, $alasan_penolakan, 1, 1, 'L', true);
 
         $pdf->SetFillColor(255, 255, 255);
-        $pdf->Ln(2);
 
-        // Catatan Petugas dengan background seperti kandungan informasi
-        $catatan_petugas = !empty($data['catatan_petugas']) ? $data['catatan_petugas'] : '-';
-        $pdf->SetFont('times', '', 12);
-        $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
-        $pdf->Cell(5, 6, ':', 0, 0, 'L');
-        $pdf->SetFillColor(211, 211, 211);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
-
-        $pdf->SetFillColor(255, 255, 255);
-        $pdf->SetTextColor(0, 0, 0);
-
-        $pdf->Ln(2);
-
-        // Website
-        $pdf->Cell(50, 6, 'Website', 0, 0, 'L');
-        $pdf->Cell(5, 6, ':', 0, 0, 'L');
-        $pdf->Cell(0, 6, 'www.madinakab.go.id', 0, 1, 'L');
+        $pdf->Ln(5);
     }
 
     // PROSES METHODS
