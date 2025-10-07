@@ -1146,7 +1146,7 @@ class PermohonanAdminController
         $pdf->Cell(0, 6, 'Keputusan PPID', 0, 1, 'C');
 
         $pdf->SetFont('times', 'B', 12);
-        $pdf->Cell(0, 6, 'PERMOHONAN DIPENUHI', 0, 1, 'C');
+        $pdf->Cell(0, 6, 'PERMOHONAN TERPENUHI', 0, 1, 'C');
 
         $pdf->SetFont('times', '', 12);
         $pdf->Ln(2);

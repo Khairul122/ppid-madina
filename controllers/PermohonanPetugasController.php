@@ -98,9 +98,154 @@ class PermohonanPetugasController
     }
 
     // Display permohonan masuk for petugas SKPD
+    // Display permohonan masuk for petugas SKPD
     public function permohonanMasuk()
     {
-        $this->renderSKPDView('permohonan_masuk', 'getPermohonanBySKPD', 'countPermohonanBySKPD');
+        // Get petugas SKPD data
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd) {
+            $_SESSION['error_message'] = 'Data SKPD petugas tidak ditemukan';
+            header('Location: index.php?controller=user&action=index');
+            exit();
+        }
+
+        $nama_skpd = $petugas_skpd['nama_skpd'];
+        $params = $this->getPaginationParams();
+
+        // Override status parameter to only show 'Masuk' requests
+        $params['status'] = 'Masuk';
+
+        $permohonan_list = $this->permohonanPetugasModel->getPermohonanBySKPD(
+            $nama_skpd,
+            $params['limit'],
+            $params['offset'],
+            $params['status'],
+            $params['search']
+        );
+
+        $total_records = $this->permohonanPetugasModel->countPermohonanBySKPD($nama_skpd, $params['status'], $params['search']);
+        $total_pages = ceil($total_records / $params['limit']);
+        $stats = $this->permohonanPetugasModel->getPetugasStatsBySKPD($nama_skpd);
+
+        // Extract params for view
+        $page = $params['page'];
+        $limit = $params['limit'];
+        $offset = $params['offset'];
+        $status = $params['status'];
+        $search = $params['search'];
+
+        extract($this->getSessionMessages());
+        include 'views/permohonan_petugas/permohonan_masuk/index.php';
+    }
+
+    public function permohonanMasukView()
+    {
+        $this->renderSKPDDetailView('permohonanMasuk', 'permohonan_masuk');
+    }
+
+    public function editPermohonanMasuk()
+    {
+        $id = $this->getRequiredId('permohonanMasuk');
+        $permohonan = $this->getPermohonanOrFail($id, 'permohonanMasuk');
+        $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
+
+        extract($this->getSessionMessages());
+        include 'views/permohonan_petugas/permohonan_masuk/edit.php';
+    }
+
+    public function updatePermohonanMasuk()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error_message'] = 'Metode tidak diizinkan';
+            header('Location: index.php?controller=permohonanpetugas&action=permohonanMasuk');
+            exit();
+        }
+
+        if (!isset($_POST['id_permohonan']) || empty($_POST['id_permohonan'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=permohonanMasuk');
+            exit();
+        }
+
+        // Validasi input
+        $id = intval($_POST['id_permohonan']);
+        $judul_dokumen = trim($_POST['judul_dokumen'] ?? '');
+        $tujuan_penggunaan_informasi = trim($_POST['tujuan_penggunaan_informasi'] ?? '');
+        $tujuan_permohonan = trim($_POST['tujuan_permohonan'] ?? '');
+        $komponen_tujuan = trim($_POST['komponen_tujuan'] ?? '');
+        $sumber_media = trim($_POST['sumber_media'] ?? '');
+
+        // Validasi wajib
+        if (empty($judul_dokumen) || empty($tujuan_penggunaan_informasi)) {
+            $_SESSION['error_message'] = 'Judul dokumen dan tujuan penggunaan informasi wajib diisi';
+            header("Location: index.php?controller=permohonanpetugas&action=editPermohonanMasuk&id=$id");
+            exit();
+        }
+
+        // Update data permohonan
+        $query = "UPDATE {$this->permohonanPetugasModel->table_permohonan} 
+                  SET judul_dokumen = :judul_dokumen,
+                      tujuan_penggunaan_informasi = :tujuan_penggunaan_informasi,
+                      tujuan_permohonan = :tujuan_permohonan,
+                      komponen_tujuan = :komponen_tujuan,
+                      sumber_media = :sumber_media,
+                      updated_at = NOW()
+                  WHERE id_permohonan = :id_permohonan";
+        
+        $stmt = $this->permohonanPetugasModel->conn->prepare($query);
+        $stmt->bindParam(':judul_dokumen', $judul_dokumen);
+        $stmt->bindParam(':tujuan_penggunaan_informasi', $tujuan_penggunaan_informasi);
+        $stmt->bindParam(':tujuan_permohonan', $tujuan_permohonan);
+        $stmt->bindParam(':komponen_tujuan', $komponen_tujuan);
+        $stmt->bindParam(':sumber_media', $sumber_media);
+        $stmt->bindParam(':id_permohonan', $id, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            $_SESSION['success_message'] = 'Data permohonan berhasil diperbarui';
+        } else {
+            $_SESSION['error_message'] = 'Gagal memperbarui data permohonan';
+        }
+
+        header("Location: index.php?controller=permohonanpetugas&action=permohonanMasukView&id=$id");
+        exit();
+    }
+
+    public function deletePermohonanMasuk()
+    {
+        if (!isset($_GET['id']) || empty($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=permohonanMasuk');
+            exit();
+        }
+
+        $id = intval($_GET['id']);
+
+        $permohonan = $this->permohonanPetugasModel->getPermohonanById($id);
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Data permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=permohonanMasuk');
+            exit();
+        }
+
+        // Hanya permohonan dengan status 'Masuk' yang bisa dihapus
+        if ($permohonan['status'] !== 'Masuk') {
+            $_SESSION['error_message'] = 'Hanya permohonan dengan status Masuk yang bisa dihapus';
+            header('Location: index.php?controller=permohonanpetugas&action=permohonanMasuk');
+            exit();
+        }
+
+        $result = $this->permohonanPetugasModel->deletePermohonan($id);
+        
+        if ($result) {
+            $_SESSION['success_message'] = 'Data permohonan berhasil dihapus';
+        } else {
+            $_SESSION['error_message'] = 'Gagal menghapus data permohonan';
+        }
+
+        header('Location: index.php?controller=permohonanpetugas&action=permohonanMasuk');
+        exit();
     }
 
     // Display permohonan disposisi for petugas SKPD
@@ -139,7 +284,43 @@ class PermohonanPetugasController
     // Display permohonan sedang diproses index
     public function permohonanDiproses()
     {
-        $this->renderSKPDView('permohonan_diproses', 'getPermohonanDiprosesBySKPD', 'countPermohonanDiprosesBySKPD');
+        // Get petugas SKPD data
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd) {
+            $_SESSION['error_message'] = 'Data SKPD petugas tidak ditemukan';
+            header('Location: index.php?controller=user&action=index');
+            exit();
+        }
+
+        $nama_skpd = $petugas_skpd['nama_skpd'];
+        $params = $this->getPaginationParams();
+
+        // Override status parameter to only show 'Diproses' requests
+        $params['status'] = 'Diproses';
+
+        $permohonan_list = $this->permohonanPetugasModel->getPermohonanDiprosesBySKPD(
+            $nama_skpd,
+            $params['limit'],
+            $params['offset'],
+            $params['status'],
+            $params['search']
+        );
+
+        $total_records = $this->permohonanPetugasModel->countPermohonanDiprosesBySKPD($nama_skpd, $params['status'], $params['search']);
+        $total_pages = ceil($total_records / $params['limit']);
+        $stats = $this->permohonanPetugasModel->getPetugasStatsBySKPD($nama_skpd);
+
+        // Extract params for view
+        $page = $params['page'];
+        $limit = $params['limit'];
+        $offset = $params['offset'];
+        $status = $params['status'];
+        $search = $params['search'];
+
+        extract($this->getSessionMessages());
+        include 'views/permohonan_petugas/permohonan_diproses/index.php';
     }
 
     // Alias for permohonanDiproses (backward compatibility)
@@ -179,6 +360,16 @@ class PermohonanPetugasController
         $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
 
         $this->generateBuktiProsesTCPDF($permohonan, $skpd_data);
+    }
+
+    // Generate Bukti Selesai PDF
+    public function generateBuktiSelesaiPDF()
+    {
+        $id = $this->getRequiredId('selesaiIndex');
+        $permohonan = $this->getPermohonanOrFail($id, 'selesaiIndex');
+        $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
+
+        $this->generateBuktiSelesaiTCPDF($permohonan, $skpd_data);
     }
 
     // Download file
@@ -806,7 +997,7 @@ class PermohonanPetugasController
         $pdf->Cell(0, 6, 'Keputusan PPID', 0, 1, 'C');
 
         $pdf->SetFont('times', 'B', 12);
-        $pdf->Cell(0, 6, 'PERMOHONAN DIPENUHI', 0, 1, 'C');
+        $pdf->Cell(0, 6, 'PERMOHONAN TERPENUHI', 0, 1, 'C');
 
         $pdf->SetFont('times', '', 12);
         $pdf->Ln(2);
@@ -929,20 +1120,16 @@ class PermohonanPetugasController
         }
 
         $nama_skpd = $petugas_skpd['nama_skpd'];
-
+        
         // Get pagination and filter parameters
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $status = isset($_GET['status']) ? $_GET['status'] : 'all';
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-        // Validate status to prevent tampering
-        $allowed_statuses = ['all', 'Diproses', 'Disposisi', 'Selesai', 'Ditolak'];
-        if (!in_array($status, $allowed_statuses)) {
-            $status = 'all';
-        }
+        // Override status to only show 'Selesai' requests
+        $status = 'Selesai';
 
         // Get permohonan list with pagination
         $permohonan_list = $this->permohonanPetugasModel->getPermohonanSelesaiBySKPD($nama_skpd, $limit, $offset, $status, $search);
@@ -1004,6 +1191,18 @@ class PermohonanPetugasController
         include 'views/permohonan_petugas/permohonan_selesai/view.php';
     }
     
+    // Alias for permohonanSelesai (to match the pattern of diprosesIndex)
+    public function selesaiIndex()
+    {
+        $this->permohonanSelesai();
+    }
+    
+    // Alias for permohonanSelesaiView (backward compatibility)
+    public function selesaiView()
+    {
+        $this->permohonanSelesaiView();
+    }
+    
     // Display permohonan ditolak index
     public function permohonanDitolak()
     {
@@ -1018,20 +1217,16 @@ class PermohonanPetugasController
         }
 
         $nama_skpd = $petugas_skpd['nama_skpd'];
-
+        
         // Get pagination and filter parameters
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $limit = 10;
         $offset = ($page - 1) * $limit;
 
-        $status = isset($_GET['status']) ? $_GET['status'] : 'all';
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-        // Validate status to prevent tampering
-        $allowed_statuses = ['all', 'Diproses', 'Disposisi', 'Selesai', 'Ditolak'];
-        if (!in_array($status, $allowed_statuses)) {
-            $status = 'all';
-        }
+        // Override status to only show 'Ditolak' requests
+        $status = 'Ditolak';
 
         // Get permohonan list with pagination
         $permohonan_list = $this->permohonanPetugasModel->getPermohonanDitolakBySKPD($nama_skpd, $limit, $offset, $status, $search);
@@ -1091,5 +1286,137 @@ class PermohonanPetugasController
         unset($_SESSION['error_message']);
 
         include 'views/permohonan_petugas/permohonan_ditolak/view.php';
+    }
+
+    private function generateBuktiSelesaiTCPDF($data, $skpd_data = null)
+    {
+        $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        // Document settings
+        $pdf->SetCreator('PPID Mandailing Natal');
+        $pdf->SetAuthor('PPID Mandailing Natal');
+        $pdf->SetTitle('Bukti Selesai Permohonan Informasi');
+        $pdf->SetSubject('Bukti Selesai Permohonan Informasi');
+
+        // Remove default header/footer
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        // Set margins
+        $pdf->SetMargins(15, 15, 15);
+        $pdf->SetAutoPageBreak(true, 15);
+
+        $pdf->AddPage();
+        $pdf->SetFont('times', '', 12);
+        $pdf->SetCellHeightRatio(1.15);
+
+        // Use same header as bukti proses
+        $this->addBuktiProsesHeader($pdf, $data, $skpd_data);
+
+        // Title section
+        $this->addBuktiProsesTitle($pdf, $data);
+
+        // Data section with PERMOHONAN SELESAI
+        $this->addBuktiSelesaiDataSection($pdf, $data);
+
+        // Signature section
+        $this->addBuktiProsesSignature($pdf, $data);
+
+        // Footer notes
+        $this->addBuktiProsesFooter($pdf);
+
+        // Output PDF
+        $filename = 'Bukti_Selesai_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
+        $pdf->Output($filename, 'I');
+        exit();
+    }
+
+    private function addBuktiSelesaiDataSection($pdf, $data)
+    {
+        $pdf->Ln(5);
+        $pdf->SetFont('times', '', 12);
+
+        $items = [
+            ['Nama Pemohon', $data['nama_lengkap'] ?? $data['username']],
+            ['Alamat', $data['alamat'] ?? ''],
+            ['Telepon', $data['no_kontak'] ?? ''],
+            ['Email', $data['email'] ?? ''],
+            ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
+            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
+            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+        ];
+
+        foreach ($items as $item) {
+            $pdf->Cell(50, 6, $item[0], 0, 0, 'L');
+            $pdf->Cell(5, 6, ':', 0, 0, 'L');
+            $pdf->Cell(0, 6, $item[1], 0, 1, 'L');
+        }
+
+        // Kandungan Informasi dengan background
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $kandungan_info, 1, 1, 'L', true);
+
+        $pdf->Ln(1);
+
+        // Tujuan Penggunaan dengan background
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->Cell(0, 6, $tujuan_penggunaan, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+
+        $pdf->Ln(2);
+
+        // Keputusan PPID section - PERMOHONAN SELESAI
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Keputusan PPID', 0, 1, 'C');
+
+        $pdf->SetFont('times', 'B', 12);
+        $pdf->Cell(0, 6, 'PERMOHONAN SELESAI', 0, 1, 'C');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Ln(2);
+
+        // Cara Memperoleh Informasi
+        $lebar_indentasi = 55;
+        $pdf->Cell(50, 6, 'Cara Memperoleh Informasi', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        $pdf->SetFont('dejavusans', '', 12);
+        $pdf->Cell(10, 6, '☐', 0, 0, 'L');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Melihat/Membaca/Mendengarkan/Mencatat', 0, 1, 'L');
+
+        $pdf->Cell($lebar_indentasi, 6, '', 0, 0, 'L');
+
+        $pdf->SetFont('dejavusans', '', 12);
+        $pdf->Cell(10, 6, '☑', 0, 0, 'L');
+
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(0, 6, 'Mendapatkan Salinan Informasi (Hard Copy / Soft Copy)', 0, 1, 'L');
+
+        $pdf->Ln(2);
+
+        // Catatan Petugas dengan background seperti kandungan informasi
+        $catatan_petugas = !empty($data['catatan_petugas']) ? $data['catatan_petugas'] : '-';
+        $pdf->SetFont('times', '', 12);
+        $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
+        $pdf->Cell(5, 6, ':', 0, 0, 'L');
+        $pdf->SetFillColor(211, 211, 211);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+
+        $pdf->SetFillColor(255, 255, 255);
+        $pdf->Ln(2);
+
+        $pdf->Ln(10);
     }
 }

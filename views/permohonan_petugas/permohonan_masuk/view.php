@@ -1,7 +1,7 @@
 <?php
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
-    header('Location: index.php?controller=auth&action=login');
-    exit();
+  header('Location: index.php?controller=auth&action=login');
+  exit();
 }
 ?>
 
@@ -12,37 +12,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar_petugas.php'; ?>
+      <?php include 'template/sidebar.php'; ?>
       <div class="main-panel">
         <div class="content-wrapper">
-          <div class="row">
-            <div class="col-lg-12">
+          <div class="row justify-content-center">
+            <div class="col-12 col-xl-11">
 
-              <!-- Alert Messages -->
-              <?php if (isset($_SESSION['success_message'])): ?>
-                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-                  <i class="mdi mdi-check-circle me-2"></i>
-                  <?php
-                    echo $_SESSION['success_message'];
-                    unset($_SESSION['success_message']);
-                  ?>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              <?php endif; ?>
-
-              <?php if (isset($_SESSION['error_message'])): ?>
-                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-                  <i class="mdi mdi-alert-circle me-2"></i>
-                  <?php
-                    echo $_SESSION['error_message'];
-                    unset($_SESSION['error_message']);
-                  ?>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              <?php endif; ?>
-
-
-              <!-- Page Header -->
+              <!-- Header Section -->
               <div class="page-header mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
                   <div class="mb-2 mb-md-0">
@@ -65,8 +41,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                 </div>
               </div>
 
-              <!-- Permohonan Info -->
               <div class="row g-4">
+                <!-- Permohonan Info -->
                 <div class="col-lg-8">
                   <!-- Informasi Permohonan -->
                   <div class="card shadow-sm border-0 mb-4">
@@ -127,6 +103,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                             <div class="info-value"><?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? ''); ?></div>
                           </div>
                         </div>
+
+
 
                         <div class="col-12">
                           <div class="info-item">
@@ -251,41 +229,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                   </div>
                 </div>
 
+                <!-- Status & Files -->
                 <div class="col-lg-4">
-                  <!-- Update Status Diproses -->
-                  <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-header bg-light border-bottom">
-                      <h5 class="card-title mb-0 text-dark fw-normal">
-                        <i class="fas fa-edit me-2 text-primary"></i>
-                        Update Status
-                      </h5>
-                    </div>
-                    <div class="card-body p-4">
-                      <form id="status-form">
-                        <input type="hidden" name="id" value="<?php echo $permohonan['id_permohonan']; ?>">
-                        <div class="mb-3">
-                          <label class="form-label text-dark fw-medium">Status Permohonan</label>
-                          <select name="status" class="form-select form-control-lg" id="status-select">
-                            <option value="Diproses" <?php echo ($permohonan['status'] ?? '') == 'Diproses' ? 'selected' : ''; ?>>Diproses</option>
-                            <option value="Disposisi" <?php echo ($permohonan['status'] ?? '') == 'Disposisi' ? 'selected' : ''; ?>>Disposisi</option>
-                            <option value="Selesai" <?php echo ($permohonan['status'] ?? '') == 'Selesai' ? 'selected' : ''; ?>>Selesai</option>
-                            <option value="Ditolak" <?php echo ($permohonan['status'] ?? '') == 'Ditolak' ? 'selected' : ''; ?>>Ditolak</option>
-                          </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 btn-lg">
-                          <i class="fas fa-save me-1"></i>Update Status
-                        </button>
-                      </form>
-
-                      <div class="mt-4">
-                        <button type="button" class="btn btn-warning w-100 btn-lg" id="perpanjang-jatuh-tempo" data-id="<?php echo $permohonan['id_permohonan']; ?>">
-                          <i class="fas fa-calendar-plus me-1"></i>Perpanjang Jatuh Tempo 7 Hari Kerja
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Foto Profile -->
                   <?php if (!empty($permohonan['foto_profile'])): ?>
                     <div class="card shadow-sm border-0 mb-4">
                       <div class="card-header bg-light border-bottom">
@@ -355,6 +300,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -378,7 +324,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
             <input type="hidden" name="status" value="Disposisi">
 
             <div class="mb-3">
-              <label for="tujuan_permohonan" class="form-label fw-bold">Tujuan Permohonan <span class="text-danger"> *</span></label>
+              <label for="tujuan_permohonan" class="form-label fw-bold">Tujuan Permohonan <span class="text-danger">*</span></label>
               <select name="tujuan_permohonan" id="tujuan_permohonan" class="form-select" required>
                 <option value="">-- Pilih Tujuan Permohonan --</option>
               </select>
@@ -388,7 +334,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
             </div>
 
             <div class="mb-3">
-              <label for="komponen_tujuan" class="form-label fw-bold">Komponen Tujuan <span class="text-danger"> *</span></label>
+              <label for="komponen_tujuan" class="form-label fw-bold">Komponen Tujuan <span class="text-danger">*</span></label>
               <select name="komponen_tujuan" id="komponen_tujuan" class="form-select" required disabled>
                 <option value="">-- Pilih Tujuan Permohonan Terlebih Dahulu --</option>
               </select>
@@ -487,7 +433,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
             <input type="hidden" name="status" value="Ditolak">
 
             <div class="mb-3">
-              <label for="alasan_penolakan" class="form-label fw-bold">Alasan Penolakan <span class="text-danger"> *</span></label>
+              <label for="alasan_penolakan" class="form-label fw-bold">Alasan Penolakan <span class="text-danger">*</span></label>
               <select name="alasan_penolakan" id="alasan_penolakan" class="form-select" required>
                 <option value="">-- Pilih Alasan Penolakan --</option>
                 <option value="Belum Dikuasai">Belum Dikuasai</option>
@@ -501,7 +447,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
             </div>
 
             <div class="mb-4">
-              <label for="catatan_petugas_penolakan" class="form-label fw-bold">Catatan Petugas <span class="text-danger"> *</span></label>
+              <label for="catatan_petugas_penolakan" class="form-label fw-bold">Catatan Petugas <span class="text-danger">*</span></label>
               <textarea name="catatan_petugas" id="catatan_petugas_penolakan" class="form-control" rows="4"
                         placeholder="Masukkan catatan atau penjelasan tambahan terkait penolakan..." required></textarea>
               <small class="form-text text-muted">Berikan penjelasan detail terkait alasan penolakan permohonan ini</small>
@@ -585,7 +531,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
               try {
                 result = JSON.parse(cleanedResponse);
               } catch (e2) {
-                alert('Error: Response tidak valid dari server\n\nResponse: ' + response.substring(0, 200));
+                alert('Error: Response tidak valid dari server\\n\\nResponse: ' + response.substring(0, 200));
                 return;
               }
             }
@@ -719,7 +665,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
               try {
                 result = JSON.parse(cleanedResponse);
               } catch (e2) {
-                alert('Error: Response tidak valid dari server\n\nResponse: ' + response.substring(0, 200));
+                alert('Error: Response tidak valid dari server\\n\\nResponse: ' + response.substring(0, 200));
                 return;
               }
             }
@@ -884,7 +830,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
               try {
                 result = JSON.parse(cleanedResponse);
               } catch (e2) {
-                alert('Error: Response tidak valid dari server\n\nResponse: ' + response.substring(0, 200));
+                alert('Error: Response tidak valid dari server\\n\\nResponse: ' + response.substring(0, 200));
                 return;
               }
             }
