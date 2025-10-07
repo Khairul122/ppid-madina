@@ -22,163 +22,73 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
               <!-- Page Header -->
               <div class="page-header mb-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-                  <div>
-                    <h4 class="page-title mb-1 text-dark">
-                      <i class="fas fa-times-circle me-2 text-danger"></i>Permohonan Ditolak
-                    </h4>
+                  <div class="mb-2 mb-md-0">
+                    <h4 class="page-title mb-1 text-dark">Permohonan Ditolak</h4>
                     <nav aria-label="breadcrumb">
-                      <ol class="breadcrumb breadcrumb-custom mb-0">
-                        <li class="breadcrumb-item">
-                          <a href="index.php?controller=permohonanpetugas&action=index">Dashboard</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                          <span>Permohonan Ditolak</span>
-                        </li>
+                      <ol class="breadcrumb mb-0 fs-6">
+                        <li class="breadcrumb-item"><a href="index.php?controller=user&action=index" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Ditolak</li>
                       </ol>
                     </nav>
                   </div>
-                  <div class="mt-2 mt-md-0">
-                    <span class="text-muted small">
-                      <i class="fas fa-database me-1"></i>
-                      Total: <?php echo number_format($total_records); ?> permohonan
-                    </span>
+                  <div class="d-flex flex-column flex-sm-row gap-2">
+                    <a href="index.php?controller=user&action=index" class="btn btn-outline-secondary btn-sm">
+                      <i class="fas fa-arrow-left me-1"></i>Kembali ke Dashboard
+                    </a>
                   </div>
                 </div>
               </div>
 
-              <!-- Stats Cards -->
-              <div class="row mb-4">
-                <div class="col-md-3 col-sm-6 mb-3">
-                  <div class="card card-stat border-start border-danger border-4 h-100">
-                    <div class="card-body d-flex align-items-center">
-                      <div class="icon-box icon-box-danger me-3">
-                        <i class="fas fa-times-circle"></i>
-                      </div>
-                      <div>
-                        <h5 class="card-title mb-1 text-muted">Ditolak</h5>
-                        <p class="card-text mb-0">
-                          <span class="h4 text-danger"><?php echo number_format($stats['ditolak'] ?? 0); ?></span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              <!-- Alert Messages -->
+              <?php if (!empty($success_message)): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  <i class="fas fa-check-circle me-2"></i><?php echo htmlspecialchars($success_message); ?>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+              <?php endif; ?>
 
-                <div class="col-md-3 col-sm-6 mb-3">
-                  <div class="card card-stat border-start border-primary border-4 h-100">
-                    <div class="card-body d-flex align-items-center">
-                      <div class="icon-box icon-box-primary me-3">
-                        <i class="fas fa-clock"></i>
-                      </div>
-                      <div>
-                        <h5 class="card-title mb-1 text-muted">Diproses</h5>
-                        <p class="card-text mb-0">
-                          <span class="h4 text-primary"><?php echo number_format($stats['diproses'] ?? 0); ?></span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              <?php if (!empty($error_message)): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error_message); ?>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
+              <?php endif; ?>
 
-                <div class="col-md-3 col-sm-6 mb-3">
-                  <div class="card card-stat border-start border-warning border-4 h-100">
-                    <div class="card-body d-flex align-items-center">
-                      <div class="icon-box icon-box-warning me-3">
-                        <i class="fas fa-share-alt"></i>
-                      </div>
-                      <div>
-                        <h5 class="card-title mb-1 text-muted">Disposisi</h5>
-                        <p class="card-text mb-0">
-                          <span class="h4 text-warning"><?php echo number_format($stats['disposisi'] ?? 0); ?></span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-3 col-sm-6 mb-3">
-                  <div class="card card-stat border-start border-success border-4 h-100">
-                    <div class="card-body d-flex align-items-center">
-                      <div class="icon-box icon-box-success me-3">
-                        <i class="fas fa-check-circle"></i>
-                      </div>
-                      <div>
-                        <h5 class="card-title mb-1 text-muted">Selesai</h5>
-                        <p class="card-text mb-0">
-                          <span class="h4 text-success"><?php echo number_format($stats['selesai'] ?? 0); ?></span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Filters and Search -->
+              <!-- Filters -->
               <div class="card mb-4">
                 <div class="card-body">
                   <form method="GET" action="index.php" class="row g-3">
                     <input type="hidden" name="controller" value="permohonanpetugas">
                     <input type="hidden" name="action" value="permohonanDitolak">
 
-                    <div class="col-md-3">
-                      <label for="status-filter" class="form-label">Status</label>
-                      <select name="status" id="status-filter" class="form-select">
-                        <option value="all" <?php echo ($status === 'all') ? 'selected' : ''; ?>>Semua Status</option>
-                        <option value="Diproses" <?php echo ($status === 'Diproses') ? 'selected' : ''; ?>>Diproses</option>
-                        <option value="Disposisi" <?php echo ($status === 'Disposisi') ? 'selected' : ''; ?>>Disposisi</option>
-                        <option value="Selesai" <?php echo ($status === 'Selesai') ? 'selected' : ''; ?>>Selesai</option>
-                        <option value="Ditolak" <?php echo ($status === 'Ditolak') ? 'selected' : ''; ?>>Ditolak</option>
-                      </select>
-                    </div>
-
                     <div class="col-md-4">
-                      <label for="search-input" class="form-label">Pencarian</label>
-                      <div class="input-group">
-                        <span class="input-group-text">
-                          <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" name="search" id="search-input" class="form-control" 
-                               placeholder="Cari berdasarkan nomor, judul, atau nama..." 
-                               value="<?php echo htmlspecialchars($search); ?>">
-                      </div>
+                      <label class="form-label">Pencarian</label>
+                      <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nomor, nama, atau judul..." value="<?php echo htmlspecialchars($search ?? ''); ?>">
                     </div>
 
-                    <div class="col-md-3 d-flex align-items-end">
-                      <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                          <i class="fas fa-filter me-1"></i>Terapkan
-                        </button>
-                        <a href="index.php?controller=permohonanpetugas&action=permohonanDitolak" class="btn btn-outline-secondary">
-                          <i class="fas fa-refresh me-1"></i>Reset
-                        </a>
-                      </div>
+                    <div class="col-md-2">
+                      <label class="form-label">&nbsp;</label>
+                      <button type="submit" class="btn btn-primary d-block w-100">
+                        <i class="fas fa-search me-1"></i>Filter
+                      </button>
+                    </div>
+
+                    <div class="col-md-2">
+                      <label class="form-label">&nbsp;</label>
+                      <a href="index.php?controller=permohonanpetugas&action=permohonanDitolak" class="btn btn-outline-secondary d-block w-100">
+                        <i class="fas fa-refresh me-1"></i>Reset
+                      </a>
                     </div>
                   </form>
                 </div>
               </div>
 
-              <!-- Success/Error Messages -->
-              <?php if (!empty($success_message)): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                  <i class="fas fa-check-circle me-2"></i>
-                  <?php echo htmlspecialchars($success_message); ?>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              <?php endif; ?>
-
-              <?php if (!empty($error_message)): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                  <i class="fas fa-exclamation-circle me-2"></i>
-                  <?php echo htmlspecialchars($error_message); ?>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              <?php endif; ?>
-
-              <!-- Permohonan Table -->
+              <!-- Data Table -->
               <div class="card">
                 <div class="card-header bg-light border-bottom">
-                  <h5 class="card-title mb-0">
-                    <i class="fas fa-list me-2"></i>Daftar Permohonan Ditolak
+                  <h5 class="card-title mb-0 text-dark fw-normal">
+                    <i class="fas fa-list me-2 text-primary"></i>
+                    Daftar Permohonan Ditolak
                   </h5>
                 </div>
                 <div class="card-body">
@@ -189,79 +99,54 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                           <tr>
                             <th scope="col">#</th>
                             <th scope="col">No. Permohonan</th>
-                            <th scope="col">Tanggal</th>
                             <th scope="col">Pemohon</th>
                             <th scope="col">Judul Dokumen</th>
+                            <th scope="col">SKPD Tujuan</th>
+                            <th scope="col">Alasan Penolakan</th>
                             <th scope="col">Status</th>
-                            <th scope="col" class="text-center">Aksi</th>
+                            <th scope="col">Tanggal</th>
+                            <th scope="col">Aksi</th>
                           </tr>
                         </thead>
                         <tbody>
                           <?php
                           $no = $offset + 1;
                           foreach ($permohonan_list as $permohonan):
-                            ?>
+                          ?>
                             <tr>
-                              <th scope="row"><?php echo $no++; ?></th>
+                              <td><?php echo $no++; ?></td>
                               <td>
-                                <span class="badge bg-primary">
-                                  <?php echo htmlspecialchars($permohonan['no_permohonan'] ?? '-'); ?>
-                                </span>
-                              </td>
-                              <td>
-                                <?php 
-                                if ($permohonan['created_at']) {
-                                  $date = date_create($permohonan['created_at']);
-                                  echo $date ? date_format($date, 'd/m/Y H:i') : 'N/A';
-                                } else {
-                                  echo 'N/A';
-                                }
-                                ?>
+                                <span class="badge bg-primary"><?php echo htmlspecialchars($permohonan['no_permohonan'] ?? ''); ?></span>
                               </td>
                               <td>
                                 <div class="d-flex flex-column">
-                                  <span class="fw-medium">
-                                    <?php echo htmlspecialchars($permohonan['nama_lengkap'] ?? $permohonan['username'] ?? '-'); ?>
-                                  </span>
-                                  <small class="text-muted">
-                                    <?php echo htmlspecialchars($permohonan['email'] ?? '-'); ?>
-                                  </small>
+                                  <span class="fw-medium"><?php echo htmlspecialchars($permohonan['nama_lengkap'] ?? $permohonan['username']); ?></span>
+                                  <small class="text-muted"><?php echo htmlspecialchars($permohonan['email'] ?? ''); ?></small>
                                 </div>
                               </td>
                               <td>
-                                <div class="text-truncate" style="max-width: 250px;" 
-                                     title="<?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? '-'); ?>">
-                                  <?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? '-'); ?>
+                                <div class="text-truncate" style="max-width: 200px;" title="<?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? ''); ?>">
+                                  <?php echo htmlspecialchars($permohonan['judul_dokumen'] ?? ''); ?>
                                 </div>
                               </td>
                               <td>
-                                <?php
-                                $status_class = '';
-                                switch ($permohonan['status']) {
-                                    case 'Diproses':
-                                        $status_class = 'bg-warning';
-                                        break;
-                                    case 'Disposisi':
-                                        $status_class = 'bg-primary';
-                                        break;
-                                    case 'Selesai':
-                                        $status_class = 'bg-success';
-                                        break;
-                                    case 'Ditolak':
-                                        $status_class = 'bg-danger';
-                                        break;
-                                    default:
-                                        $status_class = 'bg-secondary';
-                                }
-                                ?>
-                                <span class="badge <?php echo $status_class; ?>">
-                                  <?php echo htmlspecialchars($permohonan['status'] ?? '-'); ?>
-                                </span>
+                                <span class="badge bg-info"><?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? '-'); ?></span>
                               </td>
-                              <td class="text-center">
+                              <td>
+                                <span class="badge bg-warning text-dark"><?php echo htmlspecialchars($permohonan['alasan_penolakan'] ?? '-'); ?></span>
+                              </td>
+                              <td>
+                                <span class="badge bg-danger">Ditolak</span>
+                              </td>
+                              <td>
+                                <small class="text-muted">
+                                  <?php echo date('d/m/Y H:i', strtotime($permohonan['created_at'] ?? 'now')); ?>
+                                </small>
+                              </td>
+                              <td>
                                 <div class="btn-group" role="group">
-                                  <a href="index.php?controller=permohonanpetugas&action=permohonanDitolakView&id=<?php echo $permohonan['id_permohonan']; ?>" 
-                                     class="btn btn-sm btn-info" title="Lihat Detail">
+                                  <a href="index.php?controller=permohonanpetugas&action=permohonanDitolakView&id=<?php echo $permohonan['id_permohonan']; ?>"
+                                     class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
                                 </div>
@@ -278,8 +163,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                         <ul class="pagination justify-content-center">
                           <?php if ($page > 1): ?>
                             <li class="page-item">
-                              <a class="page-link" 
-                                 href="index.php?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo $page - 1; ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">
+                              <a class="page-link" href="?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo ($page - 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-left"></i>
                               </a>
                             </li>
@@ -287,8 +171,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
 
                           <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
                             <li class="page-item <?php echo ($i == $page) ? 'active' : ''; ?>">
-                              <a class="page-link" 
-                                 href="index.php?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo $i; ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">
+                              <a class="page-link" href="?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo $i; ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <?php echo $i; ?>
                               </a>
                             </li>
@@ -296,8 +179,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
 
                           <?php if ($page < $total_pages): ?>
                             <li class="page-item">
-                              <a class="page-link" 
-                                 href="index.php?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo $page + 1; ?>&status=<?php echo urlencode($status); ?>&search=<?php echo urlencode($search); ?>">
+                              <a class="page-link" href="?controller=permohonanpetugas&action=permohonanDitolak&page=<?php echo ($page + 1); ?>&search=<?php echo urlencode($search ?? ''); ?>">
                                 <i class="fas fa-chevron-right"></i>
                               </a>
                             </li>
@@ -308,7 +190,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                       <div class="text-center mt-3">
                         <small class="text-muted">
                           Menampilkan <?php echo min($offset + 1, $total_records); ?> - <?php echo min($offset + $limit, $total_records); ?>
-                          dari <?php echo number_format($total_records); ?> data
+                          dari <?php echo $total_records; ?> data
                         </small>
                       </div>
                     <?php endif; ?>
@@ -316,31 +198,279 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                   <?php else: ?>
                     <div class="text-center py-5">
                       <i class="fas fa-inbox text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
-                      <h5 class="text-muted mt-3">Tidak ada data permohonan</h5>
-                      <p class="text-muted">Belum ada permohonan yang ditolak untuk SKPD Anda.</p>
+                      <h5 class="text-muted mt-3">Tidak ada data permohonan ditolak</h5>
+                      <p class="text-muted">Belum ada permohonan dengan status ditolak yang ditujukan ke SKPD Anda.</p>
                     </div>
                   <?php endif; ?>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
-
-        <?php include 'template/footer.php'; ?>
       </div>
     </div>
   </div>
 
   <?php include 'template/script.php'; ?>
 
+  <style>
+    /* Government Standard Styling */
+    :root {
+      --gov-primary: #2563eb;
+      --gov-secondary: #64748b;
+      --gov-success: #10b981;
+      --gov-danger: #ef4444;
+      --gov-warning: #f59e0b;
+      --gov-light: #f8fafc;
+      --gov-dark: #1e293b;
+      --gov-border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--gov-dark);
+      background-color: #f1f5f9;
+    }
+
+    .page-header {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--gov-border);
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      color: var(--gov-dark);
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .breadcrumb {
+      background: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .breadcrumb-item a {
+      color: var(--gov-secondary);
+      text-decoration: none;
+    }
+
+    .breadcrumb-item.active {
+      color: var(--gov-dark);
+    }
+
+    .card {
+      border: 1px solid var(--gov-border);
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      background-color: #f8fafc;
+      border-bottom: 1px solid var(--gov-border);
+      padding: 1rem 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+      background: white;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      border-radius: 6px;
+    }
+
+    .bg-primary {
+      background-color: var(--gov-primary) !important;
+      color: white;
+    }
+
+    .bg-success {
+      background-color: var(--gov-success) !important;
+      color: white;
+    }
+
+    .bg-warning {
+      background-color: var(--gov-warning) !important;
+      color: white;
+    }
+
+    .bg-danger {
+      background-color: var(--gov-danger) !important;
+      color: white;
+    }
+
+    .bg-info {
+      background-color: #0ea5e9 !important;
+      color: white;
+    }
+
+    .bg-secondary {
+      background-color: var(--gov-secondary) !important;
+      color: white;
+    }
+
+    .btn {
+      font-weight: 500;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background-color: var(--gov-primary);
+      color: white;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-secondary {
+      border: 1.5px solid var(--gov-secondary);
+      color: var(--gov-secondary);
+      background-color: white;
+    }
+
+    .btn-outline-secondary:hover {
+      background-color: var(--gov-secondary);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .form-control,
+    .form-select {
+      border: 1.5px solid var(--gov-border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      background-color: white;
+      color: var(--gov-dark);
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--gov-primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      background-color: white;
+    }
+
+    .table th {
+      background-color: var(--gov-light);
+      border-color: var(--gov-border);
+      color: var(--gov-dark);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.875rem;
+      letter-spacing: 0.5px;
+    }
+
+    .table td {
+      border-color: var(--gov-border);
+      vertical-align: middle;
+    }
+
+    .pagination .page-link {
+      color: var(--gov-secondary);
+      border: 1px solid var(--gov-border);
+      background: white;
+    }
+
+    .pagination .page-link:hover {
+      background-color: var(--gov-light);
+      border-color: var(--gov-primary);
+      color: var(--gov-primary);
+    }
+
+    .pagination .page-item.active .page-link {
+      background-color: var(--gov-primary);
+      border-color: var(--gov-primary);
+      color: white;
+    }
+
+    .alert {
+      border-radius: 8px;
+      border: none;
+    }
+
+    .alert-success {
+      background-color: #f0fdf4;
+      color: #15803d;
+      border-left: 4px solid var(--gov-success);
+    }
+
+    .alert-danger {
+      background-color: #fef2f2;
+      color: #dc2626;
+      border-left: 4px solid var(--gov-danger);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container-fluid {
+        padding: 1rem;
+      }
+
+      .page-header {
+        padding: 1rem;
+      }
+
+      .card-body {
+        padding: 1rem;
+      }
+
+      .table-responsive {
+        border-radius: 8px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .page-title {
+        font-size: 1.5rem;
+      }
+
+      .breadcrumb {
+        font-size: 0.875rem;
+      }
+    }
+
+    /* Animation */
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .card {
+      transition: box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
   <script>
-    // Auto-hide alerts after 5 seconds
-    $(document).ready(function() {
-      setTimeout(function() {
-        $('.alert').fadeOut('slow');
-      }, 5000);
-    });
+    // Auto hide alerts after 5 seconds
+    setTimeout(function() {
+      $('.alert').fadeOut('slow');
+    }, 5000);
   </script>
+
 </body>
 
 </html>

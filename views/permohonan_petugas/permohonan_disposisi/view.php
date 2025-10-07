@@ -35,9 +35,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                     <a href="index.php?controller=permohonanpetugas&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-success btn-sm" target="_blank">
                       <i class="fas fa-file-pdf me-1"></i>Cetak Bukti Permohonan
                     </a>
-                    <a href="index.php?controller=permohonanpetugas&action=edit&id=<?php echo $permohonan['id_permohonan']; ?>" class="btn btn-warning btn-sm">
-                      <i class="fas fa-edit me-1"></i>Edit
-                    </a>
                     <a href="index.php?controller=permohonanpetugas&action=disposisiIndex" class="btn btn-outline-secondary btn-sm">
                       <i class="fas fa-arrow-left me-1"></i>Kembali
                     </a>
@@ -222,13 +219,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                           </select>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 btn-lg">
-                          <i class="fas fa-save me-1"></i>Update Status
+                          </i>Update Status
                         </button>
                       </form>
 
                       <div class="mt-4">
                         <button type="button" class="btn btn-warning w-100 btn-lg" id="perpanjang-jatuh-tempo" data-id="<?php echo $permohonan['id_permohonan']; ?>">
-                          <i class="fas fa-calendar-plus me-1"></i>Perpanjang Jatuh Tempo 7 Hari Kerja
+                          </i>Perpanjang Jatuh Tempo 7 Hari Kerja
+                        </button>
+                      </div>
+
+                      <div class="mt-4">
+                        <button type="button" class="btn btn-primary w-100 btn-lg" onclick="ubahStatusKeMasuk(<?php echo $permohonan['id_permohonan']; ?>)">
+                          </i>Kembalikan Disposisi
                         </button>
                       </div>
                     </div>
@@ -249,7 +252,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                             class="img-fluid rounded shadow-sm" style="max-width: 100%; max-height: 300px; object-fit: cover;" alt="Foto Identitas">
                         </div>
                         <a href="index.php?controller=permohonanpetugas&action=downloadFile&file=<?php echo basename($permohonan['upload_foto_identitas']); ?>&id=<?php echo $permohonan['id_permohonan']; ?>"
-                           class="btn btn-outline-primary btn-sm">
+                          class="btn btn-outline-primary btn-sm">
                           <i class="fas fa-download me-1"></i>Download Foto Identitas
                         </a>
                       </div>
@@ -329,7 +332,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                     <div class="card-body p-4">
                       <div class="d-grid gap-2">
                         <a href="index.php?controller=permohonanpetugas&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
-                           class="btn btn-success" target="_blank">
+                          class="btn btn-success" target="_blank">
                           <i class="fas fa-file-pdf me-2"></i>Bukti Permohonan (PDF)
                         </a>
 
@@ -460,6 +463,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
     function confirmDelete(id) {
       if (confirm('Apakah Anda yakin ingin menghapus permohonan ini?\n\nData yang dihapus tidak dapat dikembalikan dan akan menghapus semua data terkait termasuk user dan biodata.')) {
         window.location.href = 'index.php?controller=permohonanpetugas&action=delete&id=' + id;
+      }
+    }
+
+    // Function to change status to Masuk
+    function ubahStatusKeMasuk(id) {
+      if (confirm('Apakah Anda yakin ingin mengembalikan permohonan ini ke status Masuk?')) {
+        // Create a form to submit the request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'index.php?controller=permohonanpetugas&action=ubahStatusKeMasuk';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'id';
+        input.value = id;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
       }
     }
   </script>
