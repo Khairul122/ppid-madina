@@ -832,6 +832,22 @@ $title = 'Detail Permohonan - PPID Mandailing';
             </div>
           </div>
 
+          <!-- Catatan Petugas Section -->
+          <?php if (!empty($permohonan['catatan_petugas'])): ?>
+          <div class="info-section" style="margin-bottom: var(--spacing-xl);">
+            <h3 class="info-title">
+              <i class="fas fa-clipboard-list"></i>
+              Catatan Petugas
+            </h3>
+            <div class="info-item">
+              <div class="info-value" style="background: #fef3c7; border-color: #fbbf24;">
+                <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
+                <?php echo nl2br(htmlspecialchars($permohonan['catatan_petugas'])); ?>
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+
           <!-- Files Section -->
           <div class="files-section">
             <h3 class="section-title">
@@ -905,13 +921,54 @@ $title = 'Detail Permohonan - PPID Mandailing';
               Kembali ke Daftar
             </a>
 
+            <!-- Bukti Permohonan (Selalu tampil) -->
+            <a href="index.php?controller=permohonan&action=generatePDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+               class="btn btn-primary" target="_blank">
+              <i class="fas fa-file-pdf"></i>
+              Bukti Permohonan
+            </a>
+
+            <?php
+            $currentStatus = $permohonan['status'] ?? null;
+
+            // Bukti Proses (jika status = Diproses)
+            if ($currentStatus === 'Diproses'):
+            ?>
+            <a href="index.php?controller=permohonan&action=generateBuktiProsesPDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+               class="btn btn-primary" target="_blank">
+              <i class="fas fa-file-pdf"></i>
+              Bukti Proses
+            </a>
+            <?php endif; ?>
+
+            <?php
+            // Bukti Selesai (jika status = Selesai)
+            if ($currentStatus === 'Selesai'):
+            ?>
+            <a href="index.php?controller=permohonan&action=generateBuktiSelesaiPDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+               class="btn btn-primary" target="_blank" style="background: var(--success-color);">
+              <i class="fas fa-file-pdf"></i>
+              Bukti Selesai
+            </a>
+            <?php endif; ?>
+
+            <?php
+            // Bukti Ditolak (jika status = Ditolak)
+            if ($currentStatus === 'Ditolak'):
+            ?>
+            <a href="index.php?controller=permohonan&action=generateBuktiDitolakPDF&id=<?php echo $permohonan['id_permohonan']; ?>"
+               class="btn btn-danger" target="_blank">
+              <i class="fas fa-file-pdf"></i>
+              Bukti Ditolak
+            </a>
+            <?php endif; ?>
+
             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#keberatanModal">
               <i class="fas fa-gavel"></i>
               Ajukan Keberatan
             </button>
 
             <?php
-            $currentStatus = $permohonan['status'] ?? null;
             if ($currentStatus === 'pending' || $currentStatus === '' || $currentStatus === null):
             ?>
             <a href="index.php?controller=permohonan&action=delete&id=<?php echo $permohonan['id_permohonan']; ?>"

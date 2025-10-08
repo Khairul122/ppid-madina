@@ -16,7 +16,9 @@ class PermohonanModel {
             $params[':status'] = $status;
         }
 
-        $query = "SELECT p.*, u.username, bp.nama_lengkap, bp.nik
+        $query = "SELECT p.*, u.username, u.email as user_email,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna
                   FROM " . $this->table_name . " p
                   JOIN users u ON p.id_user = u.id_user
                   LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
@@ -37,7 +39,11 @@ class PermohonanModel {
     }
 
     public function getPermohonanById($id, $userId = null) {
-        $query = "SELECT p.*, u.username, bp.nama_lengkap, bp.nik
+        $query = "SELECT p.*, u.username, u.email as user_email,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
                   FROM " . $this->table_name . " p
                   JOIN users u ON p.id_user = u.id_user
                   LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata

@@ -184,6 +184,22 @@ class PermohonanPetugasModel
         return $stmt->execute();
     }
 
+    public function updateStatusWithCatatan($id, $status, $catatan_petugas)
+    {
+        $query = "UPDATE {$this->table_permohonan}
+                  SET status = :status,
+                      catatan_petugas = :catatan_petugas,
+                      updated_at = NOW()
+                  WHERE id_permohonan = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':catatan_petugas', $catatan_petugas);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
     public function updatePermohonanWithDisposisi($data)
     {
         try {

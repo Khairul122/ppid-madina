@@ -822,19 +822,32 @@ class PermohonanAdminController
             $pdf->SetXY($start_x, $start_y);
         }
 
-        $skpd_name = !empty($data['komponen_tujuan']) ? strtoupper($data['komponen_tujuan']) : '';
+        // Nama SKPD dengan ukuran 16 bold
+        $skpd_name = !empty($data['komponen_tujuan']) ? $data['komponen_tujuan'] : '';
         $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
 
-        $pdf->SetFont('times', '', 11);
+        $pdf->SetFont('times', '', 12);
 
-        $email = ($skpd_data && !empty($skpd_data['email'])) ? $skpd_data['email'] : '';
-        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? $skpd_data['telepon'] : '';
+        // Alamat dari tabel SKPD
+        $alamat = ($skpd_data && !empty($skpd_data['alamat'])) ? $skpd_data['alamat'] : '';
+        if (!empty($alamat)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, $alamat, 0, 1, 'L');
+        }
 
-        $pdf->SetX($text_start_x);
-        $pdf->Cell(0, 5, 'Email: ' . $email, 0, 1, 'L');
+        // Email dari tabel SKPD
+        $email = ($skpd_data && !empty($skpd_data['email'])) ? 'Email : ' . $skpd_data['email'] : '';
+        if (!empty($email)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, $email, 0, 1, 'L');
+        }
 
-        $pdf->SetX($text_start_x);
-        $pdf->Cell(0, 5, 'Telp: ' . $telp, 0, 1, 'L');
+        // Telp dari tabel SKPD
+        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? 'Telp : ' . $skpd_data['telepon'] : '';
+        if (!empty($telp)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, $telp, 0, 1, 'L');
+        }
 
         $pdf->Ln(12);
 
@@ -1060,26 +1073,32 @@ class PermohonanAdminController
             $pdf->SetXY($start_x, $start_y);
         }
 
-        $skpd_name = !empty($data['komponen_tujuan']) ? strtoupper($data['komponen_tujuan']) : 'DINAS KOMUNIKASI DAN INFORMATIKA';
+        // Nama SKPD dengan ukuran 16 bold
+        $skpd_name = !empty($data['komponen_tujuan']) ? $data['komponen_tujuan'] : '';
         $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
 
-        $pdf->SetFont('times', '', 11);
+        $pdf->SetFont('times', '', 12);
 
-        // Get dynamic address from SKPD data
-        $alamat = ($skpd_data && !empty($skpd_data['alamat']))
-            ? $skpd_data['alamat']
-            : 'Perkantoran Panyabungan, Panyabungan, Kabupaten Mandailing Natal, Provinsi Sumatera Utara';
-        $email = ($skpd_data && !empty($skpd_data['email'])) ? $skpd_data['email'] : 'diskominfo@gmail.madina.go.id';
-        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? $skpd_data['telepon'] : '0821-xxxx-xxxx';
+        // Alamat dari tabel SKPD
+        $alamat = ($skpd_data && !empty($skpd_data['alamat'])) ? $skpd_data['alamat'] : '';
+        if (!empty($alamat)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, $alamat, 0, 1, 'L');
+        }
 
-        $pdf->SetX($text_start_x);
-        $pdf->Cell(0, 5, 'Alamat: ' . $alamat, 0, 1, 'L');
+        // Email dari tabel SKPD
+        $email = ($skpd_data && !empty($skpd_data['email'])) ? 'Email : ' . $skpd_data['email'] : '';
+        if (!empty($email)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, $email, 0, 1, 'L');
+        }
 
-        $pdf->SetX($text_start_x);
-        $pdf->Cell(0, 5, 'Email: ' . $email, 0, 1, 'L');
-
-        $pdf->SetX($text_start_x);
-        $pdf->Cell(0, 5, 'Telp: ' . $telp, 0, 1, 'L');
+        // Telp dari tabel SKPD
+        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? 'Telp : ' . $skpd_data['telepon'] : '';
+        if (!empty($telp)) {
+            $pdf->SetX($text_start_x);
+            $pdf->Cell(0, 5, $telp, 0, 1, 'L');
+        }
 
         $pdf->Ln(12);
 

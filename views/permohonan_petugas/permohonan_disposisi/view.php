@@ -358,6 +358,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
     </div>
   </div>
 
+  <!-- Modal Catatan Petugas -->
+  <div class="modal fade" id="catatanPetugasModal" tabindex="-1" aria-labelledby="catatanPetugasModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="catatanPetugasModalLabel">
+            <i class="fas fa-edit me-2"></i>Tambah Catatan - Update Status Diproses
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="catatan-petugas-form">
+          <div class="modal-body">
+            <input type="hidden" name="id" id="modal_id_permohonan" value="<?php echo $permohonan['id_permohonan']; ?>">
+            <input type="hidden" name="status" value="Diproses">
+
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Informasi:</strong> Tambahkan catatan internal mengenai proses permohonan ini.
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Catatan Petugas <span class="text-danger">*</span></label>
+              <textarea name="catatan_petugas" id="catatan_petugas" class="form-control" rows="6" placeholder="Masukkan catatan mengenai proses permohonan ini..." required></textarea>
+              <small class="text-muted">Catatan ini untuk keperluan internal petugas</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i>Batal
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>Simpan & Update Status
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Photo Modal -->
   <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -387,6 +426,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
     $('#status-form').on('submit', function(e) {
       e.preventDefault();
 
+      const selectedStatus = $('#status-select').val();
+
+      // If status is "Diproses", show the catatan petugas modal
+      if (selectedStatus === 'Diproses') {
+        const catatanModal = new bootstrap.Modal(document.getElementById('catatanPetugasModal'));
+        catatanModal.show();
+        return;
+      }
+
+      // Otherwise, submit normally
       const formData = new FormData(this);
 
       // Debug: log form data
@@ -405,7 +454,43 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
         success: function(response) {
           console.log('Raw response:', response);
           if (response.success) {
-            alert('Status berhasil diupdate ke Diterima');
+            alert('Status berhasil diupdate');
+            location.reload();
+          } else {
+            alert('Gagal mengupdate status: ' + response.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('AJAX error:', error);
+          console.log('Response Text:', xhr.responseText);
+          alert('Terjadi kesalahan saat mengupdate status: ' + error);
+        }
+      });
+    });
+
+    // Handle catatan petugas form submission
+    $('#catatan-petugas-form').on('submit', function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      // Debug: log form data
+      console.log('Catatan Petugas Form data:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      $.ajax({
+        url: 'index.php?controller=permohonanpetugas&action=updateStatus',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Raw response:', response);
+          if (response.success) {
+            alert('Status berhasil diupdate ke Diproses dengan catatan');
             location.reload();
           } else {
             alert('Gagal mengupdate status: ' + response.message);
