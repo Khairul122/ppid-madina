@@ -259,6 +259,16 @@ class PermohonanController {
             exit();
         }
 
+        // Validasi status permohonan - tidak boleh dalam status keberatan, sengketa, atau selesai
+        $forbiddenStatuses = ['keberatan', 'sengketa', 'selesai', 'Selesai'];
+        $currentStatus = $permohonan['status'] ?? null;
+        $currentStatusLower = $currentStatus ? strtolower($currentStatus) : '';
+        if (in_array($currentStatusLower, $forbiddenStatuses) || in_array($currentStatus, $forbiddenStatuses)) {
+            $_SESSION['error_message'] = 'Layanan kepuasan hanya dapat diisi untuk permohonan yang bukan dalam status keberatan, sengketa, atau selesai';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
         // Validasi umur dan rating
         $umur = intval($_POST['umur']);
         $rating = intval($_POST['rating']);

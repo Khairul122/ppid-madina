@@ -215,11 +215,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                         <div class="mb-3">
                           <label class="form-label text-dark fw-medium">Status Permohonan</label>
                           <select name="status" class="form-select form-control-lg" id="status-select">
-                            <option value="Diproses">Diproses</option>
+                            <option value="Diproses" <?php echo ($permohonan['status'] ?? '') == 'Diproses' ? 'selected' : ''; ?>>Diproses</option>
+                            <option value="Ditolak" <?php echo ($permohonan['status'] ?? '') == 'Ditolak' ? 'selected' : ''; ?>>Ditolak</option>
                           </select>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 btn-lg">
-                          </i>Update Status
+                          <i class="fas fa-save me-1"></i>Update Status
                         </button>
                       </form>
 
@@ -397,6 +398,60 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
     </div>
   </div>
 
+  <!-- Modal Penolakan -->
+  <div class="modal fade" id="penolakanModal" tabindex="-1" aria-labelledby="penolakanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="penolakanModalLabel">
+            <i class="fas fa-times-circle me-2"></i>Keputusan PPID DITOLAK
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="penolakan-form">
+          <div class="modal-body">
+            <input type="hidden" name="id" value="<?php echo $permohonan['id_permohonan']; ?>">
+            <input type="hidden" name="status" value="Ditolak">
+
+            <div class="mb-3">
+              <label for="alasan_penolakan" class="form-label fw-bold">Alasan Penolakan <span class="text-danger">*</span></label>
+              <select name="alasan_penolakan" id="alasan_penolakan" class="form-select" required>
+                <option value="">-- Pilih Alasan Penolakan --</option>
+                <option value="Belum Dikuasai">Belum Dikuasai</option>
+                <option value="Belum Dikomentasikan">Belum Dikomentasikan</option>
+                <option value="Otoritas Instansi Lain">Otoritas Instansi Lain</option>
+                <option value="Informasi Dikecualikan">Informasi Dikecualikan</option>
+              </select>
+              <div class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>Pilih alasan penolakan permohonan informasi
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="catatan_penolakan" class="form-label fw-bold">Catatan Petugas <span class="text-danger">*</span></label>
+              <textarea name="catatan_petugas" id="catatan_penolakan" class="form-control" rows="4"
+                        placeholder="Masukkan catatan atau penjelasan tambahan terkait penolakan..." required></textarea>
+              <small class="form-text text-muted">Berikan penjelasan detail terkait alasan penolakan permohonan ini</small>
+            </div>
+
+            <div class="alert alert-warning" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Perhatian:</strong> Permohonan yang ditolak tidak dapat diproses lebih lanjut. Pastikan alasan penolakan dan catatan sudah sesuai.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i>Batal
+            </button>
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-times-circle me-1"></i>Tolak Permohonan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Photo Modal -->
   <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -432,6 +487,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
       if (selectedStatus === 'Diproses') {
         const catatanModal = new bootstrap.Modal(document.getElementById('catatanPetugasModal'));
         catatanModal.show();
+        return;
+      }
+      
+      // If status is "Ditolak", show the penolakan modal
+      else if (selectedStatus === 'Ditolak') {
+        const penolakanModal = new bootstrap.Modal(document.getElementById('penolakanModal'));
+        penolakanModal.show();
         return;
       }
 
@@ -500,6 +562,49 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
           console.error('AJAX error:', error);
           console.log('Response Text:', xhr.responseText);
           alert('Terjadi kesalahan saat mengupdate status: ' + error);
+        }
+      });
+    });
+
+    // Handle penolakan form submission
+    $('#penolakan-form').on('submit', function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      // Disable submit button
+      const submitBtn = $(this).find('button[type="submit"]');
+      const originalText = submitBtn.html();
+      submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Tolak Permohonan');
+
+      // Debug: log form data
+      console.log('Penolakan Form data:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      $.ajax({
+        url: 'index.php?controller=permohonanpetugas&action=updateStatus',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Penolakan response:', response);
+          if (response.success) {
+            alert('Permohonan berhasil ditolak');
+            location.reload();
+          } else {
+            alert('Gagal menolak permohonan: ' + response.message);
+            submitBtn.prop('disabled', false).html(originalText);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Penolakan AJAX error:', error);
+          console.log('Response Text:', xhr.responseText);
+          alert('Terjadi kesalahan saat menolak permohonan: ' + error);
+          submitBtn.prop('disabled', false).html(originalText);
         }
       });
     });

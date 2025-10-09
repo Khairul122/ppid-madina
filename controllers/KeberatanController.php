@@ -114,13 +114,13 @@ class KeberatanController {
             ];
         }
 
-        // Validasi tambahan: Hanya bisa mengajukan keberatan untuk permohonan yang sudah diproses
-        $allowedStatuses = ['approved', 'rejected', 'selesai', 'ditolak', 'Diproses'];
+        // Validasi tambahan: Hanya bisa mengajukan keberatan untuk permohonan selain status 'keberatan', 'sengketa', dan 'selesai'
+        $forbiddenStatuses = ['keberatan', 'sengketa', 'selesai', 'Selesai'];
         $currentStatus = $permohonan['status'] ?? '';
-        if (!in_array($currentStatus, $allowedStatuses)) {
+        if (in_array(strtolower($currentStatus), $forbiddenStatuses) || in_array($currentStatus, $forbiddenStatuses)) {
             return [
                 'success' => false,
-                'message' => 'Keberatan hanya dapat diajukan untuk permohonan yang sudah diproses'
+                'message' => 'Keberatan hanya dapat diajukan untuk permohonan yang belum dalam status keberatan, sengketa, atau selesai'
             ];
         }
 

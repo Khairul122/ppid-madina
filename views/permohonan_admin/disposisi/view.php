@@ -218,7 +218,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <div class="mb-3">
                           <label class="form-label text-dark fw-medium">Status Permohonan</label>
                           <select name="status" class="form-select form-control-lg" id="status-select">
-                            <option value="Diproses">Diproses</option>
+                            <option value="Diproses" <?php echo ($permohonan['status'] ?? '') == 'Diproses' ? 'selected' : ''; ?>>Diproses</option>
+                            <option value="Ditolak" <?php echo ($permohonan['status'] ?? '') == 'Ditolak' ? 'selected' : ''; ?>>Ditolak</option>
                           </select>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 btn-lg">
@@ -418,11 +419,65 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
   </div>
 
+  <!-- Modal Penolakan -->
+  <div class="modal fade" id="penolakanModal" tabindex="-1" aria-labelledby="penolakanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="penolakanModalLabel">
+            <i class="fas fa-times-circle me-2"></i>Keputusan PPID DITOLAK
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="penolakan-form">
+            <input type="hidden" name="id" value="<?php echo $permohonan['id_permohonan']; ?>">
+            <input type="hidden" name="status" value="Ditolak">
+
+            <div class="mb-3">
+              <label for="alasan_penolakan" class="form-label fw-bold">Alasan Penolakan <span class="text-danger">*</span></label>
+              <select name="alasan_penolakan" id="alasan_penolakan" class="form-select" required>
+                <option value="">-- Pilih Alasan Penolakan --</option>
+                <option value="Belum Dikuasai">Belum Dikuasai</option>
+                <option value="Belum Dikomentasikan">Belum Dikomentasikan</option>
+                <option value="Otoritas Instansi Lain">Otoritas Instansi Lain</option>
+                <option value="Informasi Dikecualikan">Informasi Dikecualikan</option>
+              </select>
+              <div class="form-text text-muted">
+                <i class="fas fa-info-circle me-1"></i>Pilih alasan penolakan permohonan informasi
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="catatan_petugas_penolakan" class="form-label fw-bold">Catatan Petugas <span class="text-danger">*</span></label>
+              <textarea name="catatan_petugas" id="catatan_petugas_penolakan" class="form-control" rows="4"
+                        placeholder="Masukkan catatan atau penjelasan tambahan terkait penolakan..." required></textarea>
+              <small class="form-text text-muted">Berikan penjelasan detail terkait alasan penolakan permohonan ini</small>
+            </div>
+
+            <div class="alert alert-warning" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Perhatian:</strong> Permohonan yang ditolak tidak dapat diproses lebih lanjut. Pastikan alasan penolakan dan catatan sudah sesuai.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Batal
+          </button>
+          <button type="button" class="btn btn-danger" id="btn-submit-penolakan">
+            <i class="fas fa-times-circle me-1"></i>Tolak Permohonan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <?php include 'template/script.php'; ?>
 
   <script>
-    // Handle status update - show modal first
+    // Handle status update - show modal first or penolakan modal if status is Ditolak
     $('#status-form').on('submit', function(e) {
       e.preventDefault();
 
@@ -430,20 +485,30 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       const status = $('#status-select').val();
       const id = $('input[name="id"]', this).val();
 
-      // Set modal hidden fields
-      $('#modal-status').val(status);
-      $('#modal-permohonan-id').val(id);
+      // If status is Ditolak, show penolakan modal
+      if (status === 'Ditolak') {
+        // Pre-fill with existing catatan if any
+        const existingCatatan = <?php echo json_encode($permohonan['catatan_petugas'] ?? ''); ?>;
+        $('#catatan_petugas_penolakan').val(existingCatatan);
+        
+        const penolakanModal = new bootstrap.Modal(document.getElementById('penolakanModal'));
+        penolakanModal.show();
+      } else {
+        // Set modal hidden fields
+        $('#modal-status').val(status);
+        $('#modal-permohonan-id').val(id);
 
-      // Pre-fill with existing catatan if any
-      const existingCatatan = <?php echo json_encode($permohonan['catatan_petugas'] ?? ''); ?>;
-      $('#modal-catatan-petugas').val(existingCatatan);
+        // Pre-fill with existing catatan if any
+        const existingCatatan = <?php echo json_encode($permohonan['catatan_petugas'] ?? ''); ?>;
+        $('#modal-catatan-petugas').val(existingCatatan);
 
-      // Show modal
-      const modal = new bootstrap.Modal(document.getElementById('catatanPetugasModal'));
-      modal.show();
+        // Show catatan modal
+        const catatanModal = new bootstrap.Modal(document.getElementById('catatanPetugasModal'));
+        catatanModal.show();
+      }
     });
 
-    // Handle submit from modal
+    // Handle submit from catatan modal
     $('#submit-catatan-status').on('click', function() {
       const form = document.getElementById('catatan-status-form');
 
@@ -488,6 +553,65 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           console.log('Response Text:', xhr.responseText);
           alert('Terjadi kesalahan: ' + error);
           $('#submit-catatan-status').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Simpan & Update Status');
+        }
+      });
+    });
+
+    // Handle submit from penolakan modal
+    $('#btn-submit-penolakan').on('click', function() {
+      const alasanPenolakan = $('#alasan_penolakan').val();
+      const catatanPetugas = $('#catatan_petugas_penolakan').val();
+
+      // Validasi form penolakan
+      if (!alasanPenolakan) {
+        alert('Alasan penolakan harus dipilih!');
+        $('#alasan_penolakan').focus();
+        return;
+      }
+
+      if (!catatanPetugas.trim()) {
+        alert('Catatan petugas harus diisi!');
+        $('#catatan_petugas_penolakan').focus();
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('id', $('input[name="id"]', '#penolakan-form').val());
+      formData.append('status', $('input[name="status"]', '#penolakan-form').val());
+      formData.append('alasan_penolakan', alasanPenolakan);
+      formData.append('catatan_petugas', catatanPetugas);
+
+      // Disable button
+      $('#btn-submit-penolakan').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Menolak...');
+
+      // Debug: log form data
+      console.log('Penolakan form data:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      $.ajax({
+        url: 'index.php?controller=permohonanadmin&action=updateStatus',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Penolakan response:', response);
+          if (response.success) {
+            alert('Permohonan berhasil ditolak');
+            location.reload();
+          } else {
+            alert('Gagal menolak permohonan: ' + response.message);
+            $('#btn-submit-penolakan').prop('disabled', false).html('<i class="fas fa-times-circle me-1"></i>Tolak Permohonan');
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Penolakan AJAX error:', error);
+          console.log('Response Text:', xhr.responseText);
+          alert('Terjadi kesalahan saat menolak permohonan: ' + error);
+          $('#btn-submit-penolakan').prop('disabled', false).html('<i class="fas fa-times-circle me-1"></i>Tolak Permohonan');
         }
       });
     });
@@ -568,6 +692,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         window.location.href = 'index.php?controller=permohonanadmin&action=delete&id=' + id;
       }
     }
+
+    // Reset modal penolakan ketika ditutup
+    $('#penolakanModal').on('hidden.bs.modal', function () {
+      $('#penolakan-form')[0].reset();
+      $('#status-select').val($('#status-select option:selected').data('current-status') || 'Diproses');
+    });
   </script>
 
   <style>

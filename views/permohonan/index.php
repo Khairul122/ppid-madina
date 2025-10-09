@@ -981,10 +981,18 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
                   Lihat Detail
                 </a>
 
+                  <?php
+                // Tombol ajukan keberatan hanya muncul jika status bukan keberatan, sengketa, atau selesai
+                $forbiddenStatuses = ['keberatan', 'sengketa', 'selesai', 'Selesai'];
+                $currentStatus = $permohonan['status'] ?? null;
+                $currentStatusLower = $currentStatus ? strtolower($currentStatus) : '';
+                if (!in_array($currentStatusLower, $forbiddenStatuses) && !in_array($currentStatus, $forbiddenStatuses)):
+                ?>
                 <button type="button" class="btn btn-warning btn-sm" onclick="openKeberatanModal(<?php echo $permohonan['id_permohonan']; ?>, '<?php echo htmlspecialchars($permohonan['no_permohonan']); ?>', '<?php echo htmlspecialchars($permohonan['judul_dokumen']); ?>')">
                   <i class="fas fa-gavel"></i>
                   Ajukan Keberatan
                 </button>
+                <?php endif; ?>
 
                 <?php
                 // Tampilkan tombol Layanan Kepuasan hanya untuk permohonan dengan status "Diproses"

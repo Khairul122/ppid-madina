@@ -963,10 +963,17 @@ $title = 'Detail Permohonan - PPID Mandailing';
             </a>
             <?php endif; ?>
 
+            <?php
+            // Tombol ajukan keberatan hanya muncul jika status bukan keberatan, sengketa, atau selesai
+            $forbiddenStatuses = ['keberatan', 'sengketa', 'selesai', 'Selesai'];
+            $currentStatusLower = $currentStatus ? strtolower($currentStatus) : '';
+            if (!in_array($currentStatusLower, $forbiddenStatuses) && !in_array($currentStatus, $forbiddenStatuses)):
+            ?>
             <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#keberatanModal">
               <i class="fas fa-gavel"></i>
               Ajukan Keberatan
             </button>
+            <?php endif; ?>
 
             <?php
             if ($currentStatus === 'pending' || $currentStatus === '' || $currentStatus === null):
