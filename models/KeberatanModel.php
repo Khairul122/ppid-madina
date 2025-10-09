@@ -26,12 +26,26 @@ class KeberatanModel {
 
             if ($result) {
                 $keberatan_id = $this->conn->lastInsertId();
-                $this->conn->commit();
-                return [
-                    'success' => true,
-                    'id' => $keberatan_id,
-                    'message' => 'Keberatan berhasil diajukan'
-                ];
+                
+                // Update status permohonan menjadi 'keberatan'
+                $status = 'Keberatan';
+                $updateQuery = "UPDATE permohonan SET status = :status WHERE id_permohonan = :id_permohonan";
+                $updateStmt = $this->conn->prepare($updateQuery);
+                $updateStmt->bindParam(':status', $status);
+                $updateStmt->bindParam(':id_permohonan', $data['id_permohonan']);
+                $updateResult = $updateStmt->execute();
+
+                if ($updateResult) {
+                    $this->conn->commit();
+                    return [
+                        'success' => true,
+                        'id' => $keberatan_id,
+                        'message' => 'Keberatan berhasil diajukan dan status permohonan diperbarui'
+                    ];
+                } else {
+                    $this->conn->rollBack();
+                    return ['success' => false, 'message' => 'Gagal memperbarui status permohonan'];
+                }
             } else {
                 $this->conn->rollBack();
                 return ['success' => false, 'message' => 'Gagal mengajukan keberatan'];

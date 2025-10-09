@@ -283,5 +283,34 @@ class PermohonanModel {
             ];
         }
     }
+
+    public function updateStatus($id, $status) {
+        try {
+            $query = "UPDATE " . $this->table_name . " 
+                      SET status = :status 
+                      WHERE id_permohonan = :id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':status', $status);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Status permohonan berhasil diperbarui'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Gagal memperbarui status permohonan'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+        }
+    }
 }
 ?>

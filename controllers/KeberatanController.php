@@ -114,6 +114,15 @@ class KeberatanController {
             ];
         }
 
+        // Validasi tambahan: Hanya bisa mengajukan keberatan untuk permohonan yang sudah diproses
+        $allowedStatuses = ['approved', 'rejected', 'selesai', 'ditolak', 'Diproses'];
+        $currentStatus = $permohonan['status'] ?? '';
+        if (!in_array($currentStatus, $allowedStatuses)) {
+            return [
+                'success' => false,
+                'message' => 'Keberatan hanya dapat diajukan untuk permohonan yang sudah diproses'
+            ];
+        }
 
         if ($this->keberatanModel->checkExistingKeberatan($user_id, $permohonan_id)) {
             return [
@@ -122,18 +131,24 @@ class KeberatanController {
             ];
         }
 
-        if (strlen(trim($_POST['alasan_keberatan'])) < 20) {
+        // Validasi panjang dan karakter pada alasan keberatan
+        $alasan_keberatan = trim($_POST['alasan_keberatan']);
+        if (strlen($alasan_keberatan) < 20) {
             return [
                 'success' => false,
                 'message' => 'Alasan keberatan minimal 20 karakter'
             ];
         }
+        
+        // Filter karakter berbahaya untuk mencegah XSS
+        $alasan_keberatan = htmlspecialchars($alasan_keberatan, ENT_QUOTES, 'UTF-8');
+        $keterangan = htmlspecialchars(trim($_POST['keterangan'] ?? ''), ENT_QUOTES, 'UTF-8');
 
         $data = [
             'id_permohonan' => $permohonan_id,
             'id_users' => $user_id,
-            'alasan_keberatan' => trim($_POST['alasan_keberatan']),
-            'keterangan' => trim($_POST['keterangan'] ?? '')
+            'alasan_keberatan' => $alasan_keberatan,
+            'keterangan' => $keterangan
         ];
 
         return $this->keberatanModel->createKeberatan($data);
