@@ -1425,7 +1425,8 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
 
       // Handle province change for layanan kepuasan
       document.getElementById('layanan_provinsi').addEventListener('change', function() {
-        const provinceId = this.value;
+        const selectedOption = this.options[this.selectedIndex];
+        const provinceId = selectedOption.getAttribute('data-id');
         if (provinceId) {
           loadCities(provinceId, 'layanan_kota');
         } else {
@@ -1452,9 +1453,9 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
           // Add provinces to select
           data.forEach(province => {
             const option = document.createElement('option');
-            option.value = province.id;
+            option.value = province.name;
             option.textContent = province.name;
-            option.setAttribute('data-name', province.name);
+            option.setAttribute('data-id', province.id);
             selectElement.appendChild(option);
           });
         })
@@ -1496,9 +1497,6 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
     // Function to open layanan kepuasan modal (defined outside DOMContentLoaded)
     function openLayananKepuasanModal(permohonanId, noPermohonan, judulDokumen, tanggalPermohonan) {
       document.getElementById('layanan_id_permohonan').value = permohonanId;
-      document.getElementById('layanan_no_permohonan').value = noPermohonan;
-      document.getElementById('layanan_judul_dokumen').value = judulDokumen;
-      document.getElementById('layanan_tanggal_permohonan').value = tanggalPermohonan;
 
       // Clear form
       document.getElementById('layananKepuasanForm').reset();

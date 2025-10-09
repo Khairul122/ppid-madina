@@ -47,21 +47,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                       </ol>
                     </nav>
                   </div>
-                  <div class="d-flex gap-2">
-                    <a href="index.php?controller=permohonanpetugas&action=create" class="btn btn-primary">
-                      <i class="fas fa-plus me-1"></i>Tambah Permohonan
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Info Box -->
-              <div class="alert alert-info mb-4" role="alert">
-                <div class="d-flex align-items-center">
-                  <i class="fas fa-info-circle me-3" style="font-size: 1.5rem;"></i>
-                  <div>
-                    <strong>Informasi:</strong> Halaman ini khusus menampilkan permohonan dengan status <span class="badge bg-info">Masuk</span> saja.
-                  </div>
                 </div>
               </div>
 

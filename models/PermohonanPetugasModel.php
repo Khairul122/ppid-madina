@@ -583,4 +583,143 @@ class PermohonanPetugasModel
 
         return $result['total'];
     }
+
+    // ============ LAYANAN KEPUASAN METHODS ============
+
+    // Get all layanan kepuasan filtered by SKPD
+    public function getLayananKepuasanBySKPD($nama_skpd, $limit = 10, $offset = 0, $search = '')
+    {
+        $whereClause = "WHERE p.komponen_tujuan = :nama_skpd";
+        $params = [':nama_skpd' => $nama_skpd];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (lk.nama LIKE :search
+                             OR p.no_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR lk.provinsi LIKE :search
+                             OR lk.kota LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT lk.*, p.no_permohonan, p.judul_dokumen, p.created_at as tanggal_permohonan,
+                         p.komponen_tujuan
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  " . $whereClause . "
+                  ORDER BY lk.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count layanan kepuasan filtered by SKPD
+    public function countLayananKepuasanBySKPD($nama_skpd, $search = '')
+    {
+        $whereClause = "WHERE p.komponen_tujuan = :nama_skpd";
+        $params = [':nama_skpd' => $nama_skpd];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (lk.nama LIKE :search
+                             OR p.no_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR lk.provinsi LIKE :search
+                             OR lk.kota LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT COUNT(*) as total
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  " . $whereClause;
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+
+    // Get layanan kepuasan by ID (with SKPD check)
+    public function getLayananKepuasanById($id)
+    {
+        $query = "SELECT lk.*, p.no_permohonan, p.judul_dokumen, p.created_at as tanggal_permohonan,
+                         p.komponen_tujuan,
+                         bp.nama_lengkap as pemohon_nama, bp.email as pemohon_email, bp.no_kontak as pemohon_kontak
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  JOIN users u ON p.id_user = u.id_user
+                  LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
+                  WHERE lk.id_layanan_kepuasan = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Delete layanan kepuasan
+    public function deleteLayananKepuasan($id)
+    {
+        try {
+            $query = "DELETE FROM layanan_kepuasan WHERE id_layanan_kepuasan = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Layanan kepuasan berhasil dihapus'
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Gagal menghapus layanan kepuasan'
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // Get layanan kepuasan stats for SKPD
+    public function getLayananKepuasanStatsBySKPD($nama_skpd)
+    {
+        try {
+            $query = "SELECT
+                        COUNT(*) as total,
+                        AVG(lk.rating) as avg_rating,
+                        SUM(CASE WHEN lk.rating >= 4 THEN 1 ELSE 0 END) as satisfied,
+                        SUM(CASE WHEN lk.rating <= 2 THEN 1 ELSE 0 END) as unsatisfied
+                      FROM layanan_kepuasan lk
+                      JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                      WHERE p.komponen_tujuan = :nama_skpd";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':nama_skpd', $nama_skpd);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ? $result : ['total' => 0, 'avg_rating' => 0, 'satisfied' => 0, 'unsatisfied' => 0];
+        } catch (Exception $e) {
+            error_log("Error in getLayananKepuasanStatsBySKPD: " . $e->getMessage());
+            return ['total' => 0, 'avg_rating' => 0, 'satisfied' => 0, 'unsatisfied' => 0];
+        }
+    }
 }

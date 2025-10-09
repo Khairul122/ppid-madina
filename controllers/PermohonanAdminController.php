@@ -577,6 +577,106 @@ class PermohonanAdminController
         }
     }
 
+    // Update catatan petugas
+    public function updateCatatanPetugas()
+    {
+        // Prevent any output before JSON
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Start output buffering to catch any unexpected output
+        ob_start();
+
+        // Set headers
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-cache, must-revalidate');
+
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['id'])) {
+                $this->sendJsonResponse(['success' => false, 'message' => 'Parameter tidak valid']);
+                return;
+            }
+
+            $id = intval($_POST['id']);
+            $catatan_petugas = isset($_POST['catatan_petugas']) ? trim($_POST['catatan_petugas']) : '';
+
+            $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+            if (!$permohonan) {
+                $this->sendJsonResponse(['success' => false, 'message' => 'Permohonan tidak ditemukan']);
+                return;
+            }
+
+            $result = $this->permohonanAdminModel->updateCatatanPetugas($id, $catatan_petugas);
+
+            if ($result['success']) {
+                $this->sendJsonResponse(['success' => true, 'message' => 'Catatan petugas berhasil disimpan']);
+            } else {
+                $this->sendJsonResponse(['success' => false, 'message' => $result['message']]);
+            }
+        } catch (Exception $e) {
+            $this->sendJsonResponse([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    // Update status with catatan petugas
+    public function updateStatusWithCatatan()
+    {
+        // Prevent any output before JSON
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Start output buffering to catch any unexpected output
+        ob_start();
+
+        // Set headers
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-cache, must-revalidate');
+
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['id'])) {
+                $this->sendJsonResponse(['success' => false, 'message' => 'Parameter tidak valid']);
+                return;
+            }
+
+            $id = intval($_POST['id']);
+            $status = isset($_POST['status']) ? trim($_POST['status']) : '';
+            $catatan_petugas = isset($_POST['catatan_petugas']) ? trim($_POST['catatan_petugas']) : '';
+
+            // Validate catatan petugas
+            if (empty($catatan_petugas)) {
+                $this->sendJsonResponse(['success' => false, 'message' => 'Catatan petugas wajib diisi']);
+                return;
+            }
+
+            $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+            if (!$permohonan) {
+                $this->sendJsonResponse(['success' => false, 'message' => 'Permohonan tidak ditemukan']);
+                return;
+            }
+
+            // Update status and catatan petugas
+            $result = $this->permohonanAdminModel->updateStatusWithCatatan($id, $status, $catatan_petugas);
+
+            if ($result['success']) {
+                $this->sendJsonResponse(['success' => true, 'message' => 'Status dan catatan petugas berhasil disimpan']);
+            } else {
+                $this->sendJsonResponse(['success' => false, 'message' => $result['message']]);
+            }
+        } catch (Exception $e) {
+            $this->sendJsonResponse([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     // Handle file uploads
     private function handleFileUploads($existingData = null)
     {
@@ -1817,6 +1917,63 @@ class PermohonanAdminController
         $pdf->Ln(5);
     }
 
+    // KEBERATAN METHODS
+
+    // Display keberatan index
+    public function keberatanIndex()
+    {
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $status = isset($_GET['status']) ? $_GET['status'] : 'Keberatan';
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+        // Get permohonan with keberatan status
+        $permohonan_list = $this->permohonanAdminModel->getKeberatanPermohonan($limit, $offset, $status, $search);
+        $total_records = $this->permohonanAdminModel->countKeberatanPermohonan($status, $search);
+        $total_pages = ceil($total_records / $limit);
+
+        // Get keberatan specific stats
+        $stats = $this->permohonanAdminModel->getKeberatanStats();
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/keberatan/index.php';
+    }
+
+    // Display keberatan view
+    public function keberatanView()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=keberatanIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $permohonan = $this->permohonanAdminModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=keberatanIndex');
+            exit();
+        }
+
+        // Check if this is a keberatan permohonan
+        if ($permohonan['status'] !== 'Keberatan') {
+            $_SESSION['error_message'] = 'Permohonan ini bukan permohonan keberatan';
+            header('Location: index.php?controller=permohonanadmin&action=keberatanIndex');
+            exit();
+        }
+
+        include 'views/permohonan_admin/keberatan/view.php';
+    }
+
     // PROSES METHODS
 
     // Display diproses index
@@ -1876,5 +2033,74 @@ class PermohonanAdminController
         }
 
         include 'views/permohonan_admin/proses/detail.php';
+    }
+
+    // LAYANAN KEPUASAN METHODS
+
+    // Display layanan kepuasan index
+    public function layananKepuasanIndex()
+    {
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+        $layanan_kepuasan_list = $this->permohonanAdminModel->getAllLayananKepuasan($limit, $offset, $search);
+        $total_records = $this->permohonanAdminModel->countLayananKepuasan($search);
+        $total_pages = ($total_records > 0) ? ceil($total_records / $limit) : 0;
+
+        $stats = $this->permohonanAdminModel->getLayananKepuasanStats();
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/layanan_kepuasan/index.php';
+    }
+
+    // Display layanan kepuasan detail
+    public function layananKepuasanView()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $layanan_kepuasan = $this->permohonanAdminModel->getLayananKepuasanById($id);
+
+        if (!$layanan_kepuasan) {
+            $_SESSION['error_message'] = 'Layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+            exit();
+        }
+
+        include 'views/permohonan_admin/layanan_kepuasan/view.php';
+    }
+
+    // Delete layanan kepuasan
+    public function deleteLayananKepuasan()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $result = $this->permohonanAdminModel->deleteLayananKepuasan($id);
+
+        if ($result['success']) {
+            $_SESSION['success_message'] = $result['message'];
+        } else {
+            $_SESSION['error_message'] = $result['message'];
+        }
+
+        header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+        exit();
     }
 }

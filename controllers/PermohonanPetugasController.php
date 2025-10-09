@@ -1730,4 +1730,114 @@ class PermohonanPetugasController
 
         $pdf->Ln(10);
     }
+
+    // ============ LAYANAN KEPUASAN METHODS ============
+
+    // Display layanan kepuasan index for petugas
+    public function layananKepuasanIndex()
+    {
+        // Get petugas SKPD
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd) {
+            $_SESSION['error_message'] = 'Data SKPD petugas tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=mejaLayanan');
+            exit();
+        }
+
+        $nama_skpd = $petugas_skpd['nama_skpd'];
+
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+        $layanan_kepuasan_list = $this->permohonanPetugasModel->getLayananKepuasanBySKPD($nama_skpd, $limit, $offset, $search);
+        $total_records = $this->permohonanPetugasModel->countLayananKepuasanBySKPD($nama_skpd, $search);
+        $total_pages = ($total_records > 0) ? ceil($total_records / $limit) : 0;
+
+        $stats = $this->permohonanPetugasModel->getLayananKepuasanStatsBySKPD($nama_skpd);
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_petugas/layanan_kepuasan/index.php';
+    }
+
+    // Display layanan kepuasan detail for petugas
+    public function layananKepuasanView()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+        $layanan_kepuasan = $this->permohonanPetugasModel->getLayananKepuasanById($id);
+
+        if (!$layanan_kepuasan) {
+            $_SESSION['error_message'] = 'Layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+            exit();
+        }
+
+        // Check if petugas has access to this layanan kepuasan
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd || $petugas_skpd['nama_skpd'] !== $layanan_kepuasan['komponen_tujuan']) {
+            $_SESSION['error_message'] = 'Anda tidak memiliki akses untuk melihat layanan kepuasan ini';
+            header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+            exit();
+        }
+
+        include 'views/permohonan_petugas/layanan_kepuasan/view.php';
+    }
+
+    // Delete layanan kepuasan for petugas
+    public function deleteLayananKepuasan()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $id = $_GET['id'];
+
+        // Get layanan kepuasan first to check access
+        $layanan_kepuasan = $this->permohonanPetugasModel->getLayananKepuasanById($id);
+
+        if (!$layanan_kepuasan) {
+            $_SESSION['error_message'] = 'Layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+            exit();
+        }
+
+        // Check if petugas has access to delete this layanan kepuasan
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd || $petugas_skpd['nama_skpd'] !== $layanan_kepuasan['komponen_tujuan']) {
+            $_SESSION['error_message'] = 'Anda tidak memiliki akses untuk menghapus layanan kepuasan ini';
+            header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $result = $this->permohonanPetugasModel->deleteLayananKepuasan($id);
+
+        if ($result['success']) {
+            $_SESSION['success_message'] = $result['message'];
+        } else {
+            $_SESSION['error_message'] = $result['message'];
+        }
+
+        header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
+        exit();
+    }
 }

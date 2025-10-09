@@ -675,6 +675,71 @@ class PermohonanAdminModel
         }
     }
 
+    // Update catatan petugas only
+    public function updateCatatanPetugas($id, $catatan_petugas)
+    {
+        try {
+            $query = "UPDATE " . $this->table_permohonan . " SET
+                      catatan_petugas = :catatan_petugas,
+                      updated_at = NOW()
+                      WHERE id_permohonan = :id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':catatan_petugas', $catatan_petugas);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Catatan petugas berhasil disimpan'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Gagal menyimpan catatan petugas'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Gagal menyimpan catatan petugas: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // Update status with catatan petugas
+    public function updateStatusWithCatatan($id, $status, $catatan_petugas)
+    {
+        try {
+            $query = "UPDATE " . $this->table_permohonan . " SET
+                      status = :status,
+                      catatan_petugas = :catatan_petugas,
+                      updated_at = NOW()
+                      WHERE id_permohonan = :id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':catatan_petugas', $catatan_petugas);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Status dan catatan petugas berhasil disimpan'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Gagal menyimpan status dan catatan petugas'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Gagal menyimpan: ' . $e->getMessage()
+            ];
+        }
+    }
 
     // Check if email exists
     public function checkEmailExists($email, $excludeUserId = null)
@@ -857,7 +922,95 @@ class PermohonanAdminModel
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
-    }    // Get SKPD data by name
+    }
+
+    // Get statistics for keberatan dashboard
+    public function getKeberatanStats()
+    {
+        $query = "SELECT
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'Keberatan' THEN 1 ELSE 0 END) as keberatan
+                  FROM " . $this->table_permohonan . "
+                  WHERE status = 'Keberatan'";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Get permohonan with keberatan status for admin with pagination
+    public function getKeberatanPermohonan($limit = 10, $offset = 0, $status = 'all', $search = '')
+    {
+        $whereClause = "WHERE p.status = 'Keberatan'";
+        $params = [];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (p.no_permohonan LIKE :search
+                             OR p.tujuan_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR p.kandungan_informasi LIKE :search
+                             OR bp.nama_lengkap LIKE :search
+                             OR bp.nik LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT p.*, u.username, u.email as user_email,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                  FROM " . $this->table_permohonan . " p
+                  JOIN " . $this->table_users . " u ON p.id_user = u.id_user
+                  LEFT JOIN " . $this->table_biodata . " bp ON u.id_biodata = bp.id_biodata
+                  " . $whereClause . "
+                  ORDER BY p.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count permohonan with keberatan status
+    public function countKeberatanPermohonan($status = 'all', $search = '')
+    {
+        $whereClause = "WHERE p.status = 'Keberatan'";
+        $params = [];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (p.no_permohonan LIKE :search
+                             OR p.tujuan_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR bp.nama_lengkap LIKE :search
+                             OR bp.nik LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT COUNT(*) as total
+                  FROM " . $this->table_permohonan . " p
+                  JOIN " . $this->table_users . " u ON p.id_user = u.id_user
+                  LEFT JOIN " . $this->table_biodata . " bp ON u.id_biodata = bp.id_biodata
+                  " . $whereClause;
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'];
+    }
+
+    // Get SKPD data by name
     public function getSKPDDataByName($skpd_name)
     {
         if (empty($skpd_name)) {
@@ -1304,6 +1457,138 @@ class PermohonanAdminModel
         } catch (Exception $e) {
             error_log("Error in getDitolakStats: " . $e->getMessage());
             return ['total' => 0, 'ditolak' => 0];
+        }
+    }
+
+    // Get all layanan kepuasan with pagination
+    public function getAllLayananKepuasan($limit = 10, $offset = 0, $search = '')
+    {
+        $whereClause = "WHERE 1=1";
+        $params = [];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (lk.nama LIKE :search
+                             OR p.no_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR lk.provinsi LIKE :search
+                             OR lk.kota LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT lk.*, p.no_permohonan, p.judul_dokumen, p.created_at as tanggal_permohonan
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  " . $whereClause . "
+                  ORDER BY lk.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count total layanan kepuasan
+    public function countLayananKepuasan($search = '')
+    {
+        $whereClause = "WHERE 1=1";
+        $params = [];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (lk.nama LIKE :search
+                             OR p.no_permohonan LIKE :search
+                             OR p.judul_dokumen LIKE :search
+                             OR lk.provinsi LIKE :search
+                             OR lk.kota LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT COUNT(*) as total
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  " . $whereClause;
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+
+    // Get layanan kepuasan by ID
+    public function getLayananKepuasanById($id)
+    {
+        $query = "SELECT lk.*, p.no_permohonan, p.judul_dokumen, p.created_at as tanggal_permohonan,
+                         bp.nama_lengkap as pemohon_nama, bp.email as pemohon_email, bp.no_kontak as pemohon_kontak
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  JOIN users u ON p.id_user = u.id_user
+                  LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
+                  WHERE lk.id_layanan_kepuasan = :id";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Delete layanan kepuasan
+    public function deleteLayananKepuasan($id)
+    {
+        try {
+            $query = "DELETE FROM layanan_kepuasan WHERE id_layanan_kepuasan = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Layanan kepuasan berhasil dihapus'
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Gagal menghapus layanan kepuasan'
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // Get layanan kepuasan stats
+    public function getLayananKepuasanStats()
+    {
+        try {
+            $query = "SELECT
+                        COUNT(*) as total,
+                        AVG(rating) as avg_rating,
+                        SUM(CASE WHEN rating >= 4 THEN 1 ELSE 0 END) as satisfied,
+                        SUM(CASE WHEN rating <= 2 THEN 1 ELSE 0 END) as unsatisfied
+                      FROM layanan_kepuasan";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ? $result : ['total' => 0, 'avg_rating' => 0, 'satisfied' => 0, 'unsatisfied' => 0];
+        } catch (Exception $e) {
+            error_log("Error in getLayananKepuasanStats: " . $e->getMessage());
+            return ['total' => 0, 'avg_rating' => 0, 'satisfied' => 0, 'unsatisfied' => 0];
         }
     }
 }

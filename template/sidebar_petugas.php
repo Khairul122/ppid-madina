@@ -61,6 +61,9 @@ function isDropdownActivePetugas($controllers)
             <li class="nav-item">
             <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">Permohonan Selesai</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'layananKepuasanIndex') || isActivePetugas('permohonanpetugas', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=layananKepuasanIndex">Layanan Kepuasan</a>
+          </li>
         </ul>
       </div>
     </li>

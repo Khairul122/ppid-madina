@@ -376,15 +376,89 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
   </div>
 
+  <!-- Catatan Petugas Modal -->
+  <div class="modal fade" id="catatanPetugasModal" tabindex="-1" aria-labelledby="catatanPetugasModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="catatanPetugasModalLabel">
+            <i class="fas fa-sticky-note me-2"></i>Catatan Petugas
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="catatan-status-form">
+            <input type="hidden" name="id" id="modal-permohonan-id" value="<?php echo $permohonan['id_permohonan']; ?>">
+            <input type="hidden" name="status" id="modal-status" value="">
+
+            <div class="alert alert-info mb-3">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Perhatian:</strong> Silakan isi catatan petugas sebelum mengupdate status ke <strong>Diproses</strong>.
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label text-dark fw-medium">
+                Catatan Petugas <span class="text-danger">*</span>
+              </label>
+              <textarea name="catatan_petugas" id="modal-catatan-petugas" class="form-control" rows="6"
+                        placeholder="Tulis catatan petugas di sini... (wajib diisi)" required></textarea>
+              <small class="text-muted">Catatan ini akan tersimpan dalam sistem dan dapat dilihat pada bukti proses/selesai.</small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Batal
+          </button>
+          <button type="button" class="btn btn-primary" id="submit-catatan-status">
+            <i class="fas fa-save me-1"></i>Simpan & Update Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <?php include 'template/script.php'; ?>
 
   <script>
-    // Handle status update
+    // Handle status update - show modal first
     $('#status-form').on('submit', function(e) {
       e.preventDefault();
 
-      const formData = new FormData(this);
+      // Get status value
+      const status = $('#status-select').val();
+      const id = $('input[name="id"]', this).val();
+
+      // Set modal hidden fields
+      $('#modal-status').val(status);
+      $('#modal-permohonan-id').val(id);
+
+      // Pre-fill with existing catatan if any
+      const existingCatatan = <?php echo json_encode($permohonan['catatan_petugas'] ?? ''); ?>;
+      $('#modal-catatan-petugas').val(existingCatatan);
+
+      // Show modal
+      const modal = new bootstrap.Modal(document.getElementById('catatanPetugasModal'));
+      modal.show();
+    });
+
+    // Handle submit from modal
+    $('#submit-catatan-status').on('click', function() {
+      const form = document.getElementById('catatan-status-form');
+
+      // Validate catatan petugas
+      const catatanPetugas = $('#modal-catatan-petugas').val().trim();
+      if (!catatanPetugas) {
+        alert('Catatan petugas wajib diisi!');
+        $('#modal-catatan-petugas').focus();
+        return;
+      }
+
+      const formData = new FormData(form);
+
+      // Disable button
+      $('#submit-catatan-status').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Menyimpan...');
 
       // Debug: log form data
       console.log('Form data:');
@@ -393,7 +467,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
       }
 
       $.ajax({
-        url: 'index.php?controller=permohonanadmin&action=updateStatus',
+        url: 'index.php?controller=permohonanadmin&action=updateStatusWithCatatan',
         type: 'POST',
         data: formData,
         processData: false,
@@ -402,16 +476,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         success: function(response) {
           console.log('Raw response:', response);
           if (response.success) {
-            alert('Status berhasil diupdate ke Diterima');
+            alert('Status dan catatan petugas berhasil disimpan');
             location.reload();
           } else {
-            alert('Gagal mengupdate status: ' + response.message);
+            alert('Gagal menyimpan: ' + response.message);
+            $('#submit-catatan-status').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Simpan & Update Status');
           }
         },
         error: function(xhr, status, error) {
           console.error('AJAX error:', error);
           console.log('Response Text:', xhr.responseText);
-          alert('Terjadi kesalahan saat mengupdate status: ' + error);
+          alert('Terjadi kesalahan: ' + error);
+          $('#submit-catatan-status').prop('disabled', false).html('<i class="fas fa-save me-1"></i>Simpan & Update Status');
         }
       });
     });
@@ -444,6 +520,36 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           }
         });
       }
+    });
+
+    // Handle catatan petugas update
+    $('#catatan-form').on('submit', function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      $.ajax({
+        url: 'index.php?controller=permohonanadmin&action=updateCatatanPetugas',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Catatan response:', response);
+          if (response.success) {
+            alert('Catatan petugas berhasil disimpan');
+            location.reload();
+          } else {
+            alert('Gagal menyimpan catatan: ' + response.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Catatan AJAX error:', error);
+          console.log('Response Text:', xhr.responseText);
+          alert('Terjadi kesalahan saat menyimpan catatan: ' + error);
+        }
+      });
     });
 
     // Show photo modal
