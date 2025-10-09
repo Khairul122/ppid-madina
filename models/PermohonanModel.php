@@ -312,5 +312,90 @@ class PermohonanModel {
             ];
         }
     }
+
+    public function ajukanSengketa($id) {
+        try {
+            $status = 'Sengketa';
+            $query = "UPDATE " . $this->table_name . "
+                      SET status = :status
+                      WHERE id_permohonan = :id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':status', $status);
+
+            if ($stmt->execute()) {
+                return [
+                    'success' => true,
+                    'message' => 'Status permohonan berhasil diubah menjadi sengketa'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Gagal mengubah status permohonan menjadi sengketa'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function submitKeberatan($data) {
+        try {
+            $this->conn->beginTransaction();
+
+            // Insert keberatan data
+            $queryKeberatan = "INSERT INTO keberatan
+                               (id_permohonan, id_users, alasan_keberatan, keterangan)
+                               VALUES
+                               (:id_permohonan, :id_users, :alasan_keberatan, :keterangan)";
+
+            $stmtKeberatan = $this->conn->prepare($queryKeberatan);
+            $stmtKeberatan->bindParam(':id_permohonan', $data['id_permohonan']);
+            $stmtKeberatan->bindParam(':id_users', $data['id_users']);
+            $stmtKeberatan->bindParam(':alasan_keberatan', $data['alasan_keberatan']);
+            $stmtKeberatan->bindParam(':keterangan', $data['keterangan']);
+
+            if (!$stmtKeberatan->execute()) {
+                $this->conn->rollBack();
+                return [
+                    'success' => false,
+                    'message' => 'Gagal menyimpan data keberatan'
+                ];
+            }
+
+            // Update permohonan status to "Keberatan"
+            $queryUpdate = "UPDATE " . $this->table_name . "
+                            SET status = 'Keberatan'
+                            WHERE id_permohonan = :id_permohonan";
+
+            $stmtUpdate = $this->conn->prepare($queryUpdate);
+            $stmtUpdate->bindParam(':id_permohonan', $data['id_permohonan']);
+
+            if (!$stmtUpdate->execute()) {
+                $this->conn->rollBack();
+                return [
+                    'success' => false,
+                    'message' => 'Gagal mengubah status permohonan'
+                ];
+            }
+
+            $this->conn->commit();
+            return [
+                'success' => true,
+                'message' => 'Keberatan berhasil diajukan. Status permohonan telah diubah menjadi Keberatan.'
+            ];
+
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ];
+        }
+    }
 }
 ?>

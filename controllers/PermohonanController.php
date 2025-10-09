@@ -309,6 +309,113 @@ class PermohonanController {
         exit();
     }
 
+    public function ajukanSengketa() {
+        if (!isset($_SESSION['user_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['error_message'] = 'Akses tidak valid';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        // Validasi input
+        $required_fields = ['id_permohonan', 'sengketa_decision'];
+        foreach ($required_fields as $field) {
+            if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
+                $_SESSION['error_message'] = 'Semua field wajib diisi';
+                header('Location: index.php?controller=permohonan&action=index');
+                exit();
+            }
+        }
+
+        $id_permohonan = intval($_POST['id_permohonan']);
+        $sengketa_decision = trim($_POST['sengketa_decision']);
+
+        // Validasi permohonan milik user
+        $permohonan = $this->permohonanModel->getPermohonanById($id_permohonan, $_SESSION['user_id']);
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        // Validasi status permohonan - hanya bisa ajukan sengketa jika statusnya "Ditolak"
+        $currentStatus = $permohonan['status'] ?? null;
+        if ($currentStatus !== 'Ditolak') {
+            $_SESSION['error_message'] = 'Sengketa hanya bisa diajukan untuk permohonan yang ditolak';
+            header('Location: index.php?controller=permohonan&action=index');
+            exit();
+        }
+
+        // Jika user memilih 'ya', ubah status menjadi sengketa
+        if ($sengketa_decision === 'ya') {
+            $result = $this->permohonanModel->ajukanSengketa($id_permohonan);
+
+            if ($result['success']) {
+                $_SESSION['success_message'] = $result['message'];
+            } else {
+                $_SESSION['error_message'] = $result['message'];
+            }
+        } else {
+            $_SESSION['success_message'] = 'Permohonan sengketa dibatalkan';
+        }
+
+        header('Location: index.php?controller=permohonan&action=index');
+        exit();
+    }
+
+    public function submitKeberatan() {
+        if (!isset($_SESSION['user_id']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Akses tidak valid'
+            ]);
+            exit();
+        }
+
+        // Validasi input
+        $required_fields = ['id_permohonan', 'alasan_keberatan', 'keterangan'];
+        foreach ($required_fields as $field) {
+            if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Semua field wajib diisi'
+                ]);
+                exit();
+            }
+        }
+
+        $id_permohonan = intval($_POST['id_permohonan']);
+        $alasan_keberatan = trim($_POST['alasan_keberatan']);
+        $keterangan = trim($_POST['keterangan']);
+
+        // Validasi permohonan milik user
+        $permohonan = $this->permohonanModel->getPermohonanById($id_permohonan, $_SESSION['user_id']);
+        if (!$permohonan) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Permohonan tidak ditemukan'
+            ]);
+            exit();
+        }
+
+        // Siapkan data untuk disimpan
+        $data = [
+            'id_permohonan' => $id_permohonan,
+            'id_users' => $_SESSION['user_id'],
+            'alasan_keberatan' => $alasan_keberatan,
+            'keterangan' => $keterangan
+        ];
+
+        // Simpan keberatan dan update status
+        $result = $this->permohonanModel->submitKeberatan($data);
+
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        exit();
+    }
+
     // Generate PDF Bukti Permohonan
     public function generatePDF() {
         if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {

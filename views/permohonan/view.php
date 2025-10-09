@@ -969,7 +969,10 @@ $title = 'Detail Permohonan - PPID Mandailing';
             $currentStatusLower = $currentStatus ? strtolower($currentStatus) : '';
             if (!in_array($currentStatusLower, $forbiddenStatuses) && !in_array($currentStatus, $forbiddenStatuses)):
             ?>
-            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#keberatanModal">
+            <button type="button" class="btn btn-warning" 
+                    onclick="openKeberatanModal(<?php echo $permohonan['id_permohonan']; ?>, 
+                    <?php echo json_encode(htmlspecialchars($permohonan['no_permohonan'])); ?>, 
+                    <?php echo json_encode(htmlspecialchars($permohonan['judul_dokumen'])); ?>)">
               <i class="fas fa-gavel"></i>
               Ajukan Keberatan
             </button>

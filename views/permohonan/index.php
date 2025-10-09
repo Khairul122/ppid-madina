@@ -981,15 +981,15 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
                   Lihat Detail
                 </a>
 
-                  <?php
-                // Tombol ajukan keberatan hanya muncul jika status bukan keberatan, sengketa, atau selesai
-                $forbiddenStatuses = ['keberatan', 'sengketa', 'selesai', 'Selesai'];
+                <?php
+                // Tombol ajukan keberatan hanya muncul jika status bukan keberatan atau selesai
+                $forbiddenStatuses = ['Keberatan', 'Selesai'];
                 $currentStatus = $permohonan['status'] ?? null;
-                $currentStatusLower = $currentStatus ? strtolower($currentStatus) : '';
-                if (!in_array($currentStatusLower, $forbiddenStatuses) && !in_array($currentStatus, $forbiddenStatuses)):
+                if (!in_array($currentStatus, $forbiddenStatuses)):
                 ?>
-                <button type="button" class="btn btn-warning btn-sm" onclick="openKeberatanModal(<?php echo $permohonan['id_permohonan']; ?>, '<?php echo htmlspecialchars($permohonan['no_permohonan']); ?>', '<?php echo htmlspecialchars($permohonan['judul_dokumen']); ?>')">
-                  <i class="fas fa-gavel"></i>
+                <button type="button" class="btn btn-warning btn-sm"
+                        onclick='openKeberatanModal(<?php echo $permohonan['id_permohonan']; ?>, <?php echo json_encode($permohonan['no_permohonan'] ?? ''); ?>, <?php echo json_encode($permohonan['judul_dokumen'] ?? ''); ?>)'>
+                  <i class="fas fa-exclamation-triangle me-1"></i>
                   Ajukan Keberatan
                 </button>
                 <?php endif; ?>
@@ -1007,6 +1007,18 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
                         onclick="openLayananKepuasanModal(this.dataset.id, this.dataset.no, this.dataset.judul, this.dataset.tanggal)">
                   <i class="fas fa-star"></i>
                   Layanan Kepuasan
+                </button>
+                <?php endif; ?>
+
+                <?php
+                // Tampilkan tombol Ajukan Sengketa hanya untuk permohonan dengan status "Ditolak"
+                $currentStatus = $permohonan['status'] ?? null;
+                if ($currentStatus === 'Ditolak'):
+                ?>
+                <button type="button" class="btn btn-danger btn-sm"
+                        onclick="openSengketaModal(<?php echo $permohonan['id_permohonan']; ?>, '<?php echo addslashes($permohonan['no_permohonan'] ?? ''); ?>', '<?php echo addslashes($permohonan['judul_dokumen'] ?? ''); ?>')">
+                  <i class="fas fa-gavel"></i>
+                  Ajukan Sengketa
                 </button>
                 <?php endif; ?>
 
@@ -1070,85 +1082,66 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
   <div class="modal fade" id="keberatanModal" tabindex="-1" aria-labelledby="keberatanModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form id="keberatanForm" method="POST" action="index.php?controller=keberatan&action=create">
-          <div class="modal-header">
-            <h5 class="modal-title" id="keberatanModalLabel">
-              <i class="fas fa-gavel"></i>
+        <form id="keberatanForm" method="POST">
+          <div class="modal-header bg-warning text-dark border-0">
+            <h5 class="modal-title fw-bold" id="keberatanModalLabel">
+              <i class="fas fa-exclamation-triangle me-2"></i>
               Ajukan Keberatan Permohonan
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
 
           <div class="modal-body">
-            <input type="hidden" name="id_permohonan" id="modal_id_permohonan" value="">
+            <input type="hidden" name="id_permohonan" id="keberatan_id_permohonan" value="">
 
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle"></i>
-              <strong>Informasi:</strong> Anda akan mengajukan keberatan untuk permohonan berikut:
+            <div class="alert alert-info border-0">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Informasi:</strong> Anda akan mengajukan keberatan untuk permohonan berikut
             </div>
 
-            <div class="row">
+            <div class="row mb-3">
               <div class="col-md-6">
-                <div class="form-group mb-3">
-                  <label for="modal_display_no_permohonan" class="form-label">
-                    <strong>Nomor Permohonan</strong>
-                  </label>
-                  <input type="text" class="form-control" id="modal_display_no_permohonan" readonly
-                         style="background-color: #f8f9fa; cursor: not-allowed;">
-                </div>
+                <label class="form-label fw-bold">Nomor Permohonan</label>
+                <input type="text" class="form-control bg-light" id="keberatan_no_permohonan" readonly>
               </div>
               <div class="col-md-6">
-                <div class="form-group mb-3">
-                  <label for="modal_display_judul_dokumen" class="form-label">
-                    <strong>Judul Dokumen</strong>
-                  </label>
-                  <input type="text" class="form-control" id="modal_display_judul_dokumen" readonly
-                         style="background-color: #f8f9fa; cursor: not-allowed;">
-                </div>
+                <label class="form-label fw-bold">Judul Dokumen</label>
+                <input type="text" class="form-control bg-light" id="keberatan_judul_dokumen" readonly>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-12">
-                <div class="form-group mb-3">
-                  <label for="alasan_keberatan" class="form-label">
-                    <strong>Alasan Keberatan <span class="text-danger">*</span></strong>
-                  </label>
-                  <textarea class="form-control" id="alasan_keberatan" name="alasan_keberatan"
-                            rows="4" required
-                            placeholder="Jelaskan alasan keberatan Anda terhadap permohonan ini..."></textarea>
-                  <div class="invalid-feedback"></div>
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="alasan_keberatan" class="form-label fw-bold">
+                Alasan Keberatan <span class="text-danger">*</span>
+              </label>
+              <textarea class="form-control" id="alasan_keberatan" name="alasan_keberatan"
+                        rows="5" required
+                        placeholder="Jelaskan secara detail alasan keberatan Anda terhadap permohonan ini..."></textarea>
+              <small class="text-muted">Minimal 20 karakter</small>
+              <div class="invalid-feedback">Alasan keberatan minimal 20 karakter</div>
             </div>
 
-            <div class="row">
-              <div class="col-md-12">
-                <div class="form-group mb-3">
-                  <label for="keterangan" class="form-label">
-                    <strong>Keterangan Tambahan</strong>
-                  </label>
-                  <textarea class="form-control" id="keterangan" name="keterangan"
-                            rows="3"
-                            placeholder="Tambahkan keterangan atau informasi pendukung lainnya (opsional)..."></textarea>
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="keterangan_keberatan" class="form-label fw-bold">
+                Keterangan Tambahan
+              </label>
+              <textarea class="form-control" id="keterangan_keberatan" name="keterangan"
+                        rows="3"
+                        placeholder="Tambahkan keterangan atau informasi pendukung lainnya (opsional)..."></textarea>
             </div>
 
-            <div class="alert alert-warning">
-              <i class="fas fa-exclamation-triangle"></i>
-              <strong>Perhatian:</strong> Pastikan alasan keberatan yang Anda berikan jelas dan dapat dipertanggungjawabkan. Keberatan yang sudah diajukan tidak dapat dibatalkan.
+            <div class="alert alert-warning border-0 mb-0">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Perhatian:</strong> Setelah keberatan diajukan, status permohonan akan berubah menjadi <strong>"Keberatan"</strong> dan akan ditinjau oleh admin PPID. Pastikan alasan yang diberikan jelas dan dapat dipertanggungjawabkan.
             </div>
           </div>
 
-          <div class="modal-footer">
+          <div class="modal-footer border-0">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              <i class="fas fa-times"></i>
-              Batal
+              <i class="fas fa-times me-1"></i>Batal
             </button>
-            <button type="submit" class="btn btn-warning">
-              <i class="fas fa-paper-plane"></i>
-              Ajukan Keberatan
+            <button type="submit" class="btn btn-warning" id="submit-keberatan-btn">
+              <i class="fas fa-paper-plane me-1"></i>Ajukan Keberatan
             </button>
           </div>
         </form>
@@ -1281,13 +1274,13 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
   <script>
     // Function to open keberatan modal
     function openKeberatanModal(permohonanId, noPermohonan, judulDokumen) {
-      document.getElementById('modal_id_permohonan').value = permohonanId;
-      document.getElementById('modal_display_no_permohonan').value = noPermohonan;
-      document.getElementById('modal_display_judul_dokumen').value = judulDokumen;
+      document.getElementById('keberatan_id_permohonan').value = permohonanId;
+      document.getElementById('keberatan_no_permohonan').value = noPermohonan;
+      document.getElementById('keberatan_judul_dokumen').value = judulDokumen;
 
       // Clear form
       document.getElementById('alasan_keberatan').value = '';
-      document.getElementById('keterangan').value = '';
+      document.getElementById('keterangan_keberatan').value = '';
       document.getElementById('alasan_keberatan').classList.remove('is-invalid');
 
       // Show modal
@@ -1323,27 +1316,51 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
         });
       });
 
-      // Keberatan form validation
+      // Keberatan form validation and submission
       const keberatanForm = document.getElementById('keberatanForm');
       if (keberatanForm) {
         keberatanForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+
           const alasanKeberatan = document.getElementById('alasan_keberatan');
-          const submitBtn = this.querySelector('button[type="submit"]');
+          const submitBtn = document.getElementById('submit-keberatan-btn');
 
           // Validate alasan keberatan
           if (alasanKeberatan.value.trim().length < 20) {
-            e.preventDefault();
             alasanKeberatan.classList.add('is-invalid');
-            alasanKeberatan.nextElementSibling.textContent = 'Alasan keberatan minimal 20 karakter';
             return;
           }
 
           // Show loading state
           const originalText = submitBtn.innerHTML;
-          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengajukan...';
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Mengajukan...';
           submitBtn.disabled = true;
 
-          // Allow form submission to continue
+          // Prepare form data
+          const formData = new FormData(keberatanForm);
+
+          // Submit via AJAX
+          fetch('index.php?controller=permohonan&action=submitKeberatan', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Keberatan berhasil diajukan! Status permohonan telah diubah menjadi Keberatan.');
+              location.reload();
+            } else {
+              alert('Gagal mengajukan keberatan: ' + data.message);
+              submitBtn.innerHTML = originalText;
+              submitBtn.disabled = false;
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat mengajukan keberatan');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          });
         });
 
         // Clear validation on input
@@ -1554,7 +1571,101 @@ $title = 'Daftar Permohonan Saya - PPID Mandailing';
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays;
     }
+
+    // Function to open sengketa modal
+    function openSengketaModal(permohonanId, noPermohonan, judulDokumen) {
+      document.getElementById('modal_sengketa_id_permohonan').value = permohonanId;
+      document.getElementById('modal_sengketa_display_no_permohonan').value = noPermohonan;
+      document.getElementById('modal_sengketa_display_judul_dokumen').value = judulDokumen;
+
+      // Clear form
+      document.getElementById('sengketaDecisionYa').checked = false;
+      document.getElementById('sengketaDecisionTidak').checked = false;
+
+      // Show modal
+      const modal = new bootstrap.Modal(document.getElementById('sengketaModal'));
+      modal.show();
+    }
   </script>
+
+  <!-- Modal Sengketa -->
+  <div class="modal fade" id="sengketaModal" tabindex="-1" aria-labelledby="sengketaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="sengketaForm" method="POST" action="index.php?controller=permohonan&action=ajukanSengketa">
+          <div class="modal-header">
+            <h5 class="modal-title" id="sengketaModalLabel">
+              <i class="fas fa-gavel"></i>
+              Ajukan Sengketa Permohonan
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <input type="hidden" name="id_permohonan" id="modal_sengketa_id_permohonan" value="">
+
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              <strong>Informasi:</strong> Anda akan mengajukan sengketa untuk permohonan berikut:
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="modal_sengketa_display_no_permohonan" class="form-label">
+                    <strong>Nomor Permohonan</strong>
+                  </label>
+                  <input type="text" class="form-control" id="modal_sengketa_display_no_permohonan" readonly
+                         style="background-color: #f8f9fa; cursor: not-allowed;">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group mb-3">
+                  <label for="modal_sengketa_display_judul_dokumen" class="form-label">
+                    <strong>Judul Dokumen</strong>
+                  </label>
+                  <input type="text" class="form-control" id="modal_sengketa_display_judul_dokumen" readonly
+                         style="background-color: #f8f9fa; cursor: not-allowed;">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group mb-3">
+                  <label class="form-label"><strong>Apakah Anda ingin mengajukan sengketa? <span class="text-danger">*</span></strong></label><br>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="sengketa_decision" id="sengketaDecisionYa" value="ya" required>
+                    <label class="form-check-label" for="sengketaDecisionYa">Ya</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="sengketa_decision" id="sengketaDecisionTidak" value="tidak" required>
+                    <label class="form-check-label" for="sengketaDecisionTidak">Tidak</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>Perhatian:</strong> Jika Anda memilih "Ya", status permohonan akan diubah menjadi "sengketa".
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times"></i>
+              Batal
+            </button>
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-paper-plane"></i>
+              Ajukan Sengketa
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
