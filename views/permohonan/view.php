@@ -541,6 +541,13 @@ $title = 'Detail Permohonan - PPID Mandailing';
 
     /* Status colors */
     .status-pending { color: #fbbf24 !important; }
+    .status-disposisi { color: #a78bfa !important; }
+    .status-diproses { color: #60a5fa !important; }
+    .status-selesai { color: #34d399 !important; }
+    .status-ditolak { color: #f87171 !important; }
+    .status-keberatan { color: #fb923c !important; }
+    .status-sengketa { color: #ef4444 !important; }
+    /* Legacy status support */
     .status-process { color: #60a5fa !important; }
     .status-approved { color: #34d399 !important; }
     .status-rejected { color: #f87171 !important; }
@@ -742,11 +749,18 @@ $title = 'Detail Permohonan - PPID Mandailing';
               <h1 class="permohonan-number"><?php echo htmlspecialchars($permohonan['no_permohonan']); ?></h1>
               <p class="permohonan-date">Diajukan: <?php echo date('d F Y, H:i', strtotime($permohonan['created_at'] ?? 'now')); ?> WIB</p>
             </div>
-            <span class="status-badge status-<?php echo $permohonan['status'] ?? 'pending'; ?>">
+            <span class="status-badge status-<?php echo strtolower($permohonan['status'] ?? 'pending'); ?>">
               <?php
               $statusText = $permohonan['status'] ?? 'pending';
-              switch($statusText) {
+              switch(strtolower($statusText)) {
                 case 'pending': echo '⏳ Menunggu Proses'; break;
+                case 'disposisi': echo '📋 Disposisi'; break;
+                case 'diproses': echo '🔄 Sedang Diproses'; break;
+                case 'selesai': echo '✅ Selesai'; break;
+                case 'ditolak': echo '❌ Ditolak'; break;
+                case 'keberatan': echo '⚖️ Keberatan'; break;
+                case 'sengketa': echo '⚠️ Sengketa'; break;
+                // Legacy status support
                 case 'process': echo '🔄 Sedang Diproses'; break;
                 case 'approved': echo '✅ Disetujui'; break;
                 case 'rejected': echo '❌ Ditolak'; break;
@@ -810,11 +824,18 @@ $title = 'Detail Permohonan - PPID Mandailing';
               <div class="info-item">
                 <div class="info-label">Status Permohonan</div>
                 <div class="info-value">
-                  <span class="status-badge status-<?php echo $permohonan['status'] ?? 'pending'; ?>">
+                  <span class="status-badge status-<?php echo strtolower($permohonan['status'] ?? 'pending'); ?>">
                     <?php
                     $statusText = $permohonan['status'] ?? 'pending';
-                    switch($statusText) {
+                    switch(strtolower($statusText)) {
                       case 'pending': echo '⏳ Menunggu Proses'; break;
+                      case 'disposisi': echo '📋 Disposisi'; break;
+                      case 'diproses': echo '🔄 Sedang Diproses'; break;
+                      case 'selesai': echo '✅ Selesai'; break;
+                      case 'ditolak': echo '❌ Ditolak'; break;
+                      case 'keberatan': echo '⚖️ Keberatan'; break;
+                      case 'sengketa': echo '⚠️ Sengketa'; break;
+                      // Legacy status support
                       case 'process': echo '🔄 Sedang Diproses'; break;
                       case 'approved': echo '✅ Disetujui'; break;
                       case 'rejected': echo '❌ Ditolak'; break;

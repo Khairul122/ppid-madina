@@ -68,17 +68,23 @@ function hasRole($allowedRoles)
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'diproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=diprosesIndex">Permohonan Diproses</a>
             </li>
-             <li class="nav-item">
+            <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'selesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=selesaiIndex">Permohonan Selesai</a>
             </li>
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'ditolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=ditolakIndex">Permohonan Ditolak</a>
             </li>
-             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=layananKepuasanIndex">Layanan Kepuasan</a>
+            <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=keberatanIndex">Keberatan</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=keberatanIndex">Keberatan</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'sengketa') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=sengketaIndex">Sengketa</a>
             </li>
              <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=keberatanIndex">Keberatan</a>
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'semua') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=semuaIndex">Semua Permohonan</a>
             </li>
           </ul>
         </div>
@@ -222,7 +228,7 @@ function hasRole($allowedRoles)
                 <span class="menu-title">Informasi Publik</span>
               </a>
             </li>
-             <li class="nav-item">
+            <li class="nav-item">
               <a class="nav-link <?php echo isActive('faq') ? 'active' : ''; ?>" href="index.php?controller=faq&action=index">
                 <i class="fa fa-instagram menu-icon fa-sm"></i>
                 <span class="menu-title">FAQ</span>

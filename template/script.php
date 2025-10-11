@@ -10,4 +10,3 @@
 <script src="assets/js/jquery.cookie.js" type="text/javascript"></script>
 <script src="assets/js/dashboard.js"></script>
 <script src="assets/js/proBanner.js"></script>
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>

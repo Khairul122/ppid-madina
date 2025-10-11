@@ -114,7 +114,7 @@ $faq = $this->faqModel->getSingleFAQ();
                         <textarea
                           name="isi_text"
                           id="faqEditor"
-                          class="form-control"
+                          class="form-control tinymce-editor"
                           rows="15"><?php echo htmlspecialchars_decode($faq['isi']); ?></textarea>
                       </div>
                     </div>
@@ -191,75 +191,9 @@ $faq = $this->faqModel->getSingleFAQ();
   <?php include 'template/script.php'; ?>
 
   <!-- TinyMCE Editor -->
-  <script src="https://cdn.tiny.cloud/1/z0t4wwtn9a2wpsk59ee400jsup9j2wusunqyvvezelo6imd8/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-  <script>
-    // Initialize TinyMCE
-    document.addEventListener('DOMContentLoaded', function() {
-      tinymce.init({
-        selector: '#faqEditor',
-        height: 500,
-        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-        file_picker_types: 'file image media',
-        file_picker_callback: function(cb, value, meta) {
-          var input = document.createElement('input');
-          input.setAttribute('type', 'file');
+   <script src="https://cdn.tiny.cloud/1/9lnh38d8gyc431et3kg0xkojz37mxqxpb7acund2y4xun237/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 
-          if (meta.filetype === 'image') {
-            input.setAttribute('accept', 'image/*');
-          } else if (meta.filetype === 'media') {
-            input.setAttribute('accept', 'video/*,audio/*');
-          } else {
-            input.setAttribute('accept', 'image/*,.pdf,.doc,.docx');
-          }
-
-          input.onchange = function() {
-            var file = this.files[0];
-            var formData = new FormData();
-            formData.append('file', file);
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'index.php?controller=faq&action=upload_image');
-
-            xhr.onload = function() {
-              if (xhr.status === 200) {
-                try {
-                  var response = JSON.parse(xhr.responseText);
-
-                  if (response && response.success === true) {
-                    if (response.url) {
-                      cb(response.url, { title: file.name });
-                    } else if (response.location) {
-                      cb(response.location, { title: file.name });
-                    } else {
-                      alert('No URL returned from server');
-                    }
-                  } else {
-                    var errorMsg = response && response.message ? response.message : 'Upload failed';
-                    alert(errorMsg);
-                  }
-                } catch (e) {
-                  alert('Invalid response from server: ' + e.message);
-                }
-              } else if (xhr.status === 403) {
-                alert('Session expired or unauthorized. Please refresh the page.');
-              } else {
-                alert('HTTP Error: ' + xhr.status);
-              }
-            };
-
-            xhr.onerror = function() {
-              alert('File upload failed due to a network error.');
-            };
-
-            xhr.send(formData);
-          };
-
-          input.click();
-        }
-      });
-    });
-  </script>
+  <script src="views/tinymce-init.js"></script>
 </body>
 
 </html>

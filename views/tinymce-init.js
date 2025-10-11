@@ -1,4 +1,3 @@
-// TinyMCE Initialization Script for Profile Management
 
 function initializeTinyMCE() {
   tinymce.init({

@@ -253,7 +253,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
   <!-- TinyMCE WYSIWYG Editor -->
   <script src="https://cdn.tiny.cloud/1/9lnh38d8gyc431et3kg0xkojz37mxqxpb7acund2y4xun237/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
 
-  <script src="views/profile/tinymce-init.js"></script>
+  <script src="views/tinymce-init.js"></script>
 </body>
 
 </html>

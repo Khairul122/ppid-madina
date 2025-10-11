@@ -33,9 +33,9 @@ class AjukanPermohonanModel {
             // Insert permohonan
             $query = "INSERT INTO " . $this->table_name . "
                       (id_user, no_permohonan, sisa_jatuh_tempo, tujuan_permohonan, komponen_tujuan, judul_dokumen,
-                       tujuan_penggunaan_informasi, upload_foto_identitas, upload_data_pedukung, status)
+                       tujuan_penggunaan_informasi, upload_foto_identitas, upload_data_pedukung, status, sumber_media)
                       VALUES (:id_user, :no_permohonan, :sisa_jatuh_tempo, :tujuan_permohonan, :komponen_tujuan, :judul_dokumen,
-                              :tujuan_penggunaan_informasi, :upload_foto_identitas, :upload_data_pendukung, :status)";
+                              :tujuan_penggunaan_informasi, :upload_foto_identitas, :upload_data_pendukung, :status, :sumber_media)";
 
             $stmt = $this->conn->prepare($query);
 
@@ -49,6 +49,7 @@ class AjukanPermohonanModel {
             $stmt->bindParam(':upload_foto_identitas', $upload_foto_identitas);
             $stmt->bindParam(':upload_data_pendukung', $upload_data_pendukung);
             $stmt->bindValue(':status', 'Masuk');
+            $stmt->bindValue(':sumber_media', 'Website');
 
             $result = $stmt->execute();
 

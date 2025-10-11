@@ -249,7 +249,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <label class="form-label text-dark fw-medium">Status Permohonan</label>
                           <select name="status" class="form-select form-control-lg" id="status-select">
                             <option value="Diproses" <?php echo ($permohonan['status'] ?? '') == 'Diproses' ? 'selected' : ''; ?>>Diproses</option>
-                            <option value="Diterima" <?php echo ($permohonan['status'] ?? '') == 'Diterima' ? 'selected' : ''; ?>>Diterima</option>
                             <option value="Disposisi" <?php echo ($permohonan['status'] ?? '') == 'Disposisi' ? 'selected' : ''; ?>>Disposisi</option>
                             <option value="Selesai" <?php echo ($permohonan['status'] ?? '') == 'Selesai' ? 'selected' : ''; ?>>Selesai</option>
                             <option value="Ditolak" <?php echo ($permohonan['status'] ?? '') == 'Ditolak' ? 'selected' : ''; ?>>Ditolak</option>
@@ -441,6 +440,46 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
   </div>
 
+  <!-- Modal Diproses -->
+  <div class="modal fade" id="diprosesModal" tabindex="-1" aria-labelledby="diprosesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title text-white" id="diprosesModalLabel">
+            <i class="fas fa-edit me-2"></i>Proses Permohonan
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="diproses-form">
+            <input type="hidden" name="id" value="<?php echo $permohonan['id_permohonan']; ?>">
+            <input type="hidden" name="status" value="Diproses">
+
+            <div class="mb-4">
+              <label for="catatan_petugas_diproses" class="form-label fw-bold">Catatan Petugas <span class="text-danger">*</span></label>
+              <textarea name="catatan_petugas" id="catatan_petugas_diproses" class="form-control" rows="4"
+                        placeholder="Masukkan catatan terkait pemrosesan permohonan ini..." required></textarea>
+              <small class="form-text text-muted">Berikan catatan atau informasi tambahan terkait pemrosesan permohonan ini</small>
+            </div>
+
+            <div class="alert alert-info" role="alert">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Informasi:</strong> Permohonan dengan status "Diproses" akan ditindaklanjuti oleh petugas PPID.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Batal
+          </button>
+          <button type="button" class="btn btn-warning" id="btn-submit-diproses">
+            <i class="fas fa-check me-1"></i>Proses Permohonan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Penolakan -->
   <div class="modal fade" id="penolakanModal" tabindex="-1" aria-labelledby="penolakanModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -504,6 +543,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
       const selectedStatus = $('#status-select').val();
 
+      // Jika status yang dipilih adalah Diproses, tampilkan modal
+      if (selectedStatus === 'Diproses') {
+        $('#diprosesModal').modal('show');
+        return;
+      }
+
       // Jika status yang dipilih adalah Disposisi, tampilkan modal
       if (selectedStatus === 'Disposisi') {
         $('#disposisiModal').modal('show');
@@ -516,7 +561,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         return;
       }
 
-      // Untuk status selain disposisi dan ditolak, lanjutkan dengan update biasa
+      // Untuk status selain diproses, disposisi dan ditolak, lanjutkan dengan update biasa
       const formData = new FormData(this);
 
       // Debug: log form data
@@ -876,6 +921,79 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     // Reset modal penolakan ketika ditutup
     $('#penolakanModal').on('hidden.bs.modal', function () {
       $('#penolakan-form')[0].reset();
+      $('#status-select').val($('#status-select option:selected').data('current-status') || 'Diproses');
+    });
+
+    // Handle submit diproses
+    $('#btn-submit-diproses').on('click', function() {
+      const catatanPetugas = $('#catatan_petugas_diproses').val();
+
+      // Validasi form
+      if (!catatanPetugas.trim()) {
+        alert('Catatan petugas harus diisi!');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('id', $('input[name="id"]').val());
+      formData.append('status', 'Diproses');
+      formData.append('catatan_petugas', catatanPetugas);
+
+      // Debug: log form data
+      console.log('Diproses form data:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+      }
+
+      $.ajax({
+        url: 'index.php?controller=permohonanadmin&action=updateStatus',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        success: function(response) {
+          console.log('Diproses response:', response);
+
+          let result;
+          if (typeof response === 'object') {
+            result = response;
+          } else {
+            try {
+              result = JSON.parse(response);
+            } catch (e) {
+              console.error('Error parsing JSON:', e);
+              const cleanedResponse = response.trim().replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+              try {
+                result = JSON.parse(cleanedResponse);
+              } catch (e2) {
+                alert('Error: Response tidak valid dari server\n\nResponse: ' + response.substring(0, 200));
+                return;
+              }
+            }
+          }
+
+          $('#diprosesModal').modal('hide');
+
+          if (result.success) {
+            alert('Permohonan berhasil diproses');
+            location.reload();
+          } else {
+            alert('Gagal memproses permohonan: ' + result.message);
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Diproses AJAX error:', error);
+          console.log('Response Text:', xhr.responseText);
+          $('#diprosesModal').modal('hide');
+          alert('Terjadi kesalahan saat memproses permohonan: ' + error);
+        }
+      });
+    });
+
+    // Reset modal diproses ketika ditutup
+    $('#diprosesModal').on('hidden.bs.modal', function () {
+      $('#diproses-form')[0].reset();
       $('#status-select').val($('#status-select option:selected').data('current-status') || 'Diproses');
     });
   </script>
