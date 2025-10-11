@@ -220,8 +220,8 @@ class PermohonanAdminController
             $username = trim($_POST['username'] ?? $_POST['email']);
             $password = password_hash(trim($_POST['password']), PASSWORD_DEFAULT);
 
-            $userQuery = "INSERT INTO users (username, email, password, role, id_biodata, created_at)
-                         VALUES (:username, :email, :password, 'user', :id_biodata, NOW())";
+            $userQuery = "INSERT INTO users (username, email, password, role, id_biodata)
+                         VALUES (:username, :email, :password, 'masyarakat', :id_biodata)";
 
             $userStmt = $this->conn->prepare($userQuery);
             $userStmt->bindValue(':username', $username);
@@ -237,66 +237,73 @@ class PermohonanAdminController
 
             // Continue with permohonan creation
             // (existing code will use $id_user that was just created)
-        $judul_dokumen = trim($_POST['judul_dokumen']);
-        $tujuan_penggunaan_informasi = trim($_POST['tujuan_penggunaan_informasi']);
-        $tujuan_permohonan = trim($_POST['tujuan_permohonan']);
-        $komponen_tujuan = trim($_POST['komponen_tujuan']);
-        $kandungan_informasi = isset($_POST['kandungan_informasi']) ? trim($_POST['kandungan_informasi']) : '';
-        $sumber_media = isset($_POST['sumber_media']) ? trim($_POST['sumber_media']) : '';
+            $judul_dokumen = trim($_POST['judul_dokumen']);
+            $tujuan_penggunaan_informasi = trim($_POST['tujuan_penggunaan_informasi']);
+            $tujuan_permohonan = trim($_POST['tujuan_permohonan']);
+            $komponen_tujuan = trim($_POST['komponen_tujuan']);
+            $kandungan_informasi = isset($_POST['kandungan_informasi']) ? trim($_POST['kandungan_informasi']) : '';
+            $sumber_media = isset($_POST['sumber_media']) ? trim($_POST['sumber_media']) : '';
 
-        // Generate nomor permohonan
-        $no_permohonan = $this->generateNoPermohonan();
+            // Generate nomor permohonan
+            $no_permohonan = $this->generateNoPermohonan();
 
-        // Handle file uploads
-        $upload_foto_identitas = '';
-        $upload_data_pedukung = '';
+            // Handle file uploads
+            $upload_foto_identitas = '';
+            $upload_data_pedukung = '';
 
-        if (isset($_FILES['upload_foto_identitas']) && $_FILES['upload_foto_identitas']['error'] === UPLOAD_ERR_OK) {
-            $upload_foto_identitas = $this->handleFileUpload($_FILES['upload_foto_identitas'], 'identitas');
-        }
+            if (isset($_FILES['upload_foto_identitas']) && $_FILES['upload_foto_identitas']['error'] === UPLOAD_ERR_OK) {
+                $upload_foto_identitas = $this->handleFileUpload($_FILES['upload_foto_identitas'], 'identitas');
+            }
 
-        if (isset($_FILES['upload_data_pedukung']) && $_FILES['upload_data_pedukung']['error'] === UPLOAD_ERR_OK) {
-            $upload_data_pedukung = $this->handleFileUpload($_FILES['upload_data_pedukung'], 'pendukung');
-        }
+            if (isset($_FILES['upload_data_pedukung']) && $_FILES['upload_data_pedukung']['error'] === UPLOAD_ERR_OK) {
+                $upload_data_pedukung = $this->handleFileUpload($_FILES['upload_data_pedukung'], 'pendukung');
+            }
 
-        // Insert permohonan
-        try {
-            $query = "INSERT INTO permohonan
-                      (id_user, no_permohonan, judul_dokumen, tujuan_penggunaan_informasi,
-                       tujuan_permohonan, komponen_tujuan, kandungan_informasi, sumber_media,
-                       upload_foto_identitas, upload_data_pedukung, status, created_at)
-                      VALUES
-                      (:id_user, :no_permohonan, :judul_dokumen, :tujuan_penggunaan_informasi,
-                       :tujuan_permohonan, :komponen_tujuan, :kandungan_informasi, :sumber_media,
-                       :upload_foto_identitas, :upload_data_pedukung, 'Masuk', NOW())";
+            // Insert permohonan
+            try {
+                $query = "INSERT INTO permohonan
+                          (id_user, no_permohonan, sisa_jatuh_tempo, judul_dokumen, tujuan_penggunaan_informasi,
+                           tujuan_permohonan, komponen_tujuan, kandungan_informasi, sumber_media,
+                           upload_foto_identitas, upload_data_pedukung, status, created_at)
+                          VALUES
+                          (:id_user, :no_permohonan, :sisa_jatuh_tempo, :judul_dokumen, :tujuan_penggunaan_informasi,
+                           :tujuan_permohonan, :komponen_tujuan, :kandungan_informasi, :sumber_media,
+                           :upload_foto_identitas, :upload_data_pedukung, 'Masuk', NOW())";
 
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':id_user', $id_user);
-            $stmt->bindParam(':no_permohonan', $no_permohonan);
-            $stmt->bindParam(':judul_dokumen', $judul_dokumen);
-            $stmt->bindParam(':tujuan_penggunaan_informasi', $tujuan_penggunaan_informasi);
-            $stmt->bindParam(':tujuan_permohonan', $tujuan_permohonan);
-            $stmt->bindParam(':komponen_tujuan', $komponen_tujuan);
-            $stmt->bindParam(':kandungan_informasi', $kandungan_informasi);
-            $stmt->bindParam(':sumber_media', $sumber_media);
-            $stmt->bindParam(':upload_foto_identitas', $upload_foto_identitas);
-            $stmt->bindParam(':upload_data_pedukung', $upload_data_pedukung);
+                $stmt = $this->conn->prepare($query);
+                $stmt->bindParam(':id_user', $id_user);
+                $stmt->bindParam(':no_permohonan', $no_permohonan);
+                $stmt->bindParam(':sisa_jatuh_tempo', 9); 
+                $stmt->bindParam(':judul_dokumen', $judul_dokumen);
+                $stmt->bindParam(':tujuan_penggunaan_informasi', $tujuan_penggunaan_informasi);
+                $stmt->bindParam(':tujuan_permohonan', $tujuan_permohonan);
+                $stmt->bindParam(':komponen_tujuan', $komponen_tujuan);
+                $stmt->bindParam(':kandungan_informasi', $kandungan_informasi);
+                $stmt->bindParam(':sumber_media', $sumber_media);
+                $stmt->bindParam(':upload_foto_identitas', $upload_foto_identitas);
+                $stmt->bindParam(':upload_data_pedukung', $upload_data_pedukung);
 
-            if ($stmt->execute()) {
-                // Clear old input on success
-                unset($_SESSION['old_input']);
-                $_SESSION['success_message'] = 'Permohonan berhasil ditambahkan';
-                header('Location: index.php?controller=permohonanadmin&action=index');
-            } else {
-                $_SESSION['error_message'] = 'Gagal menambahkan permohonan';
+                if ($stmt->execute()) {
+                    // Clear old input on success
+                    unset($_SESSION['old_input']);
+                    $_SESSION['success_message'] = 'Permohonan berhasil ditambahkan';
+                    header('Location: index.php?controller=permohonanadmin&action=index');
+                } else {
+                    $_SESSION['error_message'] = 'Gagal menambahkan permohonan';
+                    header('Location: index.php?controller=permohonanadmin&action=create');
+                }
+            } catch (Exception $e) {
+                $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
                 header('Location: index.php?controller=permohonanadmin&action=create');
             }
+            $this->conn->commit();
         } catch (Exception $e) {
+            $this->conn->rollBack();
             $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
             header('Location: index.php?controller=permohonanadmin&action=create');
         }
         exit();
-        }
+    }
 
     // ============ EDIT & UPDATE ============
 
