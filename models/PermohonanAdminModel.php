@@ -153,7 +153,7 @@ class PermohonanAdminModel
                     SUM(CASE WHEN status = 'Disposisi' THEN 1 ELSE 0 END) as disposisi,
                     SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as selesai,
                     SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END) as ditolak
-                  FROM {$this->table_permohonan}
+                  FROM {$this->table_permohonan} 
                   WHERE komponen_tujuan = :nama_skpd";
 
         $stmt = $this->conn->prepare($query);
@@ -174,7 +174,7 @@ class PermohonanAdminModel
 
     public function updatePermohonanStatus($id, $status)
     {
-        $query = "UPDATE {$this->table_permohonan}
+        $query = "UPDATE {$this->table_permohonan} 
                   SET status = :status, updated_at = NOW()
                   WHERE id_permohonan = :id";
 
@@ -187,7 +187,7 @@ class PermohonanAdminModel
 
     public function updateStatusWithCatatan($id, $status, $catatan_petugas)
     {
-        $query = "UPDATE {$this->table_permohonan}
+        $query = "UPDATE {$this->table_permohonan} 
                   SET status = :status,
                       catatan_petugas = :catatan_petugas,
                       updated_at = NOW()
@@ -225,6 +225,7 @@ class PermohonanAdminModel
             return false;
         }
     }
+    
 
     public function updatePermohonanWithPenolakan($data)
     {
@@ -248,6 +249,7 @@ class PermohonanAdminModel
             return false;
         }
     }
+    
 
     public function updateSisaJatuhTempo($id, $sisa_jatuh_tempo)
     {
@@ -279,6 +281,7 @@ class PermohonanAdminModel
             ];
         }
     }
+    
 
     // ============ PUBLIC METHODS - RELATED DATA ============
 
@@ -295,6 +298,7 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 
     public function getPetugasSKPDByUserId($user_id)
     {
@@ -310,6 +314,7 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 
     // ============ CUSTOM METHODS FOR 7 HARI KERJA ============
 
@@ -344,8 +349,9 @@ class PermohonanAdminModel
         
         return $selisih->days;
     }
+    
 
-    /**
+    /** 
      * Fungsi untuk membuat permohonan baru dengan sisa_jatuh_tempo yang dihitung
      */
     public function createPermohonan($data)
@@ -398,6 +404,7 @@ class PermohonanAdminModel
             ];
         }
     }
+    
 
     /**
      * Fungsi untuk mendapatkan semua data pemohon
@@ -436,6 +443,7 @@ class PermohonanAdminModel
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 
     /**
      * Count total pemohon
@@ -468,6 +476,7 @@ class PermohonanAdminModel
 
         return (int)$result['total'];
     }
+    
 
     // ============ PRIVATE HELPER METHODS ============
 
@@ -485,6 +494,7 @@ class PermohonanAdminModel
                 ORDER BY p.created_at DESC
                 LIMIT :limit OFFSET :offset";
     }
+    
 
     private function executePermohonanQuery($query, $params, $limit, $offset)
     {
@@ -500,6 +510,7 @@ class PermohonanAdminModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 
     private function countPermohonan($whereClause, $params)
     {
@@ -520,6 +531,7 @@ class PermohonanAdminModel
 
         return (int)$result['total'];
     }
+    
 
     private function addStatusFilter(&$whereClause, &$params, $status)
     {
@@ -528,6 +540,7 @@ class PermohonanAdminModel
             $params[':status'] = $status;
         }
     }
+    
 
     private function addSearchFilter(&$whereClause, &$params, $search)
     {
@@ -597,6 +610,7 @@ class PermohonanAdminModel
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 
     // Count permohonan selesai by SKPD
     public function countPermohonanSelesaiBySKPD($nama_skpd, $status = 'all', $search = '')
@@ -699,6 +713,7 @@ class PermohonanAdminModel
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 
     // Count permohonan ditolak by SKPD
     public function countPermohonanDitolakBySKPD($nama_skpd, $status = 'all', $search = '')
@@ -779,6 +794,7 @@ class PermohonanAdminModel
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
 
     // Count layanan kepuasan filtered by SKPD
     public function countLayananKepuasanBySKPD($nama_skpd, $search = '')
@@ -810,6 +826,7 @@ class PermohonanAdminModel
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'] ?? 0;
     }
+    
 
     // Get layanan kepuasan by ID (with SKPD check)
     public function getLayananKepuasanById($id)
@@ -829,6 +846,7 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
 
     // Delete layanan kepuasan
     public function deleteLayananKepuasan($id)
@@ -856,6 +874,7 @@ class PermohonanAdminModel
             ];
         }
     }
+    
 
     // Get layanan kepuasan stats for SKPD
     public function getLayananKepuasanStatsBySKPD($nama_skpd)
@@ -904,4 +923,53 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    
+
+    /**
+     * Get permohonan for diproses view by ID
+     */
+    public function getPermohonanForDiprosesView($id)
+    {
+        $query = "SELECT p.*, u.username, u.email as user_email, u.role,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                  FROM {$this->table_permohonan} p
+                  JOIN {$this->table_users} u ON p.id_user = u.id_user
+                  LEFT JOIN {$this->table_biodata} bp ON u.id_biodata = bp.id_biodata
+                  WHERE p.id_permohonan = :id AND p.status = 'Diproses'
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+
+    /**
+     * Get permohonan for selesai view by ID
+     */
+    public function getPermohonanForSelesaiView($id)
+    {
+        $query = "SELECT p.*, u.username, u.email as user_email, u.role,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                  FROM {$this->table_permohonan} p
+                  JOIN {$this->table_users} u ON p.id_user = u.id_user
+                  LEFT JOIN {$this->table_biodata} bp ON u.id_biodata = bp.id_biodata
+                  WHERE p.id_permohonan = :id AND p.status = 'Selesai'
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }
+?>
