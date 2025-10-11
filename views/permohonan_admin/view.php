@@ -365,9 +365,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
               <select name="komponen_tujuan" id="komponen_tujuan" class="form-select" required>
                 <option value="">-- Pilih SKPD Tujuan --</option>
               </select>
-              <div class="form-text text-muted">
-                <i class="fas fa-info-circle me-1"></i>Memuat daftar SKPD...
-              </div>
             </div>
 
             <div class="mb-4">
@@ -798,7 +795,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     // Load SKPD data dinamis - langsung load semua SKPD
     function loadSKPDData() {
       $.ajax({
-        url: 'index.php?controller=permohonanadmin&action=getSKPDData',
+        url: 'index.php?controller=permohonanadmin&action=getAllSKPDList',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
@@ -811,17 +808,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             // Tambahkan semua SKPD ke dropdown
             if (response.data.skpd_list && response.data.skpd_list.length > 0) {
               response.data.skpd_list.forEach(function(skpd) {
-                komponenSelect.append(`<option value="${skpd.nama_skpd}">${skpd.nama_skpd}</option>`);
+                // Jika komponen_tujuan sebelumnya cocok dengan SKPD ini, tandai sebagai selected
+                const isSelected = "<?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? ''); ?>" === skpd.nama_skpd;
+                const selectedAttr = isSelected ? ' selected' : '';
+                komponenSelect.append(`<option value="${skpd.nama_skpd}"${selectedAttr}>${skpd.nama_skpd}</option>`);
               });
 
-              // Update form text
-              $('#komponen_tujuan').parent().find('.form-text').html(
-                `<i class="fas fa-check-circle me-1 text-success"></i>Ditemukan ${response.data.skpd_list.length} SKPD`
-              );
             } else {
               $('#komponen_tujuan').parent().find('.form-text').html(
                 '<i class="fas fa-exclamation-triangle me-1 text-warning"></i>Tidak ada SKPD tersedia'
               );
+            }
+            
+            // Jika komponen_tujuan sebelumnya ada, set sebagai selected
+            const currentKomponen = "<?php echo htmlspecialchars($permohonan['komponen_tujuan'] ?? ''); ?>";
+            if (currentKomponen) {
+              komponenSelect.val(currentKomponen);
             }
           } else {
             console.error('Gagal memuat data SKPD:', response.message);

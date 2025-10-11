@@ -1,4 +1,5 @@
 <?php
+require_once 'models/PermohonanAdminModel.php';
 require_once 'models/PermohonanPetugasModel.php';
 require_once 'models/SKPDModel.php';
 require_once 'models/UserModel.php';
@@ -22,7 +23,7 @@ class PermohonanAdminController
         global $database;
         $db = $database->getConnection();
         $this->conn = $db;
-        $this->permohonanAdminModel = new PermohonanPetugasModel($db);
+        $this->permohonanAdminModel = new PermohonanAdminModel($db);
         $this->skpdModel = new SKPDModel($db);
         $this->userModel = new UserModel($db);
     }
@@ -87,6 +88,36 @@ class PermohonanAdminController
         unset($_SESSION['error_message']);
 
         include 'views/permohonan_admin/view.php';
+    }
+
+    /**
+     * Lihat detail permohonan disposisi dengan validasi session admin
+     */
+    public function disposisiView()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=disposisiIndex');
+            exit();
+        }
+
+        $id = intval($_GET['id']);
+        $permohonan = $this->permohonanAdminModel->getPermohonanForDisposisiView($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan disposisi tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=disposisiIndex');
+            exit();
+        }
+
+        $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/disposisi/view.php';
     }
 
     // ============ CREATE & STORE ============
@@ -259,41 +290,30 @@ class PermohonanAdminController
                 $upload_data_pedukung = $this->handleFileUpload($_FILES['upload_data_pedukung'], 'pendukung');
             }
 
-            // Insert permohonan
-            try {
-                $query = "INSERT INTO permohonan
-                          (id_user, no_permohonan, sisa_jatuh_tempo, judul_dokumen, tujuan_penggunaan_informasi,
-                           tujuan_permohonan, komponen_tujuan, kandungan_informasi, sumber_media,
-                           upload_foto_identitas, upload_data_pedukung, status, created_at)
-                          VALUES
-                          (:id_user, :no_permohonan, :sisa_jatuh_tempo, :judul_dokumen, :tujuan_penggunaan_informasi,
-                           :tujuan_permohonan, :komponen_tujuan, :kandungan_informasi, :sumber_media,
-                           :upload_foto_identitas, :upload_data_pedukung, 'Masuk', NOW())";
+            // Insert permohonan using model method with 7 hari kerja calculation
+            $permohonan_data = [
+                'id_user' => $id_user,
+                'no_permohonan' => $no_permohonan,
+                'judul_dokumen' => $judul_dokumen,
+                'tujuan_penggunaan_informasi' => $tujuan_penggunaan_informasi,
+                'tujuan_permohonan' => $tujuan_permohonan,
+                'komponen_tujuan' => $komponen_tujuan,
+                'kandungan_informasi' => $kandungan_informasi,
+                'sumber_media' => $sumber_media,
+                'upload_foto_identitas' => $upload_foto_identitas,
+                'upload_data_pedukung' => $upload_data_pedukung,
+                'status' => 'Masuk'
+            ];
 
-                $stmt = $this->conn->prepare($query);
-                $stmt->bindParam(':id_user', $id_user);
-                $stmt->bindParam(':no_permohonan', $no_permohonan);
-                $stmt->bindParam(':sisa_jatuh_tempo', 9); 
-                $stmt->bindParam(':judul_dokumen', $judul_dokumen);
-                $stmt->bindParam(':tujuan_penggunaan_informasi', $tujuan_penggunaan_informasi);
-                $stmt->bindParam(':tujuan_permohonan', $tujuan_permohonan);
-                $stmt->bindParam(':komponen_tujuan', $komponen_tujuan);
-                $stmt->bindParam(':kandungan_informasi', $kandungan_informasi);
-                $stmt->bindParam(':sumber_media', $sumber_media);
-                $stmt->bindParam(':upload_foto_identitas', $upload_foto_identitas);
-                $stmt->bindParam(':upload_data_pedukung', $upload_data_pedukung);
+            $result = $this->permohonanAdminModel->createPermohonan($permohonan_data);
 
-                if ($stmt->execute()) {
-                    // Clear old input on success
-                    unset($_SESSION['old_input']);
-                    $_SESSION['success_message'] = 'Permohonan berhasil ditambahkan';
-                    header('Location: index.php?controller=permohonanadmin&action=index');
-                } else {
-                    $_SESSION['error_message'] = 'Gagal menambahkan permohonan';
-                    header('Location: index.php?controller=permohonanadmin&action=create');
-                }
-            } catch (Exception $e) {
-                $_SESSION['error_message'] = 'Error: ' . $e->getMessage();
+            if ($result['success']) {
+                // Clear old input on success
+                unset($_SESSION['old_input']);
+                $_SESSION['success_message'] = 'Permohonan berhasil ditambahkan dengan sisa jatuh tempo ' . $result['sisa_jatuh_tempo'] . ' hari';
+                header('Location: index.php?controller=permohonanadmin&action=index');
+            } else {
+                $_SESSION['error_message'] = $result['message'];
                 header('Location: index.php?controller=permohonanadmin&action=create');
             }
             $this->conn->commit();
@@ -504,15 +524,24 @@ class PermohonanAdminController
                 break;
 
             case 'Disposisi':
-                if (empty(trim($_POST['tujuan_permohonan'] ?? '')) || empty(trim($_POST['komponen_tujuan'] ?? ''))) {
-                    echo json_encode(['success' => false, 'message' => 'Tujuan permohonan dan komponen tujuan harus diisi']);
+                $tujuan_permohonan = trim($_POST['tujuan_permohonan'] ?? '');
+                $komponen_tujuan = trim($_POST['komponen_tujuan'] ?? '');
+                
+                if (empty($komponen_tujuan)) {
+                    echo json_encode(['success' => false, 'message' => 'Komponen tujuan harus diisi']);
                     exit();
                 }
+                
+                // Jika tujuan_permohonan tidak diisi, gunakan komponen_tujuan sebagai tujuan_permohonan
+                if (empty($tujuan_permohonan)) {
+                    $tujuan_permohonan = $komponen_tujuan;
+                }
+                
                 $updateData = [
                     'id_permohonan' => $id,
                     'status' => $status,
-                    'tujuan_permohonan' => trim($_POST['tujuan_permohonan']),
-                    'komponen_tujuan' => trim($_POST['komponen_tujuan']),
+                    'tujuan_permohonan' => $tujuan_permohonan,
+                    'komponen_tujuan' => $komponen_tujuan,
                     'catatan_petugas' => trim($_POST['catatan_petugas'] ?? '')
                 ];
                 $result = $this->permohonanAdminModel->updatePermohonanWithDisposisi($updateData);
@@ -531,6 +560,50 @@ class PermohonanAdminController
                 ];
                 $result = $this->permohonanAdminModel->updatePermohonanWithPenolakan($updateData);
                 break;
+
+            default:
+                $result = $this->permohonanAdminModel->updatePermohonanStatus($id, $status);
+                break;
+        }
+
+        $message = $result ? 'Status berhasil diperbarui' : 'Gagal memperbarui status';
+        echo json_encode(['success' => $result, 'message' => $message]);
+        exit();
+    }
+
+    /**
+     * Update status permohonan dengan catatan petugas (untuk status selain disposisi, ditolak)
+     */
+    public function updateStatusWithCatatan()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Metode tidak diizinkan']);
+            exit();
+        }
+
+        $id = isset($_POST['id']) ? intval($_POST['id']) : (isset($_POST['id_permohonan']) ? intval($_POST['id_permohonan']) : 0);
+        $status = trim($_POST['status'] ?? '');
+        $catatan_petugas = trim($_POST['catatan_petugas'] ?? '');
+
+        if (!$id || empty($status)) {
+            echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+            exit();
+        }
+
+        if (empty($catatan_petugas)) {
+            echo json_encode(['success' => false, 'message' => 'Catatan petugas harus diisi']);
+            exit();
+        }
+
+        // Update status with catatan
+        $result = $this->permohonanAdminModel->updateStatusWithCatatan($id, $status, $catatan_petugas);
+
+        $message = $result ? 'Status dan catatan berhasil diperbarui' : 'Gagal memperbarui status dan catatan';
+        echo json_encode(['success' => $result, 'message' => $message]);
+        exit();
+    }
 
             case 'Selesai':
                 $catatan_petugas = trim($_POST['catatan_petugas'] ?? '');
@@ -859,50 +932,8 @@ class PermohonanAdminController
         $offset = ($page - 1) * $limit;
         $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-        // Get pemohon data with permohonan count
-        $whereClause = "WHERE u.role = 'user'";
-        $params = [];
-
-        if (!empty($search)) {
-            $whereClause .= " AND (u.username LIKE :search
-                             OR bp.nama_lengkap LIKE :search
-                             OR bp.nik LIKE :search
-                             OR bp.email LIKE :search
-                             OR bp.no_kontak LIKE :search)";
-            $params[':search'] = '%' . $search . '%';
-        }
-
-        $query = "SELECT u.id_user, u.username, u.email as user_email, u.created_at as register_date,
-                         bp.nama_lengkap, bp.nik, bp.alamat, bp.no_kontak, bp.email,
-                         bp.status_pengguna, bp.provinsi, bp.city,
-                         (SELECT COUNT(*) FROM permohonan WHERE id_user = u.id_user) as total_permohonan
-                  FROM users u
-                  LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
-                  " . $whereClause . "
-                  ORDER BY u.created_at DESC
-                  LIMIT :limit OFFSET :offset";
-
-        $stmt = $this->conn->prepare($query);
-        foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value);
-        }
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        $pemohon_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Count total
-        $countQuery = "SELECT COUNT(*) as total
-                       FROM users u
-                       LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
-                       " . $whereClause;
-
-        $countStmt = $this->conn->prepare($countQuery);
-        foreach ($params as $key => $value) {
-            $countStmt->bindValue($key, $value);
-        }
-        $countStmt->execute();
-        $total_records = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+        $pemohon_list = $this->permohonanAdminModel->getAllPemohon($limit, $offset, $search);
+        $total_records = $this->permohonanAdminModel->countAllPemohon($search);
         $total_pages = ceil($total_records / $limit);
 
         $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
@@ -971,28 +1002,46 @@ class PermohonanAdminController
         exit();
     }
 
-    // ============ HELPER METHODS ============
 
-    /**
-     * Get SKPD data by name
-     */
-    private function getSKPDData($nama_skpd)
+    public function getAllSKPDList()
     {
-        if (empty($nama_skpd)) {
-            return null;
+        header('Content-Type: application/json');
+
+        try {
+            // Get all SKPD
+            $skpd_list = $this->skpdModel->getAllSKPD();
+
+            if (empty($skpd_list)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Tidak ada SKPD tersedia',
+                    'data' => [
+                        'skpd_list' => []
+                    ]
+                ]);
+                exit();
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Data SKPD berhasil dimuat',
+                'data' => [
+                    'skpd_list' => $skpd_list
+                ]
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+                'data' => [
+                    'skpd_list' => []
+                ]
+            ]);
         }
-
-        $query = "SELECT * FROM skpd WHERE nama_skpd = :nama_skpd LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':nama_skpd', $nama_skpd);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        exit();
     }
 
-    /**
-     * Generate nomor permohonan unik
-     */
+
     private function generateNoPermohonan()
     {
         $prefix = 'PRM';
@@ -1051,6 +1100,23 @@ class PermohonanAdminController
 
         $_SESSION['error_message'] = 'Gagal mengupload file';
         return '';
+    }
+    
+    /**
+     * Get SKPD data by name
+     */
+    private function getSKPDData($nama_skpd)
+    {
+        if (empty($nama_skpd)) {
+            return null;
+        }
+
+        $query = "SELECT * FROM skpd WHERE nama_skpd = :nama_skpd LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':nama_skpd', $nama_skpd);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
 ?>
