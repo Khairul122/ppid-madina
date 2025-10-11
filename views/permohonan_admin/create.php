@@ -76,7 +76,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="row g-3">
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control form-control-lg" name="nama_lengkap" required placeholder="Masukkan nama lengkap sesuai KTP">
+                          <input type="text" class="form-control form-control-lg" name="nama_lengkap" required placeholder="Masukkan nama lengkap sesuai KTP" value="<?php echo isset($old_input['nama_lengkap']) ? htmlspecialchars($old_input['nama_lengkap']) : ''; ?>">
                         </div>
 
                         <div class="col-md-6">
@@ -84,7 +84,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                           <select class="form-select form-control-lg" name="tujuan_permohonan" id="tujuan_permohonan" required>
                             <option value="">-- Pilih Kategori SKPD --</option>
                             <?php if (!empty($skpd_list)): ?>
-                              <?php 
+                              <?php
                                 $kategori_list = [];
                                 foreach ($skpd_list as $skpd) {
                                   if (!empty($skpd['kategori']) && !in_array($skpd['kategori'], $kategori_list)) {
@@ -92,8 +92,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                   }
                                 }
                                 foreach ($kategori_list as $kategori):
+                                  $selected = (isset($old_input['tujuan_permohonan']) && $old_input['tujuan_permohonan'] === $kategori) ? 'selected' : '';
                               ?>
-                                <option value="<?php echo htmlspecialchars($kategori); ?>">
+                                <option value="<?php echo htmlspecialchars($kategori); ?>" <?php echo $selected; ?>>
                                   <?php echo htmlspecialchars($kategori); ?>
                                 </option>
                               <?php endforeach; ?>
@@ -103,25 +104,28 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">NIK (16 Digit) <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control form-control-lg" name="nik" maxlength="16" pattern="\d{16}" required placeholder="Nomor Induk Kependudukan">
+                          <input type="text" class="form-control form-control-lg" name="nik" maxlength="16" pattern="\d{16}" required placeholder="Nomor Induk Kependudukan" value="<?php echo isset($old_input['nik']) ? htmlspecialchars($old_input['nik']) : ''; ?>">
                         </div>
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Nama SKPD <span class="text-danger">*</span></label>
                           <select class="form-select form-control-lg" name="komponen_tujuan" id="komponen_tujuan" required>
                             <option value="">-- Pilih kategori SKPD terlebih dahulu --</option>
+                            <?php if (isset($old_input['komponen_tujuan'])): ?>
+                              <option value="<?php echo htmlspecialchars($old_input['komponen_tujuan']); ?>" selected><?php echo htmlspecialchars($old_input['komponen_tujuan']); ?></option>
+                            <?php endif; ?>
                           </select>
                           <small class="text-muted">Nama SKPD akan muncul setelah memilih kategori</small>
                         </div>
 
                         <div class="col-12">
                           <label class="form-label text-dark fw-medium">Alamat Lengkap <span class="text-danger">*</span></label>
-                          <textarea class="form-control" name="alamat" rows="3" required placeholder="Alamat lengkap sesuai KTP"></textarea>
+                          <textarea class="form-control" name="alamat" rows="3" required placeholder="Alamat lengkap sesuai KTP"><?php echo isset($old_input['alamat']) ? htmlspecialchars($old_input['alamat']) : ''; ?></textarea>
                         </div>
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Judul Dokumen Informasi <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control form-control-lg" name="judul_dokumen" required placeholder="Judul dokumen atau informasi yang dimohon">
+                          <input type="text" class="form-control form-control-lg" name="judul_dokumen" required placeholder="Judul dokumen atau informasi yang dimohon" value="<?php echo isset($old_input['judul_dokumen']) ? htmlspecialchars($old_input['judul_dokumen']) : ''; ?>">
                         </div>
 
                         <div class="col-md-6">
@@ -140,12 +144,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Kandungan Informasi <span class="text-danger">*</span></label>
-                          <textarea class="form-control" name="kandungan_informasi" rows="3" required placeholder="Jelaskan kandungan informasi yang dibutuhkan"></textarea>
+                          <textarea class="form-control" name="kandungan_informasi" rows="3" required placeholder="Jelaskan kandungan informasi yang dibutuhkan"><?php echo isset($old_input['kandungan_informasi']) ? htmlspecialchars($old_input['kandungan_informasi']) : ''; ?></textarea>
                         </div>
 
                         <div class="col-md-4">
                           <label class="form-label text-dark fw-medium">No. Kontak <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control form-control-lg" name="no_kontak" required placeholder="Nomor telepon/HP aktif">
+                          <input type="text" class="form-control form-control-lg" name="no_kontak" required placeholder="Nomor telepon/HP aktif" value="<?php echo isset($old_input['no_kontak']) ? htmlspecialchars($old_input['no_kontak']) : ''; ?>">
                         </div>
 
 
@@ -157,12 +161,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Email Aktif <span class="text-danger">*</span></label>
-                          <input type="email" class="form-control form-control-lg" name="email" required placeholder="email@example.com">
+                          <input type="email" class="form-control form-control-lg" name="email" required placeholder="email@example.com" value="<?php echo isset($old_input['email']) ? htmlspecialchars($old_input['email']) : ''; ?>">
                         </div>
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Password <span class="text-danger">*</span></label>
-                          <input type="password" class="form-control form-control-lg" name="password" required placeholder="Minimal 6 karakter">
+                          <input type="password" class="form-control form-control-lg" name="password" required placeholder="Minimal 6 karakter" value="<?php echo isset($old_input['password']) ? htmlspecialchars($old_input['password']) : ''; ?>">
                         </div>
                       </div>
                     </div>
@@ -179,53 +183,53 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="row g-3">
                         <div class="col-md-4">
                           <label class="form-label text-dark fw-medium">Username</label>
-                          <input type="text" class="form-control form-control-lg" name="username" placeholder="Username untuk login">
+                          <input type="text" class="form-control form-control-lg" name="username" placeholder="Username untuk login" value="<?php echo isset($old_input['username']) ? htmlspecialchars($old_input['username']) : ''; ?>">
                         </div>
 
                         <div class="col-md-4">
                           <label class="form-label text-dark fw-medium">Jenis Kelamin</label>
                           <select class="form-select form-control-lg" name="jenis_kelamin">
                             <option value="">-- Pilih --</option>
-                            <option value="Laki-laki">Laki-laki</option>
-                            <option value="Perempuan">Perempuan</option>
+                            <option value="Laki-laki" <?php echo (isset($old_input['jenis_kelamin']) && $old_input['jenis_kelamin'] === 'Laki-laki') ? 'selected' : ''; ?>>Laki-laki</option>
+                            <option value="Perempuan" <?php echo (isset($old_input['jenis_kelamin']) && $old_input['jenis_kelamin'] === 'Perempuan') ? 'selected' : ''; ?>>Perempuan</option>
                           </select>
                         </div>
 
                         <div class="col-md-4">
                           <label class="form-label text-dark fw-medium">Usia</label>
-                          <input type="number" class="form-control form-control-lg" name="usia" min="17" max="100" placeholder="Tahun">
+                          <input type="number" class="form-control form-control-lg" name="usia" min="17" max="100" placeholder="Tahun" value="<?php echo isset($old_input['usia']) ? htmlspecialchars($old_input['usia']) : ''; ?>">
                         </div>
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Pendidikan Terakhir</label>
                           <select class="form-select form-control-lg" name="pendidikan">
                             <option value="">-- Pilih Pendidikan --</option>
-                            <option value="SD">SD</option>
-                            <option value="SMP">SMP</option>
-                            <option value="SMA/SMK">SMA/SMK</option>
-                            <option value="Diploma">Diploma</option>
-                            <option value="S1">Sarjana (S1)</option>
-                            <option value="S2">Magister (S2)</option>
-                            <option value="S3">Doktor (S3)</option>
+                            <option value="SD" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'SD') ? 'selected' : ''; ?>>SD</option>
+                            <option value="SMP" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'SMP') ? 'selected' : ''; ?>>SMP</option>
+                            <option value="SMA/SMK" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'SMA/SMK') ? 'selected' : ''; ?>>SMA/SMK</option>
+                            <option value="Diploma" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'Diploma') ? 'selected' : ''; ?>>Diploma</option>
+                            <option value="S1" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'S1') ? 'selected' : ''; ?>>Sarjana (S1)</option>
+                            <option value="S2" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'S2') ? 'selected' : ''; ?>>Magister (S2)</option>
+                            <option value="S3" <?php echo (isset($old_input['pendidikan']) && $old_input['pendidikan'] === 'S3') ? 'selected' : ''; ?>>Doktor (S3)</option>
                           </select>
                         </div>
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Pekerjaan</label>
-                          <input type="text" class="form-control form-control-lg" name="pekerjaan" placeholder="Contoh: PNS, Wiraswasta, Mahasiswa">
+                          <input type="text" class="form-control form-control-lg" name="pekerjaan" placeholder="Contoh: PNS, Wiraswasta, Mahasiswa" value="<?php echo isset($old_input['pekerjaan']) ? htmlspecialchars($old_input['pekerjaan']) : ''; ?>">
                         </div>
 
                         <div class="col-md-6">
                           <label class="form-label text-dark fw-medium">Status Pemohon</label>
                           <select class="form-select form-control-lg" name="status_pengguna" id="status_pengguna">
-                            <option value="pribadi">Perorangan/Pribadi</option>
-                            <option value="lembaga">Kelompok/Lembaga</option>
+                            <option value="pribadi" <?php echo (!isset($old_input['status_pengguna']) || $old_input['status_pengguna'] === 'pribadi') ? 'selected' : ''; ?>>Perorangan/Pribadi</option>
+                            <option value="lembaga" <?php echo (isset($old_input['status_pengguna']) && $old_input['status_pengguna'] === 'lembaga') ? 'selected' : ''; ?>>Kelompok/Lembaga</option>
                           </select>
                         </div>
 
-                        <div class="col-md-6" id="lembaga-field" style="display: none;">
+                        <div class="col-md-6" id="lembaga-field" style="<?php echo (isset($old_input['status_pengguna']) && $old_input['status_pengguna'] === 'lembaga') ? '' : 'display: none;'; ?>">
                           <label class="form-label text-dark fw-medium">Nama Lembaga/Organisasi</label>
-                          <input type="text" class="form-control form-control-lg" name="nama_lembaga" placeholder="Nama lembaga/organisasi">
+                          <input type="text" class="form-control form-control-lg" name="nama_lembaga" placeholder="Nama lembaga/organisasi" value="<?php echo isset($old_input['nama_lembaga']) ? htmlspecialchars($old_input['nama_lembaga']) : ''; ?>">
                         </div>
                       </div>
                     </div>
@@ -244,12 +248,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
                         <div class="col-12">
                           <label class="form-label text-dark fw-medium">Kandungan Informasi <span class="text-danger">*</span></label>
-                          <textarea class="form-control" name="kandungan_informasi" rows="4" required placeholder="Jelaskan secara detail informasi apa yang diminta dan kandungan informasi yang dibutuhkan"></textarea>
+                          <textarea class="form-control" name="kandungan_informasi" rows="4" required placeholder="Jelaskan secara detail informasi apa yang diminta dan kandungan informasi yang dibutuhkan"><?php echo isset($old_input['kandungan_informasi']) ? htmlspecialchars($old_input['kandungan_informasi']) : ''; ?></textarea>
                         </div>
 
                         <div class="col-12">
                           <label class="form-label text-dark fw-medium">Tujuan Penggunaan Informasi <span class="text-danger">*</span></label>
-                          <textarea class="form-control" name="tujuan_penggunaan_informasi" rows="3" required placeholder="Jelaskan untuk apa informasi ini akan digunakan"></textarea>
+                          <textarea class="form-control" name="tujuan_penggunaan_informasi" rows="3" required placeholder="Jelaskan untuk apa informasi ini akan digunakan"><?php echo isset($old_input['tujuan_penggunaan_informasi']) ? htmlspecialchars($old_input['tujuan_penggunaan_informasi']) : ''; ?></textarea>
                         </div>
 
 
@@ -332,6 +336,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         }
       });
 
+      // Trigger status_pengguna change on page load for old input
+      $('#status_pengguna').trigger('change');
+
       // Handle province change
       $('#provinsi').change(function() {
         const provinceId = $(this).val();
@@ -341,6 +348,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           $('#city').html('<option value="">Pilih Kota/Kabupaten</option>');
         }
       });
+
+      // Auto-load SKPD dropdown if tujuan_permohonan has value (from old_input)
+      <?php if (isset($old_input['tujuan_permohonan']) && !empty($old_input['tujuan_permohonan'])): ?>
+        $('#tujuan_permohonan').trigger('change');
+      <?php endif; ?>
     });
 
     function loadProvinces() {

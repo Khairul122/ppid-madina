@@ -109,6 +109,10 @@ class PermohonanAdminController
         $stmt->execute();
         $users_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Get old input for form repopulation
+        $old_input = isset($_SESSION['old_input']) ? $_SESSION['old_input'] : [];
+        unset($_SESSION['old_input']); // Clear after retrieving
+
         $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
         $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
         unset($_SESSION['success_message']);
@@ -128,17 +132,111 @@ class PermohonanAdminController
             exit();
         }
 
-        // Validasi input
-        $required_fields = ['id_user', 'judul_dokumen', 'tujuan_penggunaan_informasi', 'tujuan_permohonan', 'komponen_tujuan'];
+        // Save POST data to session for form repopulation on error
+        $_SESSION['old_input'] = $_POST;
+
+        // Validasi input untuk user baru
+        $required_fields = ['nama_lengkap', 'nik', 'email', 'password', 'judul_dokumen', 'tujuan_penggunaan_informasi', 'tujuan_permohonan', 'komponen_tujuan'];
         foreach ($required_fields as $field) {
             if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
-                $_SESSION['error_message'] = 'Semua field wajib diisi';
+                $_SESSION['error_message'] = 'Field ' . $field . ' wajib diisi';
                 header('Location: index.php?controller=permohonanadmin&action=create');
                 exit();
             }
         }
 
-        $id_user = intval($_POST['id_user']);
+        // Validasi NIK 16 digit
+        $nik = trim($_POST['nik']);
+        if (!preg_match('/^\d{16}$/', $nik)) {
+            $_SESSION['error_message'] = 'NIK harus 16 digit angka';
+            header('Location: index.php?controller=permohonanadmin&action=create');
+            exit();
+        }
+
+        // Validasi email format
+        $email = trim($_POST['email']);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error_message'] = 'Format email tidak valid';
+            header('Location: index.php?controller=permohonanadmin&action=create');
+            exit();
+        }
+
+        // Check if email already exists
+        $checkEmailQuery = "SELECT id_user FROM users WHERE email = :email LIMIT 1";
+        $checkStmt = $this->conn->prepare($checkEmailQuery);
+        $checkStmt->bindParam(':email', $email);
+        $checkStmt->execute();
+        if ($checkStmt->fetch()) {
+            $_SESSION['error_message'] = 'Email sudah terdaftar';
+            header('Location: index.php?controller=permohonanadmin&action=create');
+            exit();
+        }
+
+        // Check if NIK already exists
+        $checkNikQuery = "SELECT id_biodata FROM biodata_pengguna WHERE nik = :nik LIMIT 1";
+        $checkNikStmt = $this->conn->prepare($checkNikQuery);
+        $checkNikStmt->bindParam(':nik', $nik);
+        $checkNikStmt->execute();
+        if ($checkNikStmt->fetch()) {
+            $_SESSION['error_message'] = 'NIK sudah terdaftar';
+            header('Location: index.php?controller=permohonanadmin&action=create');
+            exit();
+        }
+
+        // Begin transaction
+        try {
+            $this->conn->beginTransaction();
+
+            // 1. Create biodata_pengguna first
+            $biodataQuery = "INSERT INTO biodata_pengguna
+                            (nama_lengkap, nik, alamat, provinsi, city, no_kontak, email, jenis_kelamin,
+                             usia, pendidikan, pekerjaan, status_pengguna, nama_lembaga)
+                            VALUES
+                            (:nama_lengkap, :nik, :alamat, :provinsi, :city, :no_kontak, :email, :jenis_kelamin,
+                             :usia, :pendidikan, :pekerjaan, :status_pengguna, :nama_lembaga)";
+
+            $biodataStmt = $this->conn->prepare($biodataQuery);
+            $biodataStmt->bindValue(':nama_lengkap', trim($_POST['nama_lengkap']));
+            $biodataStmt->bindValue(':nik', $nik);
+            $biodataStmt->bindValue(':alamat', trim($_POST['alamat'] ?? ''));
+            $biodataStmt->bindValue(':provinsi', trim($_POST['provinsi'] ?? ''));
+            $biodataStmt->bindValue(':city', trim($_POST['city'] ?? ''));
+            $biodataStmt->bindValue(':no_kontak', trim($_POST['no_kontak'] ?? ''));
+            $biodataStmt->bindValue(':email', $email);
+            $biodataStmt->bindValue(':jenis_kelamin', trim($_POST['jenis_kelamin'] ?? ''));
+            $biodataStmt->bindValue(':usia', !empty($_POST['usia']) ? intval($_POST['usia']) : null, PDO::PARAM_INT);
+            $biodataStmt->bindValue(':pendidikan', trim($_POST['pendidikan'] ?? ''));
+            $biodataStmt->bindValue(':pekerjaan', trim($_POST['pekerjaan'] ?? ''));
+            $biodataStmt->bindValue(':status_pengguna', trim($_POST['status_pengguna'] ?? 'pribadi'));
+            $biodataStmt->bindValue(':nama_lembaga', trim($_POST['nama_lembaga'] ?? ''));
+
+            if (!$biodataStmt->execute()) {
+                throw new Exception('Gagal menyimpan data biodata');
+            }
+
+            $id_biodata = $this->conn->lastInsertId();
+
+            // 2. Create user account
+            $username = trim($_POST['username'] ?? $_POST['email']);
+            $password = password_hash(trim($_POST['password']), PASSWORD_DEFAULT);
+
+            $userQuery = "INSERT INTO users (username, email, password, role, id_biodata, created_at)
+                         VALUES (:username, :email, :password, 'user', :id_biodata, NOW())";
+
+            $userStmt = $this->conn->prepare($userQuery);
+            $userStmt->bindValue(':username', $username);
+            $userStmt->bindValue(':email', $email);
+            $userStmt->bindValue(':password', $password);
+            $userStmt->bindValue(':id_biodata', $id_biodata);
+
+            if (!$userStmt->execute()) {
+                throw new Exception('Gagal membuat akun user');
+            }
+
+            $id_user = $this->conn->lastInsertId();
+
+            // Continue with permohonan creation
+            // (existing code will use $id_user that was just created)
         $judul_dokumen = trim($_POST['judul_dokumen']);
         $tujuan_penggunaan_informasi = trim($_POST['tujuan_penggunaan_informasi']);
         $tujuan_permohonan = trim($_POST['tujuan_permohonan']);
@@ -185,6 +283,8 @@ class PermohonanAdminController
             $stmt->bindParam(':upload_data_pedukung', $upload_data_pedukung);
 
             if ($stmt->execute()) {
+                // Clear old input on success
+                unset($_SESSION['old_input']);
                 $_SESSION['success_message'] = 'Permohonan berhasil ditambahkan';
                 header('Location: index.php?controller=permohonanadmin&action=index');
             } else {
@@ -196,7 +296,7 @@ class PermohonanAdminController
             header('Location: index.php?controller=permohonanadmin&action=create');
         }
         exit();
-    }
+        }
 
     // ============ EDIT & UPDATE ============
 
@@ -804,6 +904,64 @@ class PermohonanAdminController
         unset($_SESSION['error_message']);
 
         include 'views/permohonan_admin/data_pemohon/index.php';
+    }
+
+    // ============ AJAX METHODS ============
+
+    /**
+     * Get komponen (SKPD) berdasarkan kategori tujuan permohonan
+     * Dipanggil via AJAX dari form create
+     */
+    public function getKomponen()
+    {
+        header('Content-Type: application/json');
+
+        if (!isset($_GET['tujuan_permohonan']) || empty(trim($_GET['tujuan_permohonan']))) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Kategori tujuan permohonan tidak ditemukan',
+                'data' => []
+            ]);
+            exit();
+        }
+
+        $kategori = trim($_GET['tujuan_permohonan']);
+
+        try {
+            // Get SKPD by category
+            $skpd_list = $this->skpdModel->getSKPDByCategory($kategori);
+
+            if (empty($skpd_list)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Tidak ada SKPD untuk kategori ini',
+                    'data' => []
+                ]);
+                exit();
+            }
+
+            // Map nama_skpd to nama_tujuan_permohonan for compatibility with frontend
+            $data = array_map(function($skpd) {
+                return [
+                    'id_skpd' => $skpd['id_skpd'],
+                    'nama_tujuan_permohonan' => $skpd['nama_skpd'],
+                    'kategori' => $skpd['kategori']
+                ];
+            }, $skpd_list);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Data SKPD berhasil dimuat',
+                'data' => $data
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+                'data' => []
+            ]);
+        }
+        exit();
     }
 
     // ============ HELPER METHODS ============
