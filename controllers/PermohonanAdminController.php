@@ -1129,11 +1129,14 @@ class PermohonanAdminController
         // Get all SKPD for filter
         $skpd_list = $this->skpdModel->getAllSKPD();
 
-        // Chart statistics by status
-        $chartQuery = "SELECT status, COUNT(*) as count FROM permohonan GROUP BY status";
-        $chartStmt = $this->conn->prepare($chartQuery);
-        $chartStmt->execute();
-        $chart_data = $chartStmt->fetchAll(PDO::FETCH_ASSOC);
+        // Get komponen statistics for the table
+        $komponen_stats = $this->permohonanAdminModel->getKomponenStats();
+
+        // Get all komponen for the filter dropdown
+        $all_komponen = $this->permohonanAdminModel->getAllKomponen();
+
+        // Get status statistics for charts
+        $status_stats = $this->permohonanAdminModel->getStatusStats();
 
         $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
         $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
@@ -1157,12 +1160,51 @@ class PermohonanAdminController
         $total_records = $this->permohonanAdminModel->countAllPemohon($search);
         $total_pages = ceil($total_records / $limit);
 
+        // Provide variables required by the view
+        $title = 'Daftar Data Pemohon';
+        $total_pemohon = $total_records;
+        $search = $search;  // untuk form search
+        $page = $page;      // untuk pagination
+        $limit = $limit;    // untuk pagination
+        $total_records = $total_records;  // untuk info jumlah data
+        $total_pages = $total_pages;      // untuk pagination
+
         $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
         $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
         unset($_SESSION['success_message']);
         unset($_SESSION['error_message']);
 
         include 'views/permohonan_admin/data_pemohon/index.php';
+    }
+
+    /** 
+     * Detail pemohon by id
+     */
+    public function detail_pemohon()
+    {
+        if (!isset($_GET['id']) || empty($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID pemohon tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=dataPemohonIndex');
+            exit();
+        }
+
+        $id = intval($_GET['id']);
+        $pemohon = $this->permohonanAdminModel->getPemohonById($id);
+
+        if (!$pemohon) {
+            $_SESSION['error_message'] = 'Data pemohon tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=dataPemohonIndex');
+            exit();
+        }
+
+        $title = 'Detail Pemohon - ' . htmlspecialchars($pemohon['nama_lengkap']);
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/data_pemohon/detail.php';
     }
 
     // ============ AJAX METHODS ============

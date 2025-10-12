@@ -66,6 +66,18 @@ class UserController {
         $status_pengguna = $user_data['status_pengguna'] ?? 'publik';
         $current_datetime = date('d F Y H:i');
 
+        // Update session with user data for consistent display
+        if ($user_data) {
+            $_SESSION['username'] = $user_data['username'] ?? $_SESSION['username'];
+            $_SESSION['email'] = $user_data['email'] ?? $_SESSION['email'] ?? '';
+            $_SESSION['created_at'] = $user_data['created_at'] ?? date('Y-m-d');
+
+            // Update profile photo in session if it exists in database
+            if (!empty($user_data['foto_profile']) && file_exists($user_data['foto_profile'])) {
+                $_SESSION['profile_photo'] = $user_data['foto_profile'];
+            }
+        }
+
         // Route to appropriate profile view based on role
         $role = $_SESSION['role'] ?? 'masyarakat';
 
@@ -91,46 +103,39 @@ class UserController {
             exit();
         }
 
-        // Get profile categories for navbar
-        $profile_categories = $this->profileModel->getUniqueCategories();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?controller=user&action=profile');
+            exit();
+        }
 
-        $error = '';
-        $success = '';
+        $current_password = $_POST['current_password'] ?? '';
+        $new_password = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
 
-        if ($_POST) {
-            $current_password = $_POST['current_password'];
-            $new_password = $_POST['new_password'];
-            $confirm_password = $_POST['confirm_password'];
-
-            // Validation
-            if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
-                $error = 'Semua field wajib diisi!';
-            } elseif ($new_password !== $confirm_password) {
-                $error = 'Password baru dan konfirmasi password tidak cocok!';
-            } elseif (strlen($new_password) < 6) {
-                $error = 'Password baru minimal 6 karakter!';
+        // Validation
+        if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
+            $_SESSION['error'] = 'Semua field wajib diisi!';
+        } elseif ($new_password !== $confirm_password) {
+            $_SESSION['error'] = 'Password baru dan konfirmasi password tidak cocok!';
+        } elseif (strlen($new_password) < 8) {
+            $_SESSION['error'] = 'Password baru minimal 8 karakter!';
+        } elseif (!preg_match('/[A-Za-z]/', $new_password) || !preg_match('/[0-9]/', $new_password)) {
+            $_SESSION['error'] = 'Password harus mengandung kombinasi huruf dan angka!';
+        } else {
+            // Verify current password
+            $user = $this->userModel->findById($_SESSION['user_id']);
+            if (!$user) {
+                $_SESSION['error'] = 'User tidak ditemukan!';
+            } elseif (md5($current_password) !== $user['password']) {
+                $_SESSION['error'] = 'Password saat ini salah!';
             } else {
-                // Verify current password
-                $user = $this->userModel->findById($_SESSION['user_id']);
-                if (!$user || md5($current_password) !== $user['password']) {
-                    $error = 'Password saat ini salah!';
+                // Update password
+                if ($this->userModel->updatePassword($_SESSION['user_id'], $new_password)) {
+                    $_SESSION['success'] = 'Password berhasil diubah! Silakan gunakan password baru untuk login berikutnya.';
                 } else {
-                    // Update password
-                    if ($this->userModel->updatePassword($_SESSION['user_id'], $new_password)) {
-                        $success = 'Password berhasil diubah!';
-                    } else {
-                        $error = 'Gagal mengubah password. Silahkan coba lagi.';
-                    }
+                    $_SESSION['error'] = 'Gagal mengubah password. Silakan coba lagi.';
                 }
             }
-        }
-
-        // Set session messages
-        if ($error) {
-            $_SESSION['error_message'] = $error;
-        }
-        if ($success) {
-            $_SESSION['success_message'] = $success;
         }
 
         // Redirect back to profile
@@ -140,16 +145,24 @@ class UserController {
 
     public function uploadProfilePhoto() {
         if (!isset($_SESSION['user_id'])) {
-            $_SESSION['error_message'] = 'Anda harus login terlebih dahulu';
+            $_SESSION['error'] = 'Anda harus login terlebih dahulu';
             header('Location: index.php?controller=auth&action=login');
             exit();
         }
 
-        // Get profile categories for navbar
-        $profile_categories = $this->profileModel->getUniqueCategories();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: index.php?controller=user&action=profile');
+            exit();
+        }
 
         if (!isset($_FILES['profile_photo']) || $_FILES['profile_photo']['error'] !== UPLOAD_ERR_OK) {
-            $_SESSION['error_message'] = 'Tidak ada file yang diupload atau terjadi error';
+            if ($_FILES['profile_photo']['error'] === UPLOAD_ERR_NO_FILE) {
+                $_SESSION['error'] = 'Silakan pilih file foto terlebih dahulu';
+            } elseif ($_FILES['profile_photo']['error'] === UPLOAD_ERR_INI_SIZE || $_FILES['profile_photo']['error'] === UPLOAD_ERR_FORM_SIZE) {
+                $_SESSION['error'] = 'Ukuran file terlalu besar. Maksimal 2MB';
+            } else {
+                $_SESSION['error'] = 'Terjadi error saat mengupload file';
+            }
             header('Location: index.php?controller=user&action=profile');
             exit();
         }
@@ -157,9 +170,11 @@ class UserController {
         $result = $this->userModel->handleProfilePhotoUpload($_SESSION['user_id'], $_FILES['profile_photo']);
 
         if ($result['success']) {
-            $_SESSION['success_message'] = $result['message'];
+            $_SESSION['success'] = $result['message'];
+            // Update session with new profile photo path
+            $_SESSION['profile_photo'] = $result['filepath'];
         } else {
-            $_SESSION['error_message'] = $result['message'];
+            $_SESSION['error'] = $result['message'];
         }
 
         header('Location: index.php?controller=user&action=profile');

@@ -423,14 +423,14 @@ class PermohonanAdminModel
             $params[':search'] = '%' . $search . '%';
         }
 
-        $query = "SELECT u.id_user, u.username, u.email as user_email, u.created_at as register_date,
-                         bp.nama_lengkap, bp.nik, bp.alamat, bp.no_kontak, bp.email,
+        $query = "SELECT u.id_user, u.username, u.email as user_email,
+                         bp.id_biodata, bp.nama_lengkap, bp.nik, bp.alamat, bp.no_kontak, bp.email,
                          bp.status_pengguna, bp.provinsi, bp.city,
                          (SELECT COUNT(*) FROM permohonan WHERE id_user = u.id_user) as total_permohonan
                   FROM users u
                   LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
                   " . $whereClause . "
-                  ORDER BY u.created_at DESC
+                  ORDER BY u.id_user DESC
                   LIMIT :limit OFFSET :offset";
 
         $stmt = $this->conn->prepare($query);
@@ -967,6 +967,91 @@ class PermohonanAdminModel
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+
+    /**
+     * Get statistics grouped by komponen tujuan
+     */
+    public function getKomponenStats()
+    {
+        $query = "SELECT 
+                     komponen_tujuan,
+                     SUM(CASE WHEN status = 'Masuk' THEN 1 ELSE 0 END) as masuk,
+                     SUM(CASE WHEN status = 'Disposisi' THEN 1 ELSE 0 END) as disposisi,
+                     SUM(CASE WHEN status = 'Diproses' THEN 1 ELSE 0 END) as diproses,
+                     SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as selesai,
+                     SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END) as ditolak,
+                     SUM(CASE WHEN status = 'Keberatan' THEN 1 ELSE 0 END) as keberatan,
+                     SUM(CASE WHEN status = 'Sengketa' THEN 1 ELSE 0 END) as sengketa,
+                     COUNT(*) as total
+                  FROM {$this->table_permohonan}
+                  WHERE komponen_tujuan IS NOT NULL
+                  GROUP BY komponen_tujuan
+                  ORDER BY total DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+
+    /**
+     * Get all unique komponen tujuan
+     */
+    public function getAllKomponen()
+    {
+        $query = "SELECT DISTINCT komponen_tujuan
+                  FROM {$this->table_permohonan}
+                  WHERE komponen_tujuan IS NOT NULL
+                  ORDER BY komponen_tujuan ASC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+
+    /**
+     * Get overall status statistics
+     */
+    public function getStatusStats()
+    {
+        $query = "SELECT 
+                     SUM(CASE WHEN status = 'Masuk' THEN 1 ELSE 0 END) as masuk,
+                     SUM(CASE WHEN status = 'Disposisi' THEN 1 ELSE 0 END) as disposisi,
+                     SUM(CASE WHEN status = 'Diproses' THEN 1 ELSE 0 END) as diproses,
+                     SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as selesai,
+                     SUM(CASE WHEN status = 'Ditolak' THEN 1 ELSE 0 END) as ditolak,
+                     SUM(CASE WHEN status = 'Keberatan' THEN 1 ELSE 0 END) as keberatan,
+                     SUM(CASE WHEN status = 'Sengketa' THEN 1 ELSE 0 END) as sengketa
+                  FROM {$this->table_permohonan}";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+
+    /**
+     * Get pemohon detail by id_biodata
+     */
+    public function getPemohonById($id_biodata)
+    {
+        $query = "SELECT bp.*, u.username, u.email as user_email, u.role
+                  FROM {$this->table_biodata} bp
+                  JOIN {$this->table_users} u ON bp.id_biodata = u.id_biodata
+                  WHERE bp.id_biodata = :id_biodata
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id_biodata', $id_biodata, PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
