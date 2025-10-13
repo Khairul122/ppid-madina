@@ -92,10 +92,10 @@ $action_url = isset($data['dokumen']) ? 'update' : 'store';
                         <select class="form-select" id="id_kategori" name="id_kategori" style="padding: 12px; border-radius: 6px;">
                           <option value="">Pilih Kategori</option>
                           <?php foreach ($data['kategoriOptions'] as $kategori): ?>
-                            <option value="<?php echo $kategori['id_kategori']; ?>" 
-                                    <?php echo (isset($form_data['id_kategori']) && $form_data['id_kategori'] == $kategori['id_kategori']) || 
-                                               (isset($data['dokumen']) && $data['dokumen']['id_kategori'] == $kategori['id_kategori']) ? 'selected' : ''; ?>>
-                              <?php echo htmlspecialchars($kategori['nama_kategori']); ?>
+                            <option value="<?php echo isset($kategori['id_kategori']) ? htmlspecialchars($kategori['id_kategori']) : ''; ?>" 
+                                    <?php echo (isset($form_data['id_kategori']) && $form_data['id_kategori'] == ($kategori['id_kategori'] ?? '')) || 
+                                               (isset($data['dokumen']) && ($data['dokumen']['id_kategori'] ?? '') == ($kategori['id_kategori'] ?? '')) ? 'selected' : ''; ?>>
+                              <?php echo htmlspecialchars($kategori['nama_kategori'] ?? ''); ?>
                             </option>
                           <?php endforeach; ?>
                         </select>

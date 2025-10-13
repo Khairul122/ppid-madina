@@ -44,13 +44,13 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
               <!-- Header Section -->
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center">
-                  <span style="font-size: 18px; font-weight: 500;">Semua Dokumen</span>
+                  <span style="font-size: 18px; font-weight: 500;">Semua Dokumen Dikecualikan</span>
                 </div>
 
                 <div class="d-flex gap-2">
                   <!-- Search Form -->
                   <form method="GET" class="d-flex">
-                    <input type="hidden" name="controller" value="kategorisertamerta">
+                    <input type="hidden" name="controller" value="kategoridikecualikanadmin">
                     <input type="hidden" name="action" value="index">
                     <?php if (isset($pagination['limit'])): ?>
                       <input type="hidden" name="limit" value="<?php echo $pagination['limit']; ?>">
@@ -60,24 +60,24 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                              class="form-control"
                              name="search"
                              value="<?php echo htmlspecialchars($search); ?>"
-                             placeholder="Cari dokumen serta merta...">
+                             placeholder="Cari dokumen dikecualikan...">
                       <button class="btn btn-outline-secondary" type="submit">
                         <i class="mdi mdi-magnify"></i>
                       </button>
                     </div>
                   </form>
 
-                  <button class="btn btn-warning" onclick="window.location.href='index.php?controller=kategorisertamerta&action=draft'">
+                  <button class="btn btn-warning" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=draft'">
                     <i class="mdi mdi-file-document-edit me-1"></i>Draft
                   </button>
 
                   <?php if (!empty($dokumen_list)): ?>
-                    <button class="btn btn-info" onclick="window.location.href='index.php?controller=kategorisertamerta&action=export'">
+                    <button class="btn btn-info" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=export'">
                       <i class="mdi mdi-file-excel me-1"></i>Ekspor Excel
                     </button>
                   <?php endif; ?>
 
-                  <button class="btn btn-primary" onclick="window.location.href='index.php?controller=kategorisertamerta&action=create'">
+                  <button class="btn btn-primary" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=create'">
                     <i class="mdi mdi-plus me-1"></i>Tambah Dokumen
                   </button>
                 </div>
@@ -107,6 +107,10 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                         </th>
                         <th scope="col" style="padding: 15px; border: none; text-align: center; position: relative;">
                           STATUS
+                          <i class="mdi mdi-swap-vertical float-end"></i>
+                        </th>
+                        <th scope="col" style="padding: 15px; border: none; text-align: center; position: relative;">
+                          TANGGAL BUAT
                           <i class="mdi mdi-swap-vertical float-end"></i>
                         </th>
                         <th scope="col" style="padding: 15px; border: none; text-align: center; position: relative;">
@@ -155,9 +159,24 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                             <?php endif; ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
+                            <?php
+                            if (!empty($dokumen['created_at'])) {
+                                $tanggal = new DateTime($dokumen['created_at']);
+                                $bulan = [
+                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                ];
+                                echo $tanggal->format('d') . ' ' . $bulan[(int)$tanggal->format('n')] . ' ' . $tanggal->format('Y');
+                            } else {
+                                echo '-';
+                            }
+                            ?>
+                          </td>
+                          <td style="padding: 15px; border: none; text-align: center;">
                             <div class="d-flex justify-content-center gap-1 flex-wrap">
                               <button class="btn btn-sm"
-                                      onclick="window.location.href='index.php?controller=kategorisertamerta&action=edit&id=<?php echo $dokumen['id_dokumen']; ?>'"
+                                      onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=edit&id=<?php echo $dokumen['id_dokumen']; ?>'"
                                       style="background: #ffc107; color: #212529; border: none; padding: 6px 12px; border-radius: 4px;"
                                       title="Edit Data">
                                 <i class="mdi mdi-pencil"></i> Edit
@@ -198,7 +217,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                   </div>
                   <div class="d-flex">
                     <form method="GET" class="d-flex align-items-center">
-                      <input type="hidden" name="controller" value="kategorisertamerta">
+                      <input type="hidden" name="controller" value="kategoridikecualikanadmin">
                       <input type="hidden" name="action" value="index">
                       <?php if (!empty($search)): ?>
                         <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
@@ -220,7 +239,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                     <!-- Previous Button -->
                     <?php if ($pagination['current_page'] > 1): ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $pagination['current_page'] - 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=index&page=<?php echo $pagination['current_page'] - 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           Previous
                         </a>
                       </li>
@@ -239,7 +258,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                     if ($start_page > 1):
                     ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=1&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">1</a>
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=index&page=1&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">1</a>
                       </li>
                       <?php if ($start_page > 2): ?>
                         <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -248,7 +267,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 
                     <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                       <li class="page-item <?php echo $i == $pagination['current_page'] ? 'active' : ''; ?>">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $i; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=index&page=<?php echo $i; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           <?php echo $i; ?>
                         </a>
                       </li>
@@ -260,7 +279,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                         <li class="page-item disabled"><span class="page-link">...</span></li>
                       <?php endif; ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $pagination['total_pages']; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=index&page=<?php echo $pagination['total_pages']; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           <?php echo $pagination['total_pages']; ?>
                         </a>
                       </li>
@@ -269,7 +288,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                     <!-- Next Button -->
                     <?php if ($pagination['current_page'] < $pagination['total_pages']): ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $pagination['current_page'] + 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=index&page=<?php echo $pagination['current_page'] + 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           Next
                         </a>
                       </li>
@@ -284,15 +303,15 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                 <?php endif; ?>
               <?php else: ?>
                 <div class="text-center py-5">
-                  <i class="mdi mdi-clock-fast-outline" style="font-size: 64px; color: #ccc;"></i>
+                  <i class="mdi mdi-folder-clock-outline" style="font-size: 64px; color: #ccc;"></i>
                   <h5 class="text-muted mt-3">
                     <?php if (!empty($search)): ?>
-                      Tidak ada dokumen serta merta yang ditemukan untuk pencarian "<?php echo htmlspecialchars($search); ?>"
+                      Tidak ada dokumen dikecualikan yang ditemukan untuk pencarian "<?php echo htmlspecialchars($search); ?>"
                     <?php else: ?>
-                      Belum ada data dokumen serta merta
+                      Belum ada data dokumen dikecualikan
                     <?php endif; ?>
                   </h5>
-                  <button class="btn btn-primary mt-2" onclick="window.location.href='index.php?controller=kategorisertamerta&action=create'">
+                  <button class="btn btn-primary mt-2" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=create'">
                     <i class="mdi mdi-plus me-1"></i>Tambah Dokumen Pertama
                   </button>
                 </div>
@@ -372,7 +391,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 
     function copyLink(id) {
       // Create a link to the document - adjust URL as needed
-      const link = window.location.origin + '/index.php?controller=kategorisertamerta&action=view&id=' + id;
+      const link = window.location.origin + '/index.php?controller=kategoridikecualikanadmin&action=view&id=' + id;
 
       // Copy to clipboard
       navigator.clipboard.writeText(link).then(function() {
@@ -412,7 +431,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
         const formData = new FormData();
         formData.append('id', currentDokumenId);
 
-        fetch('index.php?controller=kategorisertamerta&action=updateToDraft', {
+        fetch('index.php?controller=kategoridikecualikanadmin&action=updateToDraft', {
           method: 'POST',
           body: formData
         })
@@ -435,7 +454,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
     // Handle delete confirmation
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
       if (currentDokumenId) {
-        fetch('index.php?controller=kategorisertamerta&action=destroy&id=' + currentDokumenId, {
+        fetch('index.php?controller=kategoridikecualikanadmin&action=destroy&id=' + currentDokumenId, {
           method: 'GET'
         })
         .then(response => response.json())

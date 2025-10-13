@@ -109,6 +109,9 @@ function hasRole($allowedRoles)
             <li class="nav-item">
               <a class="nav-link <?php echo isActive('kategoriSetiapSaat') ? 'active' : ''; ?>" href="index.php?controller=kategoriSetiapSaat&action=index">Kategori Setiap Saat</a>
             </li>
+             <li class="nav-item">
+              <a class="nav-link <?php echo isActive('kategoriDikecualikanAdmin') ? 'active' : ''; ?>" href="index.php?controller=kategoriDikecualikanAdmin&action=index">Kategori Dikecualikan <br> Admin</a>
+            </li>
           </ul>
         </div>
       </li>

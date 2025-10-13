@@ -387,18 +387,19 @@
   }
 </style>
 
-<div class="top-info-bar">
-  <div class="container">
-    <div class="user-info">
-      <i class="fas fa-user-circle"></i>
-      <span><strong><?php echo isset($nama_lengkap) ? htmlspecialchars($nama_lengkap) : 'Pengguna'; ?></strong></span>
-    </div>
-    <div class="top-info-contact">
-      <span><i class="fas fa-envelope"></i> ppid@mandailing.go.id</span>
-      <span><i class="fas fa-phone"></i> Call Center: +628117905000</span>
+  <div class="top-info-bar">
+    <div class="container">
+      <div class="top-info-links">
+        <a href="#">TENTANG PPID</a>
+        <a href="#">KONTAK PPID</a>
+      </div>
+      <div class="top-info-contact">
+        <span><i class="fas fa-envelope"></i> ppid@mandailingnatal.go.id</span>
+        <span><i class="fas fa-phone"></i> Call Center: +628117905000</span>
+      </div>
     </div>
   </div>
-</div>
+
 
 <nav class="navbar-custom">
   <div class="container main-navbar">
@@ -431,9 +432,6 @@
             </a>
             <a href="index.php?controller=keberatan&action=index">
               <i class="fas fa-exclamation-triangle me-2"></i>Keberatan Saya
-            </a>
-            <a href="index.php?controller=dokumen&action=index">
-              <i class="fas fa-folder me-2"></i>Dokumen Saya
             </a>
           </div>
         </div>

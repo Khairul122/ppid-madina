@@ -44,14 +44,15 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
               <!-- Header Section -->
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center">
-                  <span style="font-size: 18px; font-weight: 500;">Semua Dokumen</span>
+                  <i class="mdi mdi-file-document-edit me-2" style="font-size: 24px;"></i>
+                  <span style="font-size: 18px; font-weight: 500;">Draft / Kategori Dikecualikan</span>
                 </div>
 
                 <div class="d-flex gap-2">
                   <!-- Search Form -->
                   <form method="GET" class="d-flex">
-                    <input type="hidden" name="controller" value="kategorisertamerta">
-                    <input type="hidden" name="action" value="index">
+                    <input type="hidden" name="controller" value="kategoridikecualikanadmin">
+                    <input type="hidden" name="action" value="draft">
                     <?php if (isset($pagination['limit'])): ?>
                       <input type="hidden" name="limit" value="<?php echo $pagination['limit']; ?>">
                     <?php endif; ?>
@@ -60,26 +61,49 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                              class="form-control"
                              name="search"
                              value="<?php echo htmlspecialchars($search); ?>"
-                             placeholder="Cari dokumen serta merta...">
+                             placeholder="Cari draft dokumen...">
                       <button class="btn btn-outline-secondary" type="submit">
                         <i class="mdi mdi-magnify"></i>
                       </button>
                     </div>
                   </form>
 
-                  <button class="btn btn-warning" onclick="window.location.href='index.php?controller=kategorisertamerta&action=draft'">
-                    <i class="mdi mdi-file-document-edit me-1"></i>Draft
+                  <button class="btn btn-secondary" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=index'">
+                    <i class="mdi mdi-arrow-left me-1"></i>Kembali
                   </button>
 
-                  <?php if (!empty($dokumen_list)): ?>
-                    <button class="btn btn-info" onclick="window.location.href='index.php?controller=kategorisertamerta&action=export'">
-                      <i class="mdi mdi-file-excel me-1"></i>Ekspor Excel
-                    </button>
-                  <?php endif; ?>
-
-                  <button class="btn btn-primary" onclick="window.location.href='index.php?controller=kategorisertamerta&action=create'">
+                  <button class="btn btn-primary" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=create'">
                     <i class="mdi mdi-plus me-1"></i>Tambah Dokumen
                   </button>
+                </div>
+              </div>
+
+              <!-- Statistics Cards -->
+              <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                  <div class="card text-white bg-warning">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                          <h5 class="card-title mb-0"><?php echo $pagination['total_records']; ?></h5>
+                          <small>Total Draft</small>
+                        </div>
+                        <div>
+                          <i class="mdi mdi-file-document-edit" style="font-size: 2rem;"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-9 col-md-6">
+                  <div class="card bg-light">
+                    <div class="card-body py-3">
+                      <div class="d-flex align-items-center">
+                        <i class="mdi mdi-information-outline text-info me-2"></i>
+                        <small class="text-muted">Dokumen draft tidak terlihat oleh publik. Ubah status menjadi "Publikasi" untuk membuatnya terlihat.</small>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -87,7 +111,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
               <?php if (!empty($dokumen_list)): ?>
                 <div class="table-responsive">
                   <table class="table table-hover" style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <thead style="background: #4A90E2; color: white;">
+                    <thead style="background: #fd7e14; color: white;">
                       <tr>
                         <th scope="col" style="padding: 15px; border: none; position: relative; width: 50px; text-align: center;">
                           NO
@@ -106,7 +130,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                           <i class="mdi mdi-swap-vertical float-end"></i>
                         </th>
                         <th scope="col" style="padding: 15px; border: none; text-align: center; position: relative;">
-                          STATUS
+                          TANGGAL BUAT
                           <i class="mdi mdi-swap-vertical float-end"></i>
                         </th>
                         <th scope="col" style="padding: 15px; border: none; text-align: center; position: relative;">
@@ -125,12 +149,17 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                             <?php echo $no++; ?>
                           </td>
                           <td style="padding: 15px; border: none;">
-                            <a href="#" style="color: #4A90E2; text-decoration: none;" onclick="copyLink(<?php echo $dokumen['id_dokumen']; ?>)">
-                              <?php echo htmlspecialchars($dokumen['judul']); ?>
-                            </a>
-                            <?php if (!empty($dokumen['kandungan_informasi'])): ?>
-                              <br><small class="text-muted"><?php echo substr(strip_tags($dokumen['kandungan_informasi']), 0, 100) . '...'; ?></small>
-                            <?php endif; ?>
+                            <div class="d-flex align-items-center">
+                              <span class="badge bg-warning text-dark me-2">DRAFT</span>
+                              <div>
+                                <a href="#" style="color: #fd7e14; text-decoration: none;" onclick="copyLink(<?php echo $dokumen['id_dokumen']; ?>)">
+                                  <?php echo htmlspecialchars($dokumen['judul']); ?>
+                                </a>
+                                <?php if (!empty($dokumen['kandungan_informasi'])): ?>
+                                  <br><small class="text-muted"><?php echo substr(strip_tags($dokumen['kandungan_informasi']), 0, 80) . '...'; ?></small>
+                                <?php endif; ?>
+                              </div>
+                            </div>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
                             <?php echo htmlspecialchars($dokumen['terbitkan_sebagai']); ?>
@@ -148,28 +177,34 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                             ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
-                            <?php if ($dokumen['status'] === 'publikasi'): ?>
-                              <span class="badge bg-success">Publikasi</span>
-                            <?php else: ?>
-                              <span class="badge bg-warning">Draft</span>
-                            <?php endif; ?>
+                            <?php
+                            if (!empty($dokumen['created_at'])) {
+                                $tanggal = new DateTime($dokumen['created_at']);
+                                $bulan = [
+                                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                ];
+                                echo $tanggal->format('d') . ' ' . $bulan[(int)$tanggal->format('n')] . ' ' . $tanggal->format('Y');
+                            } else {
+                                echo '-';
+                            }
+                            ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
                             <div class="d-flex justify-content-center gap-1 flex-wrap">
                               <button class="btn btn-sm"
-                                      onclick="window.location.href='index.php?controller=kategorisertamerta&action=edit&id=<?php echo $dokumen['id_dokumen']; ?>'"
+                                      onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=edit&id=<?php echo $dokumen['id_dokumen']; ?>'"
                                       style="background: #ffc107; color: #212529; border: none; padding: 6px 12px; border-radius: 4px;"
                                       title="Edit Data">
                                 <i class="mdi mdi-pencil"></i> Edit
                               </button>
-                              <?php if ($dokumen['status'] === 'publikasi'): ?>
-                                <button class="btn btn-sm"
-                                        onclick="confirmDraft(<?php echo $dokumen['id_dokumen']; ?>, '<?php echo addslashes($dokumen['judul']); ?>')"
-                                        style="background: #fd7e14; color: white; border: none; padding: 6px 12px; border-radius: 4px;"
-                                        title="Ubah ke Draft">
-                                  <i class="mdi mdi-file-document-edit"></i> Draft
-                                </button>
-                              <?php endif; ?>
+                              <button class="btn btn-sm"
+                                      onclick="confirmPublikasi(<?php echo $dokumen['id_dokumen']; ?>, '<?php echo addslashes($dokumen['judul']); ?>')"
+                                      style="background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px;"
+                                      title="Publikasikan">
+                                <i class="mdi mdi-publish"></i> Publikasi
+                              </button>
                               <button class="btn btn-sm"
                                       onclick="copyLink(<?php echo $dokumen['id_dokumen']; ?>)"
                                       style="background: #6f42c1; color: white; border: none; padding: 6px 12px; border-radius: 4px;"
@@ -198,8 +233,8 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                   </div>
                   <div class="d-flex">
                     <form method="GET" class="d-flex align-items-center">
-                      <input type="hidden" name="controller" value="kategorisertamerta">
-                      <input type="hidden" name="action" value="index">
+                      <input type="hidden" name="controller" value="kategoridikecualikanadmin">
+                      <input type="hidden" name="action" value="draft">
                       <?php if (!empty($search)): ?>
                         <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
                       <?php endif; ?>
@@ -220,7 +255,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                     <!-- Previous Button -->
                     <?php if ($pagination['current_page'] > 1): ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $pagination['current_page'] - 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=draft&page=<?php echo $pagination['current_page'] - 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           Previous
                         </a>
                       </li>
@@ -239,7 +274,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                     if ($start_page > 1):
                     ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=1&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">1</a>
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=draft&page=1&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">1</a>
                       </li>
                       <?php if ($start_page > 2): ?>
                         <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -248,7 +283,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 
                     <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
                       <li class="page-item <?php echo $i == $pagination['current_page'] ? 'active' : ''; ?>">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $i; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=draft&page=<?php echo $i; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           <?php echo $i; ?>
                         </a>
                       </li>
@@ -260,7 +295,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                         <li class="page-item disabled"><span class="page-link">...</span></li>
                       <?php endif; ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $pagination['total_pages']; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=draft&page=<?php echo $pagination['total_pages']; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           <?php echo $pagination['total_pages']; ?>
                         </a>
                       </li>
@@ -269,7 +304,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                     <!-- Next Button -->
                     <?php if ($pagination['current_page'] < $pagination['total_pages']): ?>
                       <li class="page-item">
-                        <a class="page-link" href="?controller=kategorisertamerta&action=index&page=<?php echo $pagination['current_page'] + 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
+                        <a class="page-link" href="?controller=kategoridikecualikanadmin&action=draft&page=<?php echo $pagination['current_page'] + 1; ?>&limit=<?php echo $pagination['limit']; ?><?php echo !empty($search) ? '&search=' . urlencode($search) : ''; ?>">
                           Next
                         </a>
                       </li>
@@ -284,15 +319,15 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                 <?php endif; ?>
               <?php else: ?>
                 <div class="text-center py-5">
-                  <i class="mdi mdi-clock-fast-outline" style="font-size: 64px; color: #ccc;"></i>
+                  <i class="mdi mdi-file-document-edit-outline" style="font-size: 64px; color: #ccc;"></i>
                   <h5 class="text-muted mt-3">
                     <?php if (!empty($search)): ?>
-                      Tidak ada dokumen serta merta yang ditemukan untuk pencarian "<?php echo htmlspecialchars($search); ?>"
+                      Tidak ada draft dokumen yang ditemukan untuk pencarian "<?php echo htmlspecialchars($search); ?>"
                     <?php else: ?>
-                      Belum ada data dokumen serta merta
+                      Belum ada draft dokumen dikecualikan
                     <?php endif; ?>
                   </h5>
-                  <button class="btn btn-primary mt-2" onclick="window.location.href='index.php?controller=kategorisertamerta&action=create'">
+                  <button class="btn btn-primary mt-2" onclick="window.location.href='index.php?controller=kategoridikecualikanadmin&action=create'">
                     <i class="mdi mdi-plus me-1"></i>Tambah Dokumen Pertama
                   </button>
                 </div>
@@ -305,24 +340,24 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
   </div>
   <?php include 'template/script.php'; ?>
 
-  <!-- Modal Konfirmasi Draft -->
-  <div class="modal fade" id="draftModal" tabindex="-1" aria-labelledby="draftModalLabel" aria-hidden="true">
+  <!-- Modal Konfirmasi Publikasi -->
+  <div class="modal fade" id="publikasiModal" tabindex="-1" aria-labelledby="publikasiModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="draftModalLabel">
-            <i class="mdi mdi-file-document-edit me-2"></i>Konfirmasi Ubah ke Draft
+          <h5 class="modal-title" id="publikasiModalLabel">
+            <i class="mdi mdi-publish me-2"></i>Konfirmasi Publikasi
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Apakah Anda yakin ingin mengubah status dokumen "<span id="draftName"></span>" menjadi draft?</p>
-          <p class="text-warning"><i class="mdi mdi-alert me-1"></i>Dokumen akan tidak terlihat oleh publik!</p>
+          <p>Apakah Anda yakin ingin mempublikasikan dokumen "<span id="publikasiName"></span>"?</p>
+          <p class="text-success"><i class="mdi mdi-check-circle me-1"></i>Dokumen akan terlihat oleh publik!</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-warning" id="confirmDraftBtn">
-            <i class="mdi mdi-file-document-edit me-1"></i>Ya, Ubah ke Draft
+          <button type="button" class="btn btn-success" id="confirmPublikasiBtn">
+            <i class="mdi mdi-publish me-1"></i>Ya, Publikasikan
           </button>
         </div>
       </div>
@@ -340,7 +375,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Apakah Anda yakin ingin menghapus Dokumen "<span id="deleteName"></span>"?</p>
+          <p>Apakah Anda yakin ingin menghapus Draft "<span id="deleteName"></span>"?</p>
           <p class="text-danger"><i class="mdi mdi-alert-circle me-1"></i>Data yang sudah dihapus tidak dapat dikembalikan!</p>
         </div>
         <div class="modal-footer">
@@ -356,10 +391,10 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
   <script>
     let currentDokumenId = null;
 
-    function confirmDraft(id, name) {
+    function confirmPublikasi(id, name) {
       currentDokumenId = id;
-      document.getElementById('draftName').textContent = name;
-      const modal = new bootstrap.Modal(document.getElementById('draftModal'));
+      document.getElementById('publikasiName').textContent = name;
+      const modal = new bootstrap.Modal(document.getElementById('publikasiModal'));
       modal.show();
     }
 
@@ -372,7 +407,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 
     function copyLink(id) {
       // Create a link to the document - adjust URL as needed
-      const link = window.location.origin + '/index.php?controller=kategorisertamerta&action=view&id=' + id;
+      const link = window.location.origin + '/index.php?controller=kategoridikecualikanadmin&action=view&id=' + id;
 
       // Copy to clipboard
       navigator.clipboard.writeText(link).then(function() {
@@ -406,13 +441,13 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
       });
     }
 
-    // Handle draft confirmation
-    document.getElementById('confirmDraftBtn').addEventListener('click', function() {
+    // Handle publikasi confirmation
+    document.getElementById('confirmPublikasiBtn').addEventListener('click', function() {
       if (currentDokumenId) {
         const formData = new FormData();
         formData.append('id', currentDokumenId);
 
-        fetch('index.php?controller=kategorisertamerta&action=updateToDraft', {
+        fetch('index.php?controller=kategoridikecualikanadmin&action=updateToPublikasi', {
           method: 'POST',
           body: formData
         })
@@ -428,14 +463,14 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
           alert('Terjadi kesalahan: ' + error);
         });
 
-        bootstrap.Modal.getInstance(document.getElementById('draftModal')).hide();
+        bootstrap.Modal.getInstance(document.getElementById('publikasiModal')).hide();
       }
     });
 
     // Handle delete confirmation
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
       if (currentDokumenId) {
-        fetch('index.php?controller=kategorisertamerta&action=destroy&id=' + currentDokumenId, {
+        fetch('index.php?controller=kategoridikecualikanadmin&action=destroy&id=' + currentDokumenId, {
           method: 'GET'
         })
         .then(response => response.json())
