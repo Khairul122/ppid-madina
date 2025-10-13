@@ -6,6 +6,11 @@ class KategoriBerkalaModel {
     public function __construct($database) {
         $this->db = $database;
     }
+    
+    // Method to get database connection
+    public function getConnection() {
+        return $this->db;
+    }
 
     // Get all documents with category Berkala (id_kategori = 1) EXCEPT drafts
     public function getAllDokumenBerkala($limit = 10, $offset = 0) {

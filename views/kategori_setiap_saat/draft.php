@@ -149,7 +149,7 @@
                                 <?php endif; ?>
                               </td>
                               <td>
-                                <span class="fw-medium"><?= htmlspecialchars($dokumen['terbitkan_sebagai']); ?></span>
+                                <span class="fw-medium"><?= isset($dokumen['terbitkan_sebagai']) ? htmlspecialchars($dokumen['terbitkan_sebagai']) : '-'; ?></span>
                                 <?php if (!empty($dokumen['nama_dokumen_pemda'])): ?>
                                   <br><small class="text-muted">Ref: <?= htmlspecialchars($dokumen['nama_dokumen_pemda']); ?></small>
                                 <?php endif; ?>

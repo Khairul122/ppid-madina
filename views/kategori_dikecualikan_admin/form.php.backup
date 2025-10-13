@@ -12,7 +12,7 @@ $is_edit = isset($data['dokumen']) && !empty($data['dokumen']);
 $dokumen = $data['dokumen'] ?? [];
 $dokumen_pemda_options = $data['dokumen_pemda_options'] ?? [];
 
-$page_title = $is_edit ? 'Edit Dokumen Setiap Saat' : 'Tambah Dokumen Setiap Saat';
+$page_title = $is_edit ? 'Edit Dokumen Dikecualikan' : 'Tambah Dokumen Dikecualikan';
 $action_url = $is_edit ? 'update' : 'store';
 ?>
 
@@ -43,10 +43,10 @@ $action_url = $is_edit ? 'update' : 'store';
               <!-- Header Section -->
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="d-flex align-items-center">
-                  <i class="mdi mdi-clock me-2" style="font-size: 24px;"></i>
+                  <i class="mdi mdi-folder-lock me-2" style="font-size: 24px;"></i>
                   <span style="font-size: 18px; font-weight: 500;"><?php echo $page_title; ?></span>
                 </div>
-                <a href="index.php?controller=kategorisetiapsaat&action=index" class="btn btn-outline-secondary">
+                <a href="index.php?controller=kategoridikecualikanadmin&action=index" class="btn btn-outline-secondary">
                   <i class="mdi mdi-arrow-left me-1"></i> Kembali ke Daftar
                 </a>
               </div>
@@ -65,7 +65,7 @@ $action_url = $is_edit ? 'update' : 'store';
               <!-- Form Card -->
               <div class="card" style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div class="card-body p-4">
-                  <form method="POST" action="index.php?controller=kategorisetiapsaat&action=<?php echo $action_url; ?>" id="dokumenForm" enctype="multipart/form-data">
+                  <form method="POST" action="index.php?controller=kategoridikecualikanadmin&action=<?php echo $action_url; ?>" id="dokumenForm" enctype="multipart/form-data">
                     <?php if ($is_edit): ?>
                       <input type="hidden" name="id" value="<?php echo $dokumen['id_dokumen']; ?>">
                     <?php endif; ?>
@@ -113,26 +113,16 @@ $action_url = $is_edit ? 'update' : 'store';
                                 name="terbitkan_sebagai"
                                 style="padding: 20px; border-radius: 6px;"
                                 required>
-                          <option value="">-- Pilih SKPD --</option>
-                          <?php if (!empty($data['skpd_list'])): ?>
-                            <?php foreach ($data['skpd_list'] as $skpd): ?>
-                              <?php if (is_array($skpd)): ?>
-                                <?php if (isset($skpd['nama_skpd'])): ?>
-                                <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>"
-                                  <?php 
-                                    $selected = false;
-                                    if (isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $skpd['nama_skpd']) {
-                                      $selected = true;
-                                    } elseif (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $skpd['nama_skpd']) {
-                                      $selected = true;
-                                    }
-                                    echo $selected ? 'selected' : '';
-                                  ?>>
-                                  <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
-                                </option>
-                                <?php endif; ?>
-                              <?php endif; ?>
-                            <?php endforeach; ?>
+                              <option value="                          <option value="">-- Pilih SKPD --</option>"
+                                <?php 
+                                  $selected = false;
+                                  if (isset($form_data["terbitkan_sebagai"]) && $form_data["terbitkan_sebagai"] == $skpd["nama_skpd"]) {
+                                    $selected = true;
+                                  } elseif (isset($dokumen["terbitkan_sebagai"]) && $dokumen["terbitkan_sebagai"] == $skpd["nama_skpd"]) {
+                                    $selected = true;
+                                  }
+                                  echo $selected ? "selected" : "";
+                                ?>>
                           <?php endif; ?>
                         </select>
                         <div class="invalid-feedback"></div>
@@ -151,7 +141,7 @@ $action_url = $is_edit ? 'update' : 'store';
                             <?php foreach ($dokumen_pemda_options as $pemda): ?>
                               <option value="<?php echo $pemda['id_dokumen_pemda']; ?>"
                                       <?php echo (($form_data['id_dokumen_pemda'] ?? ($dokumen['id_dokumen_pemda'] ?? '')) == $pemda['id_dokumen_pemda']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($pemda['nama_jenis'] . ' - ' . $pemda['area']); ?>
+                                <?php echo htmlspecialchars($pemda['nama_jenis']); ?>
                               </option>
                             <?php endforeach; ?>
                           <?php endif; ?>
@@ -250,7 +240,7 @@ $action_url = $is_edit ? 'update' : 'store';
                       <button type="reset" class="btn btn-outline-secondary" style="padding: 10px 20px;">
                         <i class="mdi mdi-refresh me-1"></i>Reset
                       </button>
-                      <a href="index.php?controller=kategorisetiapsaat&action=index" class="btn btn-outline-danger" style="padding: 10px 20px;">
+                      <a href="index.php?controller=kategoridikecualikanadmin&action=index" class="btn btn-outline-danger" style="padding: 10px 20px;">
                         <i class="mdi mdi-close me-1"></i>Batal
                       </a>
                     </div>

@@ -333,7 +333,7 @@ class DokumenPemdaController {
             $kategoriOptions = $this->dokumenPemdaModel->getKategoriOptions();
             $found = false;
             foreach ($kategoriOptions as $kategori) {
-                if ($kategori['id'] == $data['id_kategori']) {
+                if ($kategori['id_kategori'] == $data['id_kategori']) {
                     $found = true;
                     break;
                 }

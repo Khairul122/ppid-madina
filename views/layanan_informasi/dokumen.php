@@ -777,7 +777,7 @@
                                                     </small>
                                                 </td>
                                                 <td><?php echo htmlspecialchars(substr($dokumen['kandungan_informasi'], 0, 100)) . (strlen($dokumen['kandungan_informasi']) > 100 ? '...' : ''); ?></td>
-                                                <td><?php echo htmlspecialchars($dokumen['terbitkan_sebagai']); ?></td>
+                                                <td><?php echo isset($dokumen['terbitkan_sebagai']) ? htmlspecialchars($dokumen['terbitkan_sebagai']) : '-'; ?></td>
                                                 <td>
                                                     <span class="badge-kategori">
                                                         <?php echo htmlspecialchars($dokumen['nama_kategori']); ?>

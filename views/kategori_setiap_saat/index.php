@@ -119,7 +119,7 @@
                             <?php endif; ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
-                            <?= htmlspecialchars($dokumen['terbitkan_sebagai']); ?>
+                            <?= isset($dokumen['terbitkan_sebagai']) ? htmlspecialchars($dokumen['terbitkan_sebagai']) : '-'; ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
                             <?php

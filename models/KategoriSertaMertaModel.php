@@ -6,6 +6,11 @@ class KategoriSertaMertaModel {
     public function __construct($database) {
         $this->db = $database;
     }
+    
+    // Method to get database connection
+    public function getConnection() {
+        return $this->db;
+    }
 
     // Get all documents with category Serta Merta (id_kategori = 2) EXCEPT drafts
     public function getAllDokumenSertaMerta($limit = 10, $offset = 0) {

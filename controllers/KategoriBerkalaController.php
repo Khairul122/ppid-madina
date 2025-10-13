@@ -65,6 +65,11 @@ class KategoriBerkalaController {
     public function create() {
         try {
             $data['dokumen_pemda_options'] = $this->kategoriBerkalaModel->getAllDokumenPemda();
+            
+            // Load SKPD data for dropdown
+            require_once 'models/SKPDModel.php';
+            $skpdModel = new SKPDModel($this->kategoriBerkalaModel->getConnection());
+            $data['skpd_list'] = $skpdModel->getAllSKPD();
 
             $pageInfo = [
                 'title' => 'Tambah Dokumen Berkala - PPID Mandailing Natal',
@@ -114,7 +119,12 @@ class KategoriBerkalaController {
                 }
             }
 
-            $errors = $this->validateDokumenData($data);
+            // Load SKPD data for validation
+            require_once 'models/SKPDModel.php';
+            $skpdModel = new SKPDModel($this->kategoriBerkalaModel->getConnection());
+            $skpd_list = $skpdModel->getAllSKPD();
+
+            $errors = $this->validateDokumenData($data, $skpd_list);
 
             if (!empty($errors)) {
                 $_SESSION['error'] = implode('<br>', $errors);
@@ -159,6 +169,11 @@ class KategoriBerkalaController {
             }
 
             $data['dokumen_pemda_options'] = $this->kategoriBerkalaModel->getAllDokumenPemda();
+            
+            // Load SKPD data for dropdown
+            require_once 'models/SKPDModel.php';
+            $skpdModel = new SKPDModel($this->kategoriBerkalaModel->getConnection());
+            $data['skpd_list'] = $skpdModel->getAllSKPD();
 
             $pageInfo = [
                 'title' => 'Edit Dokumen Berkala - PPID Mandailing Natal',
@@ -228,7 +243,12 @@ class KategoriBerkalaController {
                 }
             }
 
-            $errors = $this->validateDokumenData($data);
+            // Load SKPD data for validation
+            require_once 'models/SKPDModel.php';
+            $skpdModel = new SKPDModel($this->kategoriBerkalaModel->getConnection());
+            $skpd_list = $skpdModel->getAllSKPD();
+
+            $errors = $this->validateDokumenData($data, $skpd_list);
 
             if (!empty($errors)) {
                 $_SESSION['error'] = implode('<br>', $errors);
@@ -419,7 +439,7 @@ class KategoriBerkalaController {
         }
     }
 
-    private function validateDokumenData($data) {
+    private function validateDokumenData($data, $skpd_list = null) {
         $errors = [];
 
         if (empty($data['judul'])) {
@@ -432,6 +452,21 @@ class KategoriBerkalaController {
             $errors[] = 'Terbitkan sebagai harus diisi';
         } elseif (strlen($data['terbitkan_sebagai']) > 255) {
             $errors[] = 'Terbitkan sebagai maksimal 255 karakter';
+        } else {
+            // Validasi bahwa terbitkan_sebagai adalah nama SKPD yang valid
+            if ($skpd_list !== null) {
+                $skpd_found = false;
+                foreach ($skpd_list as $skpd) {
+                    if ($skpd['nama_skpd'] === $data['terbitkan_sebagai']) {
+                        $skpd_found = true;
+                        break;
+                    }
+                }
+                
+                if (!$skpd_found) {
+                    $errors[] = 'Terbitkan sebagai harus merupakan nama SKPD yang valid';
+                }
+            }
         }
 
         if (!in_array($data['tipe_file'], ['audio', 'video', 'text', 'gambar', 'lainnya'])) {

@@ -6,6 +6,11 @@ class KategoriDikecualikanAdminModel {
     public function __construct($database) {
         $this->db = $database;
     }
+    
+    // Method to get database connection
+    public function getConnection() {
+        return $this->db;
+    }
 
     // Get all documents with category Dikecualikan (id_kategori = 4) EXCEPT drafts
     public function getAllDokumenDikecualikan($limit = 10, $offset = 0) {

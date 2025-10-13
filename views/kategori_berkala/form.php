@@ -80,7 +80,7 @@ $method = 'POST';
                                value="<?php echo htmlspecialchars($form_data['judul'] ?? ($data['dokumen']['judul'] ?? '')); ?>"
                                placeholder="Masukkan judul dokumen"
                                maxlength="255"
-                               style="padding: 12px; border-radius: 6px;"
+                               style="padding: 20px; border-radius: 6px;"
                                required>
                         <small class="text-muted"><span id="judul_counter">0</span>/255 karakter</small>
                         <div class="invalid-feedback"></div>
@@ -97,38 +97,45 @@ $method = 'POST';
                                   name="kandungan_informasi"
                                   rows="6"
                                   placeholder="Masukkan kandungan informasi (opsional)"
-                                  style="padding: 12px; border-radius: 6px;"><?php echo htmlspecialchars($form_data['kandungan_informasi'] ?? ($data['dokumen']['kandungan_informasi'] ?? '')); ?></textarea>
+                                  style="padding: 20px; border-radius: 6px;"><?php echo htmlspecialchars($form_data['kandungan_informasi'] ?? ($data['dokumen']['kandungan_informasi'] ?? '')); ?></textarea>
                         <small class="text-muted">Kandungan informasi bersifat opsional</small>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
 
                     <div class="row">
-                      <div class="col-md-6 mb-3">
+                      <div class="col-md-12 mb-3">
                         <label for="terbitkan_sebagai" class="form-label fw-bold">
                           Terbitkan Sebagai <span style="color: red;">*</span>
                         </label>
-                        <input type="text"
-                               class="form-control"
-                               id="terbitkan_sebagai"
-                               name="terbitkan_sebagai"
-                               value="<?php echo htmlspecialchars($form_data['terbitkan_sebagai'] ?? ($data['dokumen']['terbitkan_sebagai'] ?? '')); ?>"
-                               placeholder="Contoh: Peraturan Daerah, Keputusan Bupati"
-                               maxlength="255"
-                               style="padding: 12px; border-radius: 6px;"
-                               required>
-                        <small class="text-muted"><span id="terbitkan_counter">0</span>/255 karakter</small>
+                        <select class="form-control"
+                                id="terbitkan_sebagai"
+                                name="terbitkan_sebagai"
+                                style="padding: 20px; border-radius: 6px;"
+                                required>
+                          <option value="">-- Pilih SKPD --</option>
+                          <?php if (!empty($data['skpd_list'])): ?>
+                            <?php foreach ($data['skpd_list'] as $skpd): ?>
+                              <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>"
+                                <?php echo ((isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $skpd['nama_skpd']) || (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $skpd['nama_skpd'])) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
+                              </option>
+                            <?php endforeach; ?>
+                          <?php endif; ?>
+                        </select>
                         <div class="invalid-feedback"></div>
                       </div>
+                    </div>
 
-                      <div class="col-md-6 mb-3">
+                    <div class="row">
+                      <div class="col-md-12 mb-3">
                         <label for="id_dokumen_pemda" class="form-label fw-bold">
                           Dokumen Pemda (Opsional)
                         </label>
                         <select class="form-control"
                                 id="id_dokumen_pemda"
                                 name="id_dokumen_pemda"
-                                style="padding: 12px; border-radius: 6px;">
+                                style="padding: 20px; border-radius: 6px;">
                           <option value="">Pilih Dokumen Pemda (Opsional)</option>
                           <?php foreach ($data['dokumen_pemda_options'] as $dokumen_pemda): ?>
                             <option value="<?php echo $dokumen_pemda['id_dokumen_pemda']; ?>"
@@ -142,14 +149,14 @@ $method = 'POST';
                     </div>
 
                     <div class="row">
-                      <div class="col-md-6 mb-3">
+                      <div class="col-md-12 mb-3">
                         <label for="tipe_file" class="form-label fw-bold">
                           Tipe File <span style="color: red;">*</span>
                         </label>
                         <select class="form-control"
                                 id="tipe_file"
                                 name="tipe_file"
-                                style="padding: 12px; border-radius: 6px;"
+                                style="padding: 20px; border-radius: 6px;"
                                 required>
                           <option value="">Pilih Tipe File</option>
                           <option value="text" <?php echo (isset($form_data['tipe_file']) && $form_data['tipe_file'] == 'text') || (isset($data['dokumen']) && $data['dokumen']['tipe_file'] == 'text') ? 'selected' : ''; ?>>Text/Dokumen</option>
@@ -160,15 +167,17 @@ $method = 'POST';
                         </select>
                         <div class="invalid-feedback"></div>
                       </div>
+                    </div>
 
-                      <div class="col-md-6 mb-3">
+                    <div class="row">
+                      <div class="col-md-12 mb-3">
                         <label for="status" class="form-label fw-bold">
                           Status <span style="color: red;">*</span>
                         </label>
                         <select class="form-control"
                                 id="status"
                                 name="status"
-                                style="padding: 12px; border-radius: 6px;"
+                                style="padding: 20px; border-radius: 6px;"
                                 required>
                           <option value="">Pilih Status</option>
                           <option value="draft" <?php echo (isset($form_data['status']) && $form_data['status'] == 'draft') || (isset($data['dokumen']) && $data['dokumen']['status'] == 'draft') || (!isset($data['dokumen'])) ? 'selected' : ''; ?>>Draft</option>
@@ -189,7 +198,7 @@ $method = 'POST';
                                id="upload_file"
                                name="upload_file"
                                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp3,.mp4,.avi,.mov"
-                               style="padding: 12px; border-radius: 6px;">
+                               style="padding: 20px; border-radius: 6px;">
                         <?php if (isset($data['dokumen']) && !empty($data['dokumen']['upload_file'])): ?>
                           <small class="text-muted">
                             File saat ini: <a href="<?php echo $data['dokumen']['upload_file']; ?>" target="_blank" class="text-primary">
@@ -255,7 +264,6 @@ $method = 'POST';
 
       // Initialize character counters
       updateCounter('judul', 'judul_counter', 255);
-      updateCounter('terbitkan_sebagai', 'terbitkan_counter', 255);
 
       // Form validation
       const form = document.getElementById('dokumenForm');
@@ -269,7 +277,7 @@ $method = 'POST';
         validateJudul();
       });
 
-      terbitkanInput.addEventListener('input', function() {
+      terbitkanInput.addEventListener('change', function() {
         validateTerbitkanSebagai();
       });
 
@@ -299,10 +307,7 @@ $method = 'POST';
       function validateTerbitkanSebagai() {
         const value = terbitkanInput.value.trim();
         if (value === '') {
-          setInvalid(terbitkanInput, 'Terbitkan sebagai wajib diisi');
-          return false;
-        } else if (value.length > 255) {
-          setInvalid(terbitkanInput, 'Terbitkan sebagai maksimal 255 karakter');
+          setInvalid(terbitkanInput, 'Terbitkan sebagai wajib dipilih');
           return false;
         } else {
           setValid(terbitkanInput);
@@ -394,7 +399,6 @@ $method = 'POST';
         // Reset character counters
         setTimeout(function() {
           updateCounter('judul', 'judul_counter', 255);
-          updateCounter('terbitkan_sebagai', 'terbitkan_counter', 255);
         }, 10);
       });
     });

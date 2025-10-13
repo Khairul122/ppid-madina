@@ -244,7 +244,7 @@ class DokumenPemdaModel {
             return [];
         }
 
-        $query = "SELECT id_kategori as id, nama_kategori as name FROM kategori ORDER BY nama_kategori ASC";
+        $query = "SELECT id_kategori, nama_kategori FROM kategori ORDER BY nama_kategori ASC";
 
         try {
             $stmt = $this->conn->prepare($query);

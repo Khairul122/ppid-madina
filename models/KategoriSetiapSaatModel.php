@@ -12,6 +12,11 @@ class KategoriSetiapSaatModel {
             error_log("Koneksi database gagal untuk KategoriSetiapSaatModel");
         }
     }
+    
+    // Method to get database connection
+    public function getConnection() {
+        return $this->conn;
+    }
 
     public function getAllDokumenSetiapSaat($limit = null, $offset = null) {
         if (!$this->conn) {

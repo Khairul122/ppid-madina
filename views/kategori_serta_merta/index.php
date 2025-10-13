@@ -133,7 +133,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
                             <?php endif; ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
-                            <?php echo htmlspecialchars($dokumen['terbitkan_sebagai']); ?>
+                            <?php echo isset($dokumen['terbitkan_sebagai']) ? htmlspecialchars($dokumen['terbitkan_sebagai']) : '-'; ?>
                           </td>
                           <td style="padding: 15px; border: none; text-align: center;">
                             <?php

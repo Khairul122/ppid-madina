@@ -82,7 +82,7 @@ $action_url = $is_edit ? 'update' : 'store';
                                value="<?php echo htmlspecialchars($form_data['judul'] ?? ($dokumen['judul'] ?? '')); ?>"
                                placeholder="Masukkan judul dokumen"
                                maxlength="255"
-                               style="padding: 12px; border-radius: 6px;"
+                               style="padding: 20px; border-radius: 6px;"
                                required>
                         <small class="text-muted"><span id="judul_counter">0</span>/255 karakter</small>
                         <div class="invalid-feedback"></div>
@@ -97,7 +97,7 @@ $action_url = $is_edit ? 'update' : 'store';
                                   name="kandungan_informasi"
                                   rows="4"
                                   placeholder="Masukkan kandungan informasi dokumen (opsional)"
-                                  style="padding: 12px; border-radius: 6px;"><?php echo htmlspecialchars($form_data['kandungan_informasi'] ?? ($dokumen['kandungan_informasi'] ?? '')); ?></textarea>
+                                  style="padding: 20px; border-radius: 6px;"><?php echo htmlspecialchars($form_data['kandungan_informasi'] ?? ($dokumen['kandungan_informasi'] ?? '')); ?></textarea>
                         <small class="text-muted">Deskripsi detail tentang dokumen (opsional)</small>
                         <div class="invalid-feedback"></div>
                       </div>
@@ -108,16 +108,31 @@ $action_url = $is_edit ? 'update' : 'store';
                         <label for="terbitkan_sebagai" class="form-label fw-bold">
                           Terbitkan Sebagai <span style="color: red;">*</span>
                         </label>
-                        <input type="text"
-                               class="form-control"
-                               id="terbitkan_sebagai"
-                               name="terbitkan_sebagai"
-                               value="<?php echo htmlspecialchars($form_data['terbitkan_sebagai'] ?? ($dokumen['terbitkan_sebagai'] ?? '')); ?>"
-                               placeholder="Contoh: Surat Keputusan, Peraturan, dll"
-                               maxlength="255"
-                               style="padding: 12px; border-radius: 6px;"
-                               required>
-                        <small class="text-muted"><span id="terbitkan_counter">0</span>/255 karakter</small>
+                        <select class="form-select"
+                                id="terbitkan_sebagai"
+                                name="terbitkan_sebagai"
+                                style="padding: 20px; border-radius: 6px;"
+                                required>
+                          <option value="">-- Pilih SKPD --</option>
+                          <?php if (!empty($data['skpd_list']) && is_array($data['skpd_list'])): ?>
+                            <?php foreach ($data['skpd_list'] as $skpd): ?>
+                              <?php if (is_array($skpd) && isset($skpd['nama_skpd'])): ?>
+                              <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>"
+                                <?php 
+                                  $selected = false;
+                                  if (isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $skpd['nama_skpd']) {
+                                    $selected = true;
+                                  } elseif (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $skpd['nama_skpd']) {
+                                    $selected = true;
+                                  }
+                                  echo $selected ? 'selected' : '';
+                                ?>>
+                                <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
+                              </option>
+                              <?php endif; ?>
+                            <?php endforeach; ?>
+                          <?php endif; ?>
+                        </select>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
@@ -128,7 +143,7 @@ $action_url = $is_edit ? 'update' : 'store';
                         <select class="form-select"
                                 id="id_dokumen_pemda"
                                 name="id_dokumen_pemda"
-                                style="padding: 12px; border-radius: 6px;">
+                                style="padding: 20px; border-radius: 6px;">
                           <option value="">-- Pilih Dokumen Pemda (Opsional) --</option>
                           <?php if (!empty($dokumen_pemda_options)): ?>
                             <?php foreach ($dokumen_pemda_options as $pemda): ?>
@@ -145,14 +160,14 @@ $action_url = $is_edit ? 'update' : 'store';
                     </div>
 
                     <div class="row">
-                      <div class="col-md-6 mb-3">
+                      <div class="col-md-12 mb-3">
                         <label for="tipe_file" class="form-label fw-bold">
                           Tipe File <span style="color: red;">*</span>
                         </label>
                         <select class="form-select"
                                 id="tipe_file"
                                 name="tipe_file"
-                                style="padding: 12px; border-radius: 6px;"
+                                style="padding: 20px; border-radius: 6px;"
                                 required>
                           <option value="">-- Pilih Tipe File --</option>
                           <?php
@@ -173,15 +188,17 @@ $action_url = $is_edit ? 'update' : 'store';
                         </select>
                         <div class="invalid-feedback"></div>
                       </div>
+                    </div>
 
-                      <div class="col-md-6 mb-3">
+                    <div class="row">
+                      <div class="col-md-12 mb-3">
                         <label for="status" class="form-label fw-bold">
                           Status <span style="color: red;">*</span>
                         </label>
                         <select class="form-select"
                                 id="status"
                                 name="status"
-                                style="padding: 12px; border-radius: 6px;"
+                                style="padding: 20px; border-radius: 6px;"
                                 required>
                           <?php $selected_status = $form_data['status'] ?? ($dokumen['status'] ?? 'draft'); ?>
                           <option value="draft" <?php echo ($selected_status == 'draft') ? 'selected' : ''; ?>>
@@ -204,7 +221,7 @@ $action_url = $is_edit ? 'update' : 'store';
                                id="upload_file"
                                name="upload_file"
                                accept=".pdf,.doc,.docx,.txt,.mp3,.wav,.mp4,.avi,.jpg,.jpeg,.png,.gif"
-                               style="padding: 12px; border-radius: 6px;">
+                               style="padding: 20px; border-radius: 6px;">
 
                         <?php if ($is_edit && !empty($dokumen['upload_file'])): ?>
                           <div class="mt-2">
@@ -278,7 +295,6 @@ $action_url = $is_edit ? 'update' : 'store';
 
       // Initialize character counters
       updateCounter('judul', 'judul_counter', 255);
-      updateCounter('terbitkan_sebagai', 'terbitkan_counter', 255);
 
       // Form validation
       const form = document.getElementById('dokumenForm');
@@ -286,14 +302,13 @@ $action_url = $is_edit ? 'update' : 'store';
       const terbitkanInput = document.getElementById('terbitkan_sebagai');
       const tipeFileInput = document.getElementById('tipe_file');
       const statusInput = document.getElementById('status');
-      const fileInput = document.getElementById('upload_file');
 
       // Real-time validation
       judulInput.addEventListener('input', function() {
         validateJudul();
       });
 
-      terbitkanInput.addEventListener('input', function() {
+      terbitkanInput.addEventListener('change', function() {
         validateTerbitkan();
       });
 
@@ -303,10 +318,6 @@ $action_url = $is_edit ? 'update' : 'store';
 
       statusInput.addEventListener('change', function() {
         validateStatus();
-      });
-
-      fileInput.addEventListener('change', function() {
-        validateFile();
       });
 
       // Validation functions
@@ -327,10 +338,7 @@ $action_url = $is_edit ? 'update' : 'store';
       function validateTerbitkan() {
         const value = terbitkanInput.value.trim();
         if (value === '') {
-          setInvalid(terbitkanInput, 'Terbitkan sebagai wajib diisi');
-          return false;
-        } else if (value.length > 255) {
-          setInvalid(terbitkanInput, 'Terbitkan sebagai maksimal 255 karakter');
+          setInvalid(terbitkanInput, 'Terbitkan sebagai wajib dipilih');
           return false;
         } else {
           setValid(terbitkanInput);
@@ -360,22 +368,6 @@ $action_url = $is_edit ? 'update' : 'store';
         }
       }
 
-      function validateFile() {
-        if (fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          const maxSize = 10 * 1024 * 1024; // 10MB
-
-          if (file.size > maxSize) {
-            setInvalid(fileInput, 'Ukuran file tidak boleh lebih dari 10MB');
-            return false;
-          } else {
-            setValid(fileInput);
-            return true;
-          }
-        }
-        return true;
-      }
-
       function setInvalid(input, message) {
         input.classList.remove('is-valid');
         input.classList.add('is-invalid');
@@ -398,7 +390,6 @@ $action_url = $is_edit ? 'update' : 'store';
         isValid &= validateTerbitkan();
         isValid &= validateTipeFile();
         isValid &= validateStatus();
-        isValid &= validateFile();
 
         if (!isValid) {
           e.preventDefault();
@@ -436,7 +427,6 @@ $action_url = $is_edit ? 'update' : 'store';
         // Reset character counters
         setTimeout(function() {
           updateCounter('judul', 'judul_counter', 255);
-          updateCounter('terbitkan_sebagai', 'terbitkan_counter', 255);
         }, 10);
       });
     });
