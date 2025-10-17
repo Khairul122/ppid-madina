@@ -224,7 +224,6 @@ if (isset($database)) {
             width: 100%;
             height: max-content;
             overflow: hidden;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
         }
 
         .banner-track {
@@ -244,7 +243,6 @@ if (isset($database)) {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.85;
         }
 
         .banner-overlay {
@@ -253,7 +251,7 @@ if (isset($database)) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(30, 58, 138, 0.85) 0%, rgba(30, 58, 138, 0.7) 100%);
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.5) 0%, rgba(30, 58, 138, 0.3) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2155,21 +2153,21 @@ if (isset($database)) {
                     colorByPoint: true,
                     data: [
                         <?php if(($kategoriCounts['berkala'] ?? 0) > 0): ?>
-                        {
+                        ,{
                             name: 'Berkala',
                             y: <?= $kategoriCounts['berkala'] ?? 0 ?>,
                             color: '#87CEEB' // biru muda
                         },
                         <?php endif; ?>
                         <?php if(($kategoriCounts['serta merta'] ?? 0) > 0): ?>
-                        {
+                        ,{
                             name: 'Serta Merta',
                             y: <?= $kategoriCounts['serta merta'] ?? 0 ?>,
                             color: '#90EE90' // hijau
                         },
                         <?php endif; ?>
                         <?php if(($kategoriCounts['setiap saat'] ?? 0) > 0): ?>
-                        {
+                        ,{
                             name: 'Setiap Saat',
                             y: <?= $kategoriCounts['setiap saat'] ?? 0 ?>,
                             color: '#DDA0DD' // ungu
@@ -2207,14 +2205,14 @@ if (isset($database)) {
                     colorByPoint: true,
                     data: [
                         <?php if($statusCounts['masuk'] > 0): ?>
-                        {
+                        ,{
                             name: 'Masuk',
                             y: <?= $statusCounts['masuk'] ?>,
                             color: '#93C5FD' // biru muda
                         },
                         <?php endif; ?>
                         <?php if($statusCounts['disposisi'] > 0): ?>
-                        {
+                        ,{
                             name: 'Disposisi',
                             y: <?= $statusCounts['disposisi'] ?>,
                             color: '#87CEEB' // biru langit
