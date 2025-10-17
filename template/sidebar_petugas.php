@@ -55,7 +55,7 @@ function isDropdownActivePetugas($controllers)
           <li class="nav-item">
             <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">
               <i class="fa fa-inbox fa-sm me-2"></i>
-              Permohonan Masuk SKPD
+              Permohonan Masuk
             </a>
           </li>
           <li class="nav-item">
@@ -70,10 +70,16 @@ function isDropdownActivePetugas($controllers)
               Permohonan Diproses
             </a>
           </li>
-            <li class="nav-item">
+          <li class="nav-item">
             <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">
               <i class="fa fa-check-circle fa-sm me-2"></i>
               Permohonan Selesai
+            </a>
+          </li>
+           <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'ditolakIndex') || isActivePetugas('permohonanpetugas', 'permohonanDitolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=ditolakIndex">
+             <i class="fa fa-times-circle fa-sm me-2"></i>
+              Permohonan Ditolak
             </a>
           </li>
           <li class="nav-item">
@@ -82,7 +88,7 @@ function isDropdownActivePetugas($controllers)
               Layanan Kepuasan
             </a>
           </li>
-           
+
         </ul>
       </div>
     </li>
@@ -115,11 +121,11 @@ function isDropdownActivePetugas($controllers)
             </a>
           </li>
           <li class="nav-item">
-              <a class="nav-link <?php echo isActivePetugas('kategoriDikecualikanPetugas') ? 'active' : ''; ?>" href="index.php?controller=kategoriDikecualikanPetugas&action=index">
-                <i class="fa fa-ban fa-sm me-2"></i>
-                Kategori Dikecualikan
-              </a>
-            </li>
+            <a class="nav-link <?php echo isActivePetugas('kategoriDikecualikanPetugas') ? 'active' : ''; ?>" href="index.php?controller=kategoriDikecualikanPetugas&action=index">
+              <i class="fa fa-ban fa-sm me-2"></i>
+              Kategori Dikecualikan
+            </a>
+          </li>
         </ul>
       </div>
     </li>

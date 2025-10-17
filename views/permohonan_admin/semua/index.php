@@ -215,7 +215,7 @@ $total_pages = ceil($total_records / $limit);
                       <table class="table table-hover">
                         <thead class="table-light">
                           <tr>
-                            <th scope="col">#</th>
+                            <th scope="col">No</th>
                             <th scope="col">Tanggal</th>
                             <th scope="col">Kode</th>
                             <th scope="col">Judul Permohonan</th>

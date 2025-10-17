@@ -102,6 +102,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                           </div>
                         </div>
 
+                        <div class="col-12">
+                          <div class="info-item">
+                            <label class="info-label">Catatan Petugas</label>
+                            <div class="info-value"><?php echo nl2br(htmlspecialchars($permohonan['catatan_petugas'] ?? '-')); ?></div>
+                          </div>
+                        </div>
+
                         <div class="col-md-6">
                           <div class="info-item">
                             <label class="info-label">Tanggal Permohonan</label>

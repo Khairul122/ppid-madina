@@ -160,7 +160,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <table class="table table-hover">
                         <thead class="table-light">
                           <tr>
-                            <th scope="col">#</th>
+                            <th scope="col">No</th>
                             <th scope="col">No. Permohonan</th>
                             <th scope="col">Nama Responden</th>
                             <th scope="col">Judul Dokumen</th>

@@ -492,6 +492,7 @@ class PermohonanPetugasModel
                     p.status,
                     p.alasan_penolakan,
                     p.catatan_petugas,
+                    p.komponen_tujuan,
                     p.created_at,
                     p.sisa_jatuh_tempo,
                     u.username,

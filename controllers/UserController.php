@@ -38,6 +38,59 @@ class UserController {
                 include 'views/dashboard/admin/index.php';
                 break;
             case 'petugas':
+                // Get petugas-specific data
+                require_once 'models/PermohonanPetugasModel.php';
+                global $database;
+                $db = $database->getConnection();
+                $permohonanPetugasModel = new PermohonanPetugasModel($db);
+                
+                // Get the petugas's SKPD
+                $petugas_skpd = $permohonanPetugasModel->getPetugasSKPDByUserId($_SESSION['user_id']);
+                
+                if (!$petugas_skpd) {
+                    $_SESSION['error_message'] = 'Data SKPD petugas tidak ditemukan';
+                    $data = [
+                        'permohonan_stats' => [
+                            'diproses' => 0,
+                            'disposisi' => 0,
+                            'selesai' => 0,
+                            'ditolak' => 0
+                        ],
+                        'recent_permohonan' => []
+                    ];
+                    include 'views/dashboard/petugas/index.php';
+                    return;
+                }
+                
+                $nama_skpd = $petugas_skpd['nama_skpd'];
+                
+                // Get petugas-specific statistics
+                $data = [];
+                $data['permohonan_stats'] = $permohonanPetugasModel->getPetugasStatsBySKPD($nama_skpd);
+                
+                // Map the stats to match the dashboard expectations
+                $data['permohonan_stats'] = [
+                    'permohonan_baru' => $data['permohonan_stats']['diproses'] ?? 0,
+                    'permohonan_proses' => $data['permohonan_stats']['disposisi'] ?? 0,
+                    'permohonan_selesai' => $data['permohonan_stats']['selesai'] ?? 0,
+                    'permohonan_ditolak' => $data['permohonan_stats']['ditolak'] ?? 0
+                ];
+                
+                // Get recent permohonan for this SKPD (limit to 5)
+                $recent_permohonan = $permohonanPetugasModel->getPermohonanBySKPD($nama_skpd, 5, 0, 'all', '');
+                
+                // Format the recent permohonan data to match the expected structure
+                $data['recent_permohonan'] = [];
+                foreach ($recent_permohonan as $permohonan) {
+                    $data['recent_permohonan'][] = [
+                        'id_permohonan' => $permohonan['id_permohonan'] ?? '',
+                        'judul_dokumen' => $permohonan['judul_dokumen'] ?? 'Permohonan Informasi',
+                        'status' => $permohonan['status'] ?? 'Pending',
+                        'username' => $permohonan['nama_lengkap'] ?? $permohonan['username'] ?? 'Pengguna',
+                        'created_at' => $permohonan['created_at'] ?? date('Y-m-d H:i:s')
+                    ];
+                }
+                
                 include 'views/dashboard/petugas/index.php';
                 break;
             case 'masyarakat':
