@@ -1334,7 +1334,6 @@ if (isset($database)) {
                             </div>
                             <span class="stat-number" data-count="<?= $totalDokumen ?>">0</span>
                             <p class="stat-label">Jumlah Dokumen</p>
-                            <p class="stat-description">Dokumen informasi publik tersedia</p>
                         </div>
                     </div>
                 </div>
@@ -1346,7 +1345,6 @@ if (isset($database)) {
                             </div>
                             <span class="stat-number" data-count="<?= $totalPermohonan ?>">0</span>
                             <p class="stat-label">Jumlah Permohonan</p>
-                            <p class="stat-description">Permohonan informasi masuk</p>
                         </div>
                     </div>
                 </div>
@@ -1358,7 +1356,6 @@ if (isset($database)) {
                             </div>
                             <span class="stat-number" data-count="<?= $totalPemohon ?>">0</span>
                             <p class="stat-label">Jumlah Pemohon</p>
-                            <p class="stat-description">Pengguna layanan informasi</p>
                         </div>
                     </div>
                 </div>
@@ -1370,7 +1367,6 @@ if (isset($database)) {
                             </div>
                             <span class="stat-number" data-count="<?= $totalUnduhan ?>">0</span>
                             <p class="stat-label">Jumlah Unduhan</p>
-                            <p class="stat-description">Dokumen berhasil diunduh</p>
                         </div>
                     </div>
                 </div>
@@ -1381,8 +1377,7 @@ if (isset($database)) {
     <!-- Download Dokumen Section -->
     <section class="features-section section-bg-light" data-aos="fade-up">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-left">Download Dokumen Berdasarkan Kategori</h2>
-            <p class="section-subtitle" data-aos="fade-up">Mempermudah masyarakat mengakses dokumen publik sesuai klasifikasi</p>
+            <h2 class="section-title pb-5" data-aos="fade-left">Download Dokumen Berdasarkan Kategori</h2>
 
             <div class="row">
                 <?php
@@ -1475,173 +1470,215 @@ if (isset($database)) {
                 }
                 ?>
 
+                <!-- Kategori Berkala -->
                 <div class="col-md-4 mb-4">
-                    <div class="card dokumen-category-card shadow-sm rounded">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">Berkala</h5>
+                    <div class="card dokumen-category-card shadow-sm rounded h-100" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="card-header bg-gradient text-white text-center py-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--primary-color), #1e40af);">
+                            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);"></div>
+                            <div class="position-relative">
+                                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                                <h5 class="card-title mb-0 font-weight-bold" style="color: black">Berkala</h5>
+                                <div class="d-flex justify-content-center mt-2">
+                                    <span class="badge bg-white px-3 py-2" style="color: black"><?= $kategoriCounts['berkala'] ?? 0 ?> dokumen</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <?php if (!empty($kategoriDokumen['berkala'])): ?>
-                                <?php foreach ($kategoriDokumen['berkala'] as $dok): ?>
-                                    <div class="border-bottom pb-3 mb-3" style="border-bottom: 1px dotted #ccc;">
-                                        <h6 class="mb-1"><?= htmlspecialchars($dok['judul']) ?></h6>
-                                        <div class="d-flex justify-content-between text-muted">
-                                            <small>
-                                                <i class="fas fa-calendar-alt me-1"></i>
-                                                <?php
-                                                $date = new DateTime($dok['tanggal_upload']);
-                                                $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                                                $months = [
-                                                    1 => 'Januari',
-                                                    2 => 'Februari',
-                                                    3 => 'Maret',
-                                                    4 => 'April',
-                                                    5 => 'Mei',
-                                                    6 => 'Juni',
-                                                    7 => 'Juli',
-                                                    8 => 'Agustus',
-                                                    9 => 'September',
-                                                    10 => 'Oktober',
-                                                    11 => 'November',
-                                                    12 => 'Desember'
-                                                ];
-                                                $dayName = $days[$date->format('w')];
-                                                $day = $date->format('d');
-                                                $month = $months[(int)$date->format('n')];
-                                                $year = $date->format('Y');
-                                                $indonesianDate = "$dayName, $day $month $year";
-                                                ?>
-                                                <?= $indonesianDate ?>
-                                            </small>
-                                            <small>
-                                                <i class="fas fa-download me-1"></i> 0
-                                            </small>
-                                            <small>
-                                                <i class="fas fa-eye me-1"></i> 0
-                                            </small>
+                                <div class="dokumen-list">
+                                    <?php foreach ($kategoriDokumen['berkala'] as $index => $dok): ?>
+                                        <div class="dokumen-item mb-3 pb-3 border-bottom" style="border-bottom: 1px solid #e2e8f0 !important;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="dokumen-icon me-3">
+                                                    <i class="fas fa-file-pdf text-danger fa-lg" style="font-size: 1.5rem;"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 dokumen-title" style="font-size: 0.9rem;"><?= htmlspecialchars(substr($dok['judul'], 0, 60)) . (strlen($dok['judul']) > 60 ? '...' : '') ?></h6>
+                                                    <div class="dokumen-meta text-muted" style="font-size: 0.75rem;">
+                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        <?php
+                                                        $date = new DateTime($dok['tanggal_upload']);
+                                                        $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                                                        $months = [
+                                                            1 => 'Jan',
+                                                            2 => 'Feb',
+                                                            3 => 'Mar',
+                                                            4 => 'Apr',
+                                                            5 => 'Mei',
+                                                            6 => 'Jun',
+                                                            7 => 'Jul',
+                                                            8 => 'Agu',
+                                                            9 => 'Sep',
+                                                            10 => 'Okt',
+                                                            11 => 'Nov',
+                                                            12 => 'Des'
+                                                        ];
+                                                        $dayName = $days[$date->format('w')];
+                                                        $day = $date->format('d');
+                                                        $month = $months[(int)$date->format('n')];
+                                                        $year = $date->format('Y');
+                                                        $indonesianDate = "$day $month $year";
+                                                        ?>
+                                                        <?= $indonesianDate ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php else: ?>
-                                <p class="text-muted text-center my-3">Tidak ada dokumen</p>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Tidak ada dokumen</p>
+                                </div>
                             <?php endif; ?>
                         </div>
-                        <div class="card-footer text-center">
-                            <a href="index.php?controller=dokumen&action=index&kategori=1" class="btn btn-primary rounded-pill">Dokumen Selengkapnya</a>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="index.php?controller=dokumen&action=index&kategori=1" class="btn btn-outline-primary w-100 rounded-pill shadow-sm py-2">
+                                <i class="fas fa-download me-2"></i>Lihat Semua
+                            </a>
                         </div>
                     </div>
                 </div>
 
+                <!-- Kategori Serta Merta -->
                 <div class="col-md-4 mb-4">
-                    <div class="card dokumen-category-card shadow-sm rounded">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0">Serta Merta</h5>
+                    <div class="card dokumen-category-card shadow-sm rounded h-100" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="card-header bg-gradient text-white text-center py-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--secondary-color), #d97706);">
+                            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);"></div>
+                            <div class="position-relative">
+                                <i class="fas fa-bolt fa-2x mb-2"></i>
+                                <h5 class="card-title mb-0 font-weight-bold" style="color: black">Serta Merta</h5>
+                                <div class="d-flex justify-content-center mt-2">
+                                    <span class="badge bg-white px-3 py-2" style="color: black"><?= $kategoriCounts['serta merta'] ?? 0 ?> dokumen</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <?php if (!empty($kategoriDokumen['serta_merta'])): ?>
-                                <?php foreach ($kategoriDokumen['serta_merta'] as $dok): ?>
-                                    <div class="border-bottom pb-3 mb-3" style="border-bottom: 1px dotted #ccc;">
-                                        <h6 class="mb-1"><?= htmlspecialchars($dok['judul']) ?></h6>
-                                        <div class="d-flex justify-content-between text-muted">
-                                            <small>
-                                                <i class="fas fa-calendar-alt me-1"></i>
-                                                <?php
-                                                $date = new DateTime($dok['tanggal_upload']);
-                                                $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                                                $months = [
-                                                    1 => 'Januari',
-                                                    2 => 'Februari',
-                                                    3 => 'Maret',
-                                                    4 => 'April',
-                                                    5 => 'Mei',
-                                                    6 => 'Juni',
-                                                    7 => 'Juli',
-                                                    8 => 'Agustus',
-                                                    9 => 'September',
-                                                    10 => 'Oktober',
-                                                    11 => 'November',
-                                                    12 => 'Desember'
-                                                ];
-                                                $dayName = $days[$date->format('w')];
-                                                $day = $date->format('d');
-                                                $month = $months[(int)$date->format('n')];
-                                                $year = $date->format('Y');
-                                                $indonesianDate = "$dayName, $day $month $year";
-                                                ?>
-                                                <?= $indonesianDate ?>
-                                            </small>
-                                            <small>
-                                                <i class="fas fa-download me-1"></i> 0
-                                            </small>
-                                            <small>
-                                                <i class="fas fa-eye me-1"></i> 0
-                                            </small>
+                                <div class="dokumen-list">
+                                    <?php foreach ($kategoriDokumen['serta_merta'] as $index => $dok): ?>
+                                        <div class="dokumen-item mb-3 pb-3 border-bottom" style="border-bottom: 1px solid #e2e8f0 !important;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="dokumen-icon me-3">
+                                                    <i class="fas fa-file-pdf text-danger fa-lg" style="font-size: 1.5rem;"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 dokumen-title" style="font-size: 0.9rem;"><?= htmlspecialchars(substr($dok['judul'], 0, 60)) . (strlen($dok['judul']) > 60 ? '...' : '') ?></h6>
+                                                    <div class="dokumen-meta text-muted" style="font-size: 0.75rem;">
+                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        <?php
+                                                        $date = new DateTime($dok['tanggal_upload']);
+                                                        $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                                                        $months = [
+                                                            1 => 'Jan',
+                                                            2 => 'Feb',
+                                                            3 => 'Mar',
+                                                            4 => 'Apr',
+                                                            5 => 'Mei',
+                                                            6 => 'Jun',
+                                                            7 => 'Jul',
+                                                            8 => 'Agu',
+                                                            9 => 'Sep',
+                                                            10 => 'Okt',
+                                                            11 => 'Nov',
+                                                            12 => 'Des'
+                                                        ];
+                                                        $dayName = $days[$date->format('w')];
+                                                        $day = $date->format('d');
+                                                        $month = $months[(int)$date->format('n')];
+                                                        $year = $date->format('Y');
+                                                        $indonesianDate = "$day $month $year";
+                                                        ?>
+                                                        <?= $indonesianDate ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php else: ?>
-                                <p class="text-muted text-center my-3">Tidak ada dokumen</p>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Tidak ada dokumen</p>
+                                </div>
                             <?php endif; ?>
                         </div>
-                        <div class="card-footer text-center">
-                            <a href="index.php?controller=dokumen&action=index&kategori=2" class="btn btn-warning text-dark rounded-pill">Dokumen Selengkapnya</a>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="index.php?controller=dokumen&action=index&kategori=2" class="btn btn-outline-primary text-dark w-100 rounded-pill shadow-sm py-2">
+                                <i class="fas fa-download me-2"></i>Lihat Semua
+                            </a>
                         </div>
                     </div>
                 </div>
 
+                <!-- Kategori Setiap Saat -->
                 <div class="col-md-4 mb-4">
-                    <div class="card dokumen-category-card shadow-sm rounded">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0">Setiap Saat</h5>
+                    <div class="card dokumen-category-card shadow-sm rounded h-100" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="card-header bg-gradient text-white text-center py-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, var(--accent-color), #e2c044);">
+                            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);"></div>
+                            <div class="position-relative">
+                                <i class="fas fa-clock fa-2x mb-2"></i>
+                                <h5 class="card-title mb-0 font-weight-bold" style="color: black">Setiap Saat</h5>
+                                <div class="d-flex justify-content-center mt-2">
+                                    <span class="badge bg-white text-accent px-3 py-2" style="color: black"><?= $kategoriCounts['setiap saat'] ?? 0 ?> dokumen</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <?php if (!empty($kategoriDokumen['setiap_saat'])): ?>
-                                <?php foreach ($kategoriDokumen['setiap_saat'] as $dok): ?>
-                                    <div class="border-bottom pb-3 mb-3" style="border-bottom: 1px dotted #ccc;">
-                                        <h6 class="mb-1"><?= htmlspecialchars($dok['judul']) ?></h6>
-                                        <div class="d-flex justify-content-between text-muted">
-                                            <small>
-                                                <i class="fas fa-calendar-alt me-1"></i>
-                                                <?php
-                                                $date = new DateTime($dok['tanggal_upload']);
-                                                $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                                                $months = [
-                                                    1 => 'Januari',
-                                                    2 => 'Februari',
-                                                    3 => 'Maret',
-                                                    4 => 'April',
-                                                    5 => 'Mei',
-                                                    6 => 'Juni',
-                                                    7 => 'Juli',
-                                                    8 => 'Agustus',
-                                                    9 => 'September',
-                                                    10 => 'Oktober',
-                                                    11 => 'November',
-                                                    12 => 'Desember'
-                                                ];
-                                                $dayName = $days[$date->format('w')];
-                                                $day = $date->format('d');
-                                                $month = $months[(int)$date->format('n')];
-                                                $year = $date->format('Y');
-                                                $indonesianDate = "$dayName, $day $month $year";
-                                                ?>
-                                                <?= $indonesianDate ?>
-                                            </small>
-                                            <small>
-                                                <i class="fas fa-download me-1"></i> 0
-                                            </small>
-                                            <small>
-                                                <i class="fas fa-eye me-1"></i> 0
-                                            </small>
+                                <div class="dokumen-list">
+                                    <?php foreach ($kategoriDokumen['setiap_saat'] as $index => $dok): ?>
+                                        <div class="dokumen-item mb-3 pb-3 border-bottom" style="border-bottom: 1px solid #e2e8f0 !important;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="dokumen-icon me-3">
+                                                    <i class="fas fa-file-pdf text-danger fa-lg" style="font-size: 1.5rem;"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1 dokumen-title" style="font-size: 0.9rem;"><?= htmlspecialchars(substr($dok['judul'], 0, 60)) . (strlen($dok['judul']) > 60 ? '...' : '') ?></h6>
+                                                    <div class="dokumen-meta text-muted" style="font-size: 0.75rem;">
+                                                        <i class="fas fa-calendar-alt me-1"></i>
+                                                        <?php
+                                                        $date = new DateTime($dok['tanggal_upload']);
+                                                        $days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                                                        $months = [
+                                                            1 => 'Jan',
+                                                            2 => 'Feb',
+                                                            3 => 'Mar',
+                                                            4 => 'Apr',
+                                                            5 => 'Mei',
+                                                            6 => 'Jun',
+                                                            7 => 'Jul',
+                                                            8 => 'Agu',
+                                                            9 => 'Sep',
+                                                            10 => 'Okt',
+                                                            11 => 'Nov',
+                                                            12 => 'Des'
+                                                        ];
+                                                        $dayName = $days[$date->format('w')];
+                                                        $day = $date->format('d');
+                                                        $month = $months[(int)$date->format('n')];
+                                                        $year = $date->format('Y');
+                                                        $indonesianDate = "$day $month $year";
+                                                        ?>
+                                                        <?= $indonesianDate ?>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
+                                    <?php endforeach; ?>
+                                </div>
                             <?php else: ?>
-                                <p class="text-muted text-center my-3">Tidak ada dokumen</p>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Tidak ada dokumen</p>
+                                </div>
                             <?php endif; ?>
                         </div>
-                        <div class="card-footer text-center">
-                            <a href="index.php?controller=dokumen&action=index&kategori=3" class="btn btn-success rounded-pill">Dokumen Selengkapnya</a>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="index.php?controller=dokumen&action=index&kategori=3" class="btn btn-outline-primary w-100 rounded-pill shadow-sm py-2">
+                                <i class="fas fa-download me-2"></i>Lihat Semua
+                            </a>
                         </div>
                     </div>
                 </div>

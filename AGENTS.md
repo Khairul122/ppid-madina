@@ -1087,6 +1087,10 @@ if (!empty($sub_layanan_2)) {
 // ❌ JANGAN proactive file creation
 // Wrong: "Saya buatkan config.example.php untuk referensi"
 // Correct: Tunggu instruksi eksplisit dari user
+
+// ❌ JANGAN buat file debug, log, temporary, atau sejenisnya
+// Wrong: debug.php, log.txt, temp.sql, backup.sql, test_output.txt
+// Correct: Hanya buat file yang secara eksplisit diminta oleh user
 ```
 
 ### 🗂️ File Structure & Organization
