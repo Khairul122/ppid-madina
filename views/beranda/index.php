@@ -222,7 +222,7 @@ if (isset($database)) {
         .banner-container {
             position: relative;
             width: 100%;
-            height: 650px;
+            height: max-content;
             overflow: hidden;
             background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
         }
@@ -1086,14 +1086,7 @@ if (isset($database)) {
                                 <img src="<?= $banner['image'] ?>" alt="Banner <?= $index + 1 ?>" class="banner-image">
                                 <div class="banner-overlay"></div>
                                 <?php if ($index === 0): // Only show content on first slide ?>
-                                <div class="banner-content">
-                                    <h1>Pejabat Pengelola Informasi dan Dokumentasi<br>Kabupaten Mandailing Natal</h1>
-                                    <p>Melayani transparansi informasi publik dengan cepat, akurat, dan profesional sesuai dengan Undang-Undang Keterbukaan Informasi Publik</p>
-                                    <div class="banner-buttons">
-                                        <a href="index.php?controller=auth&action=register" class="btn btn-gold">Ajukan Informasi</a>
-                                        <a href="#dokumen" class="btn btn-outline-gold">Lihat Dokumen</a>
-                                    </div>
-                                </div>
+                             
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
@@ -1718,7 +1711,7 @@ if (isset($database)) {
     <!-- Galeri Foto Section -->
     <section class="features-section section-bg-light" data-aos="fade-up">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-left">Galeri Foto</h2>
+            <h2 class="section-title pb-4" data-aos="fade-left">Galeri Foto</h2>
 
             <div id="galeriCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
                 <div class="carousel-indicators">
@@ -1767,23 +1760,22 @@ if (isset($database)) {
             </div>
 
             <div class="text-center">
-                <a href="index.php?controller=album" class="btn btn-primary">Galeri Selengkapnya <i class="fas fa-arrow-right ms-2"></i></a>
+                <a href="index.php?controller=album&action=public&kategori=foto" class="btn btn-primary">Galeri Selengkapnya <i class="fas fa-arrow-right ms-2"></i></a>
             </div>
         </div>
     </section>
 
     <!-- Layanan Kepuasan Section -->
-    <section class="features-section section-bg-accent" data-aos="fade-up">
+    <section class="features-section section" data-aos="fade-up">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-right">Layanan Kepuasan</h2>
-            <p class="section-subtitle" data-aos="fade-up">Rating kepuasan masyarakat terhadap layanan informasi publik</p>
+            <h2 class="section-title pb-4" data-aos="fade-right">Layanan Kepuasan</h2>
             
             <div class="row justify-content-center">
                 <div class="col-md-8">
                     <div class="card rating-card shadow-sm">
                         <div class="card-body text-center p-5">
                             <?php 
-                            // Get average rating from layanan_kepuasaan table
+                            // Get average rating from layanan_kepuasan table
                             $averageRating = 0;
                             $totalRespondents = 0;
                             
@@ -1794,7 +1786,7 @@ if (isset($database)) {
                             
                             if ($conn) {
                                 try {
-                                    $ratingQuery = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_respondents FROM layanan_kepuasaan";
+                                    $ratingQuery = "SELECT AVG(rating) as avg_rating, COUNT(*) as total_respondents FROM layanan_kepuasan";
                                     $ratingStmt = $conn->prepare($ratingQuery);
                                     $ratingStmt->execute();
                                     $ratingResult = $ratingStmt->fetch(PDO::FETCH_ASSOC);
@@ -1803,7 +1795,7 @@ if (isset($database)) {
                                         $averageRating = round((float)$ratingResult['avg_rating'], 1);
                                         $totalRespondents = (int)$ratingResult['total_respondents'];
                                     }
-                                } catch (Throwable $e) { // Use Throwable instead of Exception for broader compatibility
+                                } catch (PDOException $e) {
                                     error_log("Error fetching rating data: " . $e->getMessage());
                                     // Use default values
                                     $averageRating = 0;
@@ -1841,13 +1833,13 @@ if (isset($database)) {
                                 if ($conn) {
                                     try {
                                         for($star = 1; $star <= 5; $star++) {
-                                            $distQuery = "SELECT COUNT(*) as count FROM layanan_kepuasaan WHERE rating = ?";
+                                            $distQuery = "SELECT COUNT(*) as count FROM layanan_kepuasan WHERE rating = ?";
                                             $distStmt = $conn->prepare($distQuery);
                                             $distStmt->execute([$star]);
                                             $distResult = $distStmt->fetch(PDO::FETCH_ASSOC);
                                             $ratingDistribution[$star] = (int)$distResult['count'];
                                         }
-                                    } catch (Throwable $e) { // Use Throwable instead of Exception
+                                    } catch (PDOException $e) {
                                         error_log("Error fetching rating distribution: " . $e->getMessage());
                                         // Keep default values of 0
                                     }
@@ -2058,6 +2050,82 @@ if (isset($database)) {
                 }
             }
 
+            // Ambil data untuk grafik status permohonan dari database
+            <?php
+            $statusCounts = [
+                'masuk' => 0,
+                'disposisi' => 0,
+                'diproses' => 0,
+                'selesai' => 0
+            ];
+            
+            if ($conn) {
+                try {
+                    // Hitung status permohonan berdasarkan data sebenarnya dari database
+                    $statusQuery = "SELECT status, COUNT(*) as count FROM permohonan GROUP BY status";
+                    $statusStmt = $conn->prepare($statusQuery);
+                    $statusStmt->execute();
+                    $statusResults = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    foreach($statusResults as $result) {
+                        $status = trim(strtolower($result['status']));
+                        
+                        // Normalisasi status ke format yang diharapkan berdasarkan nilai sebenarnya
+                        if(strpos($status, 'selesai') !== false || strpos($status, 'publikasi') !== false || strpos($status, 'pengiriman') !== false) {
+                            $statusCounts['selesai'] += (int)$result['count'];
+                        } elseif(strpos($status, 'disposisi') !== false) {
+                            $statusCounts['disposisi'] += (int)$result['count'];
+                        } elseif(strpos($status, 'diproses') !== false) {
+                            $statusCounts['diproses'] += (int)$result['count'];
+                        } else {
+                            // Asumsikan status lainnya sebagai status masuk
+                            $statusCounts['masuk'] += (int)$result['count'];
+                        }
+                    }
+                } catch (PDOException $e) {
+                    error_log("Error fetching status counts: " . $e->getMessage());
+                }
+                
+                try {
+                    // Ambil data permohonan per bulan untuk grafik tren
+                    $monthlyData = [];
+                    $monthlySelesai = [];
+                    
+                    for($i = 1; $i <= 12; $i++) {
+                        $monthlyQuery = "SELECT COUNT(*) as count FROM permohonan WHERE MONTH(created_at) = ? AND YEAR(created_at) = YEAR(CURDATE())";
+                        $monthlyStmt = $conn->prepare($monthlyQuery);
+                        $monthlyStmt->execute([$i]);
+                        $monthlyResult = $monthlyStmt->fetch(PDO::FETCH_ASSOC);
+                        $monthlyData[] = (int)$monthlyResult['count'];
+                        
+                        // Hitung jumlah permohonan yang selesai per bulan
+                        $monthlySelesaiQuery = "SELECT COUNT(*) as count FROM permohonan WHERE MONTH(created_at) = ? AND YEAR(created_at) = YEAR(CURDATE()) AND (status = 'Selesai' OR status LIKE '%publikasi%' OR status LIKE '%pengiriman%' OR status LIKE '%selesai%')";
+                        $monthlySelesaiStmt = $conn->prepare($monthlySelesaiQuery);
+                        $monthlySelesaiStmt->execute([$i]);
+                        $monthlySelesaiResult = $monthlySelesaiStmt->fetch(PDO::FETCH_ASSOC);
+                        $monthlySelesai[] = (int)$monthlySelesaiResult['count'];
+                    }
+                    
+                    $monthlyDataJson = json_encode($monthlyData);
+                    $monthlySelesaiJson = json_encode($monthlySelesai);
+                } catch (PDOException $e) {
+                    error_log("Error fetching monthly data: " . $e->getMessage());
+                    $monthlyDataJson = json_encode(array_fill(0, 12, 0));
+                    $monthlySelesaiJson = json_encode(array_fill(0, 12, 0));
+                }
+            } else {
+                // Default values jika koneksi tidak tersedia
+                $statusCounts = ['masuk' => 0, 'disposisi' => 0, 'diproses' => 0, 'selesai' => 0];
+                $monthlyDataJson = json_encode(array_fill(0, 12, 0));
+                $monthlySelesaiJson = json_encode(array_fill(0, 12, 0));
+            }
+            
+            // Filter status dengan jumlah 0
+            $filteredStatus = array_filter($statusCounts, function($count) {
+                return $count > 0;
+            });
+            ?>
+
             // Highcharts
             // Chart 1: Proporsi Kategori Informasi
             Highcharts.chart('pieChart1', {
@@ -2085,19 +2153,29 @@ if (isset($database)) {
                 series: [{
                     name: 'Jumlah',
                     colorByPoint: true,
-                    data: [{
-                        name: 'Berkala',
-                        y: <?= $kategoriCounts['berkala'] ?? 0 ?>,
-                        color: '#87CEEB' // biru muda
-                    }, {
-                        name: 'Serta Merta',
-                        y: <?= $kategoriCounts['serta merta'] ?? 0 ?>,
-                        color: '#90EE90' // hijau
-                    }, {
-                        name: 'Setiap Saat',
-                        y: <?= $kategoriCounts['setiap saat'] ?? 0 ?>,
-                        color: '#DDA0DD' // ungu
-                    }]
+                    data: [
+                        <?php if(($kategoriCounts['berkala'] ?? 0) > 0): ?>
+                        {
+                            name: 'Berkala',
+                            y: <?= $kategoriCounts['berkala'] ?? 0 ?>,
+                            color: '#87CEEB' // biru muda
+                        },
+                        <?php endif; ?>
+                        <?php if(($kategoriCounts['serta merta'] ?? 0) > 0): ?>
+                        {
+                            name: 'Serta Merta',
+                            y: <?= $kategoriCounts['serta merta'] ?? 0 ?>,
+                            color: '#90EE90' // hijau
+                        },
+                        <?php endif; ?>
+                        <?php if(($kategoriCounts['setiap saat'] ?? 0) > 0): ?>
+                        {
+                            name: 'Setiap Saat',
+                            y: <?= $kategoriCounts['setiap saat'] ?? 0 ?>,
+                            color: '#DDA0DD' // ungu
+                        }
+                        <?php endif; ?>
+                    ]
                 }]
             });
 
@@ -2127,19 +2205,36 @@ if (isset($database)) {
                 series: [{
                     name: 'Jumlah',
                     colorByPoint: true,
-                    data: [{
-                        name: 'Selesai',
-                        y: <?= $statusCounts['selesai'] ?>,
-                        color: '#90EE90' // hijau
-                    }, {
-                        name: 'Disposisi',
-                        y: <?= $statusCounts['disposisi'] ?>,
-                        color: '#87CEEB' // biru langit
-                    }, {
-                        name: 'Proses',
-                        y: <?= $statusCounts['proses'] ?>,
-                        color: '#F0E68C' // kuning
-                    }]
+                    data: [
+                        <?php if($statusCounts['masuk'] > 0): ?>
+                        {
+                            name: 'Masuk',
+                            y: <?= $statusCounts['masuk'] ?>,
+                            color: '#93C5FD' // biru muda
+                        },
+                        <?php endif; ?>
+                        <?php if($statusCounts['disposisi'] > 0): ?>
+                        {
+                            name: 'Disposisi',
+                            y: <?= $statusCounts['disposisi'] ?>,
+                            color: '#87CEEB' // biru langit
+                        },
+                        <?php endif; ?>
+                        <?php if($statusCounts['diproses'] > 0): ?>
+                        ,{
+                            name: 'Diproses',
+                            y: <?= $statusCounts['diproses'] ?>,
+                            color: '#F0E68C' // kuning
+                        },
+                        <?php endif; ?>
+                        <?php if($statusCounts['selesai'] > 0): ?>
+                        ,{
+                            name: 'Selesai',
+                            y: <?= $statusCounts['selesai'] ?>,
+                            color: '#90EE90' // hijau
+                        }
+                        <?php endif; ?>
+                    ]
                 }]
             });
 
