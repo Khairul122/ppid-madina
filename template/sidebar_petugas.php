@@ -23,7 +23,7 @@ function isDropdownActivePetugas($controllers)
   <ul class="nav">
     <!-- Dashboard -->
     <li class="nav-item">
-      <a class="nav-link <?php echo isActivePetugas('user', 'index') ? 'active' : ''; ?>" href="index.php?controller=user&action=index">
+      <a class="nav-link <?php echo isActivePetugas('dashboard', 'index') ? 'active' : ''; ?>" href="index.php?controller=dashboard&action=index">
         <i class="fa fa-dashboard menu-icon fa-sm"></i>
         <span class="menu-title">Dashboard</span>
       </a>

@@ -1,12 +1,3 @@
-<?php
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php?controller=auth&action=login');
-    exit();
-}
-
-$title = 'Dashboard Admin - PPID Mandailing';
-?>
-
 <?php include('template/header.php'); ?>
 
 <body class="with-welcome-text">
@@ -17,108 +8,336 @@ $title = 'Dashboard Admin - PPID Mandailing';
       <?php include 'template/sidebar.php'; ?>
       <div class="main-panel">
         <div class="content-wrapper">
-          <div class="page-header">
-            <h3 class="page-title">
-              <span class="page-title-icon bg-gradient-primary text-white me-2">
-                <i class="mdi mdi-home"></i>
-              </span> Dashboard Admin
-            </h3>
-            <nav aria-label="breadcrumb">
-              <ul class="breadcrumb">
-                <li class="breadcrumb-item active" aria-current="page">
-                  <span></span>Overview <i class="mdi mdi-alert-circle-outline icon-sm text-primary align-middle"></i>
-                </li>
-              </ul>
-            </nav>
-          </div>
-          
           <div class="row">
-            <div class="col-md-4 stretch-card grid-margin">
-              <div class="card bg-gradient-danger card-img-holder text-white">
-                <div class="card-body">
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjEiIGQ9Ik0yNTYgMEMxMTQuNiAwIDAgMTE0LjYgMCAyNTZzMTE0LjYgMjU2IDI1NiAyNTYgMjU2LTExNC42IDI1Ni0yNTZTMzk3LjQgMCAyNTYgMHptMCA0NzYuOGMtMTIyLjEgMC0yMjEuOC05OS43LTIyMS44LTIyMS44UzEzMy45IDM0LjIgMjU2IDM0LjJzMjIxLjggOTkuNyAyMjEuOCAyMjEuOC05OS43IDIyMS44LTIyMS44IDIyMS44eiIvPjwvc3ZnPg==" class="card-img-absolute" alt="circle-image" />
-                  <h4 class="font-weight-normal mb-3">Total Pengguna <i class="mdi mdi-account-group mdi-24px float-right"></i></h4>
-                  <h2 class="mb-5">1,242</h2>
-                  <h6 class="card-text">Increased by 60%</h6>
+            <div class="col-sm-12">
+              <div class="home-tab">
+                <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+                  <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                      <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Dashboard</a>
+                    </li>
+                  </ul>
+                  <div>
+                    <div class="btn-wrapper">
+                      <a href="#" class="btn btn-outline-secondary">Laporan Mingguan</a>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div class="col-md-4 stretch-card grid-margin">
-              <div class="card bg-gradient-info card-img-holder text-white">
-                <div class="card-body">
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjEiIGQ9Ik0yNTYgMEMxMTQuNiAwIDAgMTE0LjYgMCAyNTZzMTE0LjYgMjU2IDI1NiAyNTYgMjU2LTExNC42IDI1Ni0yNTZTMzk3LjQgMCAyNTYgMHptMCA0NzYuOGMtMTIyLjEgMC0yMjEuOC05OS43LTIyMS44LTIyMS44UzEzMy45IDM0LjIgMjU2IDM0LjJzMjIxLjggOTkuNyAyMjEuOCAyMjEuOC05OS43IDIyMS44LTIyMS44IDIyMS44eiIvPjwvc3ZnPg==" class="card-img-absolute" alt="circle-image" />
-                  <h4 class="font-weight-normal mb-3">Permohonan <i class="mdi mdi-file-document mdi-24px float-right"></i></h4>
-                  <h2 class="mb-5">328</h2>
-                  <h6 class="card-text">Decreased by 10%</h6>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4 stretch-card grid-margin">
-              <div class="card bg-gradient-success card-img-holder text-white">
-                <div class="card-body">
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZmZmIiBvcGFjaXR5PSIwLjEiIGQ9Ik0yNTYgMEMxMTQuNiAwIDAgMTE0LjYgMCAyNTZzMTE0LjYgMjU2IDI1NiAyNTYgMjU2LTExNC42IDI1Ni0yNTZTMzk3LjQgMCAyNTYgMHptMCA0NzYuOGMtMTIyLjEgMC0yMjEuOC05OS43LTIyMS44LTIyMS44UzEzMy45IDM0LjIgMjU2IDM0LjJzMjIxLjggOTkuNyAyMjEuOCAyMjEuOC05OS43IDIyMS44LTIyMS44IDIyMS44eiIvPjwvc3ZnPg==" class="card-img-absolute" alt="circle-image" />
-                  <h4 class="font-weight-normal mb-3">Keberatan <i class="mdi mdi-alert-circle mdi-24px float-right"></i></h4>
-                  <h2 class="mb-5">24</h2>
-                  <h6 class="card-text">Increased by 5%</h6>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="col-12 grid-margin">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Aktivitas Terbaru</h4>
-                  <div class="table-responsive">
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th> Pengguna </th>
-                          <th> Aktivitas </th>
-                          <th> Waktu </th>
-                          <th> Status </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>
-                            <i class="mdi mdi-account-circle" style="font-size: 24px; margin-right: 10px;"></i> Budi Santoso
-                          </td>
-                          <td> Mendaftar sebagai pengguna baru </td>
-                          <td>
-                            <label class="badge badge-gradient-success">2 menit lalu</label>
-                          </td>
-                          <td> Berhasil </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <i class="mdi mdi-account-circle" style="font-size: 24px; margin-right: 10px;"></i> Ani Wijaya
-                          </td>
-                          <td> Mengajukan permohonan informasi </td>
-                          <td>
-                            <label class="badge badge-gradient-warning">15 menit lalu</label>
-                          </td>
-                          <td> Diproses </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <i class="mdi mdi-account-circle" style="font-size: 24px; margin-right: 10px;"></i> John Doe
-                          </td>
-                          <td> Mengajukan keberatan informasi </td>
-                          <td>
-                            <label class="badge badge-gradient-info">1 jam lalu</label>
-                          </td>
-                          <td> Diproses </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                <div class="tab-content tab-content-basic">
+                  <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+                    <div class="row">
+                      <div class="col-12 col-sm-12 col-lg-12 grid-margin stretch-card">
+                        <div class="card card-rounded">
+                          <div class="card-body">
+                            <div class="d-sm-flex justify-content-between align-items-start">
+                              <div>
+                                <h4 class="card-title card-title-dash">Panel Administrasi</h4>
+                                <h5 class="card-subtitle card-subtitle-dash">Selamat datang di dashboard PPID Mandailing Natal</h5>
+                              </div>
+                              <div id="performance-line-legend"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row">
+                      <div class="col-lg-3 col-md-6 col-sm-12 grid-margin stretch-card">
+                        <div class="card card-rounded">
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-lg-8">
+                                <div class="d-flex justify-content-between align-items-center mb-2 mb-lg-0">
+                                  <div>
+                                    <h3 class="text-primary mb-0 fw-bold"><?= isset($data['stats']['dokumen']) ? number_format((int)$data['stats']['dokumen']) : '0' ?></h3>
+                                    <h6 class="text-muted mb-0">Dokumen Publik</h6>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-lg-4 d-flex justify-content-end">
+                                <div class="icon-rounded-primary icon-rounded-md">
+                                  <i class="mdi mdi-file-document text-primary"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-lg-3 col-md-6 col-sm-12 grid-margin stretch-card">
+                        <div class="card card-rounded">
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-lg-8">
+                                <div class="d-flex justify-content-between align-items-center mb-2 mb-lg-0">
+                                  <div>
+                                    <h3 class="text-success mb-0 fw-bold"><?= isset($data['stats']['permohonan']) ? number_format((int)$data['stats']['permohonan']) : '0' ?></h3>
+                                    <h6 class="text-muted mb-0">Permohonan Masuk</h6>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-lg-4 d-flex justify-content-end">
+                                <div class="icon-rounded-success icon-rounded-md">
+                                  <i class="mdi mdi-email text-success"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-lg-3 col-md-6 col-sm-12 grid-margin stretch-card">
+                        <div class="card card-rounded">
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-lg-8">
+                                <div class="d-flex justify-content-between align-items-center mb-2 mb-lg-0">
+                                  <div>
+                                    <h3 class="text-info mb-0 fw-bold"><?= isset($data['stats']['permohonan_selesai']) ? number_format((int)$data['stats']['permohonan_selesai']) : '0' ?></h3>
+                                    <h6 class="text-muted mb-0">Permohonan Selesai</h6>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-lg-4 d-flex justify-content-end">
+                                <div class="icon-rounded-info icon-rounded-md">
+                                  <i class="mdi mdi-checkbox-marked-circle text-info"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-lg-3 col-md-6 col-sm-12 grid-margin stretch-card">
+                        <div class="card card-rounded">
+                          <div class="card-body">
+                            <div class="row">
+                              <div class="col-lg-8">
+                                <div class="d-flex justify-content-between align-items-center mb-2 mb-lg-0">
+                                  <div>
+                                    <h3 class="text-warning mb-0 fw-bold"><?= isset($data['stats']['pengguna_masyarakat']) ? number_format((int)$data['stats']['pengguna_masyarakat']) : '0' ?></h3>
+                                    <h6 class="text-muted mb-0">Pengguna</h6>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-lg-4 d-flex justify-content-end">
+                                <div class="icon-rounded-warning icon-rounded-md">
+                                  <i class="mdi mdi-account-group text-warning"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="row">
+                      <div class="col-lg-6 d-flex grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                              <div>
+                                <h4 class="card-title card-title-dash">Distribusi Dokumen per Kategori</h4>
+                              </div>
+                            </div>
+                            <div style="height: 300px;">
+                              <canvas id="kategoriChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-lg-6 d-flex grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                              <div>
+                                <h4 class="card-title card-title-dash">Status Permohonan</h4>
+                              </div>
+                            </div>
+                            <div style="height: 300px;">
+                              <canvas id="statusChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Recent Activity Row -->
+                    <div class="row">
+                      <div class="col-lg-6 d-flex grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title card-title-dash">Permohonan Terbaru</h4>
+                            <div class="list-wrapper">
+                              <ul class="recent-activity-list list-unstyled">
+                                <?php if (isset($data['recent_permohonan']) && !empty($data['recent_permohonan'])): ?>
+                                  <?php foreach ($data['recent_permohonan'] as $permohonan): ?>
+                                    <li class="activity-item">
+                                      <div class="activity-info">
+                                        <div class="activity-details">
+                                          <p class="text-muted d-block mb-1"><?= isset($permohonan['created_at']) ? date('d M Y H:i', strtotime($permohonan['created_at'])) : '-' ?></p>
+                                          <p class="mb-1"><?= isset($permohonan['judul_dokumen']) ? htmlspecialchars($permohonan['judul_dokumen']) : (isset($permohonan['kandungan_informasi']) ? htmlspecialchars(substr($permohonan['kandungan_informasi'], 0, 50) . '...') : 'Permohonan Informasi') ?></p>
+                                          <p class="text-muted mb-0">oleh <?= isset($permohonan['username']) ? htmlspecialchars($permohonan['username']) : 'Pengguna' ?></p>
+                                        </div>
+                                        <div>
+                                          <?php if (isset($permohonan['status'])): ?>
+                                            <span class="badge badge-outline-<?php 
+                                              $status = strtolower($permohonan['status']); 
+                                              if (strpos($status, 'selesai') !== false) echo 'success';
+                                              elseif (strpos($status, 'diproses') !== false) echo 'warning';
+                                              elseif (strpos($status, 'ditolak') !== false) echo 'danger';
+                                              else echo 'primary';
+                                            ?>"><?= htmlspecialchars($permohonan['status']) ?></span>
+                                          <?php endif; ?>
+                                        </div>
+                                      </div>
+                                    </li>
+                                  <?php endforeach; ?>
+                                <?php else: ?>
+                                  <li class="activity-item">
+                                    <div class="activity-info">
+                                      <div class="activity-details">
+                                        <p class="text-muted mb-0">Tidak ada permohonan terbaru</p>
+                                      </div>
+                                    </div>
+                                  </li>
+                                <?php endif; ?>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-lg-6 d-flex grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title card-title-dash">Berita Terbaru</h4>
+                            <div class="list-wrapper">
+                              <ul class="recent-activity-list list-unstyled">
+                                <?php if (isset($data['recent_berita']) && !empty($data['recent_berita'])): ?>
+                                  <?php foreach ($data['recent_berita'] as $berita): ?>
+                                    <li class="activity-item">
+                                      <div class="activity-info">
+                                        <div class="activity-details">
+                                          <p class="text-muted d-block mb-1"><?= isset($berita['created_at']) ? date('d M Y', strtotime($berita['created_at'])) : '-' ?></p>
+                                          <p class="mb-1"><?= isset($berita['judul']) ? htmlspecialchars($berita['judul']) : 'Berita' ?></p>
+                                        </div>
+                                      </div>
+                                    </li>
+                                  <?php endforeach; ?>
+                                <?php else: ?>
+                                  <li class="activity-item">
+                                    <div class="activity-info">
+                                      <div class="activity-details">
+                                        <p class="text-muted mb-0">Tidak ada berita terbaru</p>
+                                      </div>
+                                    </div>
+                                  </li>
+                                <?php endif; ?>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+        
+        <!-- Chart Scripts -->
+        <script>
+          // Chart for Dokumen by Kategori
+          document.addEventListener('DOMContentLoaded', function() {
+            // Check if Chart.js is loaded
+            if (typeof Chart !== 'undefined') {
+              // Prepare data for charts
+              <?php 
+              // Prepare kategori data
+              $kategori_labels = [];
+              $kategori_values = [];
+              if (isset($data['kategori_data']) && is_array($data['kategori_data'])) {
+                foreach ($data['kategori_data'] as $kategori) {
+                  $kategori_labels[] = isset($kategori['nama_kategori']) ? addslashes($kategori['nama_kategori']) : 'Kategori';
+                  $kategori_values[] = isset($kategori['jumlah']) ? (int)$kategori['jumlah'] : 0;
+                }
+              }
+              
+              // Prepare status data
+              $status_labels = [];
+              $status_values = [];
+              if (isset($data['status_data']) && is_array($data['status_data'])) {
+                foreach ($data['status_data'] as $status) {
+                  $status_labels[] = isset($status['status']) ? addslashes($status['status']) : 'Status';
+                  $status_values[] = isset($status['jumlah']) ? (int)$status['jumlah'] : 0;
+                }
+              }
+              ?>
+              
+              // Kategori Chart
+              const kategoriCtx = document.getElementById('kategoriChart');
+              if (kategoriCtx) {
+                const kategoriChart = new Chart(kategoriCtx.getContext('2d'), {
+                  type: 'doughnut',
+                  data: {
+                    labels: [<?php echo '"' . implode('","', $kategori_labels) . '"'; ?>],
+                    datasets: [{
+                      data: [<?php echo implode(',', $kategori_values); ?>],
+                      backgroundColor: [
+                        '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', 
+                        '#ef4444', '#8b5cf6', '#ec4899', '#f97316'
+                      ],
+                      borderWidth: 0
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        position: 'bottom',
+                      }
+                    }
+                  }
+                });
+              }
+
+              // Status Chart
+              const statusCtx = document.getElementById('statusChart');
+              if (statusCtx) {
+                const statusChart = new Chart(statusCtx.getContext('2d'), {
+                  type: 'bar',
+                  data: {
+                    labels: [<?php echo '"' . implode('","', $status_labels) . '"'; ?>],
+                    datasets: [{
+                      label: 'Jumlah',
+                      data: [<?php echo implode(',', $status_values); ?>],
+                      backgroundColor: '#3b82f6',
+                      borderWidth: 0
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        ticks: {
+                          precision: 0
+                        }
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          });
+        </script>
       </div>
     </div>
   </div>
