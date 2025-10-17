@@ -1141,8 +1141,7 @@ if (isset($database)) {
     <!-- Berita Section -->
     <section class="features-section" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);" data-aos="fade-up">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-left">Berita Terbaru</h2>
-            <p class="section-subtitle" data-aos="fade-up">Update berita resmi dari Pemerintah Kabupaten Mandailing Natal</p>
+            <h2 class="section-title pb-4" data-aos="fade-left">Berita Terbaru</h2>
 
             <div class="row">
                 <!-- Kiri (Slider Berita Terbaru) -->
@@ -1285,8 +1284,7 @@ if (isset($database)) {
     <!-- Statistik Section -->
     <section class="features-section section-bg-primary" data-aos="fade-up">
         <div class="container">
-            <h2 class="section-title text-white" data-aos="fade-right">Statistik Singkat</h2>
-            <p class="section-subtitle text-white-50" data-aos="fade-up">Data ringkas seputar jumlah dokumen dan aktivitas publik</p>
+            <h2 class="section-title text-white pb-4" data-aos="fade-right">Statistik Singkat</h2>
             <div class="row">
                 <?php
                 // Hitung statistik dari data yang ada
