@@ -1,0 +1,390 @@
+/* ====================================
+   MICRO-INTERACTIONS & ENHANCEMENTS
+   Smooth animations dan interactive elements
+   ==================================== */
+
+/* ====================================
+   CARD HOVER EFFECTS
+   ==================================== */
+.card-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+}
+
+.card:hover .card-header::before {
+    left: 100%;
+}
+
+/* ====================================
+   BERITA/NEWS CARD IMPROVEMENTS
+   ==================================== */
+#beritaCarousel .carousel-item {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#beritaCarousel .carousel-control-prev,
+#beritaCarousel .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#beritaCarousel:hover .carousel-control-prev,
+#beritaCarousel:hover .carousel-control-next {
+    opacity: 1;
+}
+
+#beritaCarousel .carousel-control-prev {
+    left: 20px;
+}
+
+#beritaCarousel .carousel-control-next {
+    right: 20px;
+}
+
+#beritaCarousel .carousel-control-prev:hover,
+#beritaCarousel .carousel-control-next:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: translateY(-50%) scale(1.1);
+}
+
+#beritaCarousel .carousel-indicators {
+    bottom: 20px;
+}
+
+#beritaCarousel .carousel-indicators button {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+#beritaCarousel .carousel-indicators button.active {
+    width: 30px;
+    border-radius: 5px;
+    background: rgba(254, 202, 87, 0.9);
+    box-shadow: 0 0 15px rgba(254, 202, 87, 0.6);
+}
+
+/* List Berita Hover */
+.list-group-item {
+    transition: all 0.3s ease;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    cursor: pointer;
+}
+
+.list-group-item:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    transform: translateX(8px);
+    padding-left: 1.5rem !important;
+}
+
+.list-group-item img {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* ====================================
+   DOKUMEN CARDS - MODERN STYLE
+   ==================================== */
+.card-header.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none;
+    padding: 20px;
+}
+
+.card-header.bg-warning {
+    background: linear-gradient(135deg, #feca57 0%, #f39c12 100%) !important;
+    border: none;
+    padding: 20px;
+}
+
+.card-header.bg-success {
+    background: linear-gradient(135deg, #48c774 0%, #00d1b2 100%) !important;
+    border: none;
+    padding: 20px;
+}
+
+.card-body .border-bottom {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    padding: 16px 0 !important;
+    transition: all 0.3s ease;
+}
+
+.card-body .border-bottom:hover {
+    background: rgba(102, 126, 234, 0.03);
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    border-radius: 8px;
+    margin: 0 -12px;
+}
+
+.card-footer {
+    background: transparent;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.rounded-pill {
+    border-radius: 50px !important;
+    padding: 10px 28px !important;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rounded-pill:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ====================================
+   CHART CARDS - GLASS EFFECT
+   ==================================== */
+#pieChart1, #pieChart2, #areaChart {
+    padding: 20px;
+}
+
+.card.p-4 {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.card.p-4 h5 {
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ====================================
+   GALERI CAROUSEL - MODERN STYLE
+   ==================================== */
+#galeriCarousel .carousel-control-prev,
+#galeriCarousel .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+#galeriCarousel .carousel-control-prev:hover,
+#galeriCarousel .carousel-control-next:hover {
+    background: rgba(102, 126, 234, 0.8);
+    transform: scale(1.1);
+}
+
+#galeriCarousel .carousel-caption {
+    background: linear-gradient(135deg,
+        rgba(102, 126, 234, 0.9) 0%,
+        rgba(118, 75, 162, 0.9) 100%) !important;
+    border-radius: 12px !important;
+    padding: 16px 20px !important;
+    backdrop-filter: blur(10px);
+}
+
+/* ====================================
+   RATING STARS - INTERACTIVE
+   ==================================== */
+.fa-star, .fa-star-half-alt, .far.fa-star {
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.fa-star:hover,
+.fa-star-half-alt:hover {
+    transform: scale(1.2) rotate(5deg);
+}
+
+/* ====================================
+   MODAL - MODERN DESIGN
+   ==================================== */
+.news-modal {
+    backdrop-filter: blur(10px);
+}
+
+.news-modal-content {
+    border-radius: 24px !important;
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3) !important;
+}
+
+.modal-close {
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.modal-close:hover {
+    background: linear-gradient(135deg, #feca57 0%, #f39c12 100%) !important;
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+}
+
+.news-modal-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.news-modal-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+}
+
+.news-modal-body {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* ====================================
+   SCROLL ANIMATIONS
+   ==================================== */
+[data-aos] {
+    transition-duration: 0.8s;
+}
+
+/* ====================================
+   LOADING SKELETON (Optional Enhancement)
+   ==================================== */
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* ====================================
+   SMOOTH FOCUS STATES
+   ==================================== */
+*:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+button:focus,
+a:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 3px;
+}
+
+/* ====================================
+   SUBTLE PAGE TRANSITIONS
+   ==================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ====================================
+   IMPROVED SPACING & TYPOGRAPHY
+   ==================================== */
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.01em;
+    font-weight: 700;
+}
+
+p {
+    line-height: 1.8;
+}
+
+/* ====================================
+   CUSTOM SCROLLBAR
+   ==================================== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* ====================================
+   RESPONSIVE ENHANCEMENTS
+   ==================================== */
+@media (max-width: 768px) {
+    .list-group-item:hover {
+        transform: translateX(4px);
+    }
+
+    .rounded-pill {
+        padding: 8px 20px !important;
+        font-size: 0.9rem;
+    }
+}
+
+/* ====================================
+   PERFORMANCE OPTIMIZATIONS
+   ==================================== */
+.card, .btn, img {
+    will-change: transform;
+}
+
+img {
+    image-rendering: -webkit-optimize-contrast;
+}

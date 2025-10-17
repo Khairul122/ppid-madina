@@ -367,5 +367,238 @@ class BerandaModel {
             ]
         ];
     }
+
+    // Method untuk mendapatkan statistik dokumen
+    public function getStatistikDokumen() {
+        if (!$this->conn) {
+            return [
+                'total_dokumen' => 0,
+                'kategori' => []
+            ];
+        }
+
+        try {
+            // Total dokumen per kategori
+            $query = "SELECT k.nama_kategori, COUNT(d.id_dokumen) as count 
+                     FROM kategori k 
+                     LEFT JOIN dokumen d ON k.id_kategori = d.id_kategori AND d.status = 'publikasi'
+                     GROUP BY k.id_kategori, k.nama_kategori";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $statistik = [
+                'total_dokumen' => 0,
+                'kategori' => []
+            ];
+
+            foreach ($results as $result) {
+                $kategori = strtolower($result['nama_kategori']);
+                $statistik['kategori'][$kategori] = $result['count'];
+                $statistik['total_dokumen'] += $result['count'];
+            }
+
+            return $statistik;
+        } catch (PDOException $e) {
+            error_log("Database error in getStatistikDokumen: " . $e->getMessage());
+            return [
+                'total_dokumen' => 0,
+                'kategori' => []
+            ];
+        }
+    }
+
+    // Method untuk mendapatkan statistik permohonan
+    public function getStatistikPermohonan() {
+        if (!$this->conn) {
+            return [
+                'total_permohonan' => 0,
+                'permohonan_selesai' => 0,
+                'total_pemohon' => 0
+            ];
+        }
+
+        try {
+            $queryTotal = "SELECT COUNT(*) as total FROM permohonan";
+            $stmtTotal = $this->conn->prepare($queryTotal);
+            $stmtTotal->execute();
+            $totalPermohonan = $stmtTotal->fetch(PDO::FETCH_ASSOC)['total'];
+
+            $querySelesai = "SELECT COUNT(*) as selesai FROM permohonan WHERE status = 'publikasi'";
+            $stmtSelesai = $this->conn->prepare($querySelesai);
+            $stmtSelesai->execute();
+            $permohonanSelesai = $stmtSelesai->fetch(PDO::FETCH_ASSOC)['selesai'];
+
+            $queryPemohon = "SELECT COUNT(*) as total FROM users WHERE role = 'masyarakat'";
+            $stmtPemohon = $this->conn->prepare($queryPemohon);
+            $stmtPemohon->execute();
+            $totalPemohon = $stmtPemohon->fetch(PDO::FETCH_ASSOC)['total'];
+
+            return [
+                'total_permohonan' => $totalPermohonan,
+                'permohonan_selesai' => $permohonanSelesai,
+                'total_pemohon' => $totalPemohon
+            ];
+        } catch (PDOException $e) {
+            error_log("Database error in getStatistikPermohonan: " . $e->getMessage());
+            return [
+                'total_permohonan' => 0,
+                'permohonan_selesai' => 0,
+                'total_pemohon' => 0
+            ];
+        }
+    }
+
+    // Method untuk mendapatkan data galeri foto terbaru
+    public function getGaleriFoto($limit = 6) {
+        if (!$this->conn) {
+            return [];
+        }
+
+        try {
+            $query = "SELECT id_album, kategori, nama_album, upload, created_at
+                     FROM album
+                     WHERE kategori = 'foto'
+                     ORDER BY created_at DESC
+                     LIMIT :limit";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Process image paths
+            foreach ($results as &$item) {
+                if (empty($item['upload']) || !file_exists($item['upload'])) {
+                    $item['upload'] = 'ppid_assets/images/default-gallery.jpg';
+                }
+            }
+
+            return $results;
+        } catch (PDOException $e) {
+            error_log("Database error in getGaleriFoto: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Method untuk mendapatkan status counts permohonan
+    public function getStatusCounts() {
+        if (!$this->conn) {
+            return [
+                'selesai' => 0,
+                'disposisi' => 0,
+                'proses' => 0
+            ];
+        }
+
+        try {
+            // Mapping status dari database ke kategori chart
+            $statusMapping = [
+                'Selesai' => 'selesai',
+                'Diterima' => 'selesai',
+                'Disposisi' => 'disposisi',
+                'Diproses' => 'proses',
+                'Ditolak' => 'proses'
+            ];
+
+            $counts = [
+                'selesai' => 0,
+                'disposisi' => 0,
+                'proses' => 0
+            ];
+
+            $query = "SELECT status, COUNT(*) as count FROM permohonan GROUP BY status";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($results as $result) {
+                $status = trim($result['status']);
+                $count = (int)$result['count'];
+
+                // Map status ke kategori
+                if (isset($statusMapping[$status])) {
+                    $kategori = $statusMapping[$status];
+                    $counts[$kategori] += $count;
+                } else {
+                    // Default ke proses jika status tidak diketahui
+                    $counts['proses'] += $count;
+                }
+            }
+
+            return $counts;
+        } catch (PDOException $e) {
+            error_log("Database error in getStatusCounts: " . $e->getMessage());
+            return [
+                'selesai' => 0,
+                'disposisi' => 0,
+                'proses' => 0
+            ];
+        }
+    }
+
+    // Method untuk mendapatkan data permohonan per bulan (12 bulan terakhir)
+    public function getMonthlyPermohonan() {
+        if (!$this->conn) {
+            return [
+                'total' => array_fill(0, 12, 0),
+                'selesai' => array_fill(0, 12, 0)
+            ];
+        }
+
+        try {
+            // Array untuk menyimpan data 12 bulan
+            $monthlyTotal = array_fill(0, 12, 0);
+            $monthlySelesai = array_fill(0, 12, 0);
+
+            // Get current year
+            $currentYear = date('Y');
+
+            // Query untuk total permohonan per bulan
+            $queryTotal = "SELECT MONTH(created_at) as month, COUNT(*) as count
+                          FROM permohonan
+                          WHERE YEAR(created_at) = :year
+                          GROUP BY MONTH(created_at)";
+
+            $stmtTotal = $this->conn->prepare($queryTotal);
+            $stmtTotal->bindParam(':year', $currentYear);
+            $stmtTotal->execute();
+            $resultsTotal = $stmtTotal->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($resultsTotal as $result) {
+                $month = (int)$result['month'] - 1; // Array index 0-11
+                $monthlyTotal[$month] = (int)$result['count'];
+            }
+
+            // Query untuk permohonan selesai per bulan
+            $querySelesai = "SELECT MONTH(created_at) as month, COUNT(*) as count
+                            FROM permohonan
+                            WHERE YEAR(created_at) = :year
+                            AND (status = 'Selesai' OR status = 'Diterima')
+                            GROUP BY MONTH(created_at)";
+
+            $stmtSelesai = $this->conn->prepare($querySelesai);
+            $stmtSelesai->bindParam(':year', $currentYear);
+            $stmtSelesai->execute();
+            $resultsSelesai = $stmtSelesai->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($resultsSelesai as $result) {
+                $month = (int)$result['month'] - 1; // Array index 0-11
+                $monthlySelesai[$month] = (int)$result['count'];
+            }
+
+            return [
+                'total' => $monthlyTotal,
+                'selesai' => $monthlySelesai
+            ];
+        } catch (PDOException $e) {
+            error_log("Database error in getMonthlyPermohonan: " . $e->getMessage());
+            return [
+                'total' => array_fill(0, 12, 0),
+                'selesai' => array_fill(0, 12, 0)
+            ];
+        }
+    }
 }
 ?>

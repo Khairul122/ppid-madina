@@ -31,6 +31,14 @@ class BerandaController {
                 'quick_links' => $this->berandaModel->getQuickLinksData()
             ];
 
+            // Get status counts for pie chart
+            $statusCounts = $this->berandaModel->getStatusCounts();
+
+            // Get monthly data for area chart
+            $monthlyData = $this->berandaModel->getMonthlyPermohonan();
+            $monthlyDataJson = json_encode($monthlyData['total']);
+            $monthlySelesaiJson = json_encode($monthlyData['selesai']);
+
             // Set page info
             $pageInfo = [
                 'title' => 'PPID Mandailing Natal - Beranda',
@@ -42,8 +50,7 @@ class BerandaController {
             include 'views/beranda/index.php';
 
         } catch (Exception $e) {
-            // Log error jika terjadi masalah
-            error_log("Error in BerandaController::index: " . $e->getMessage());
+            error_log("ERROR in BerandaController::index: " . $e->getMessage());
 
             // Fallback ke data minimal jika terjadi error
             $data = [
@@ -55,6 +62,16 @@ class BerandaController {
                 'kontak' => [],
                 'quick_links' => []
             ];
+
+            // Default status counts
+            $statusCounts = [
+                'selesai' => 0,
+                'disposisi' => 0,
+                'proses' => 0
+            ];
+
+            $monthlyDataJson = json_encode([0,0,0,0,0,0,0,0,0,0,0,0]);
+            $monthlySelesaiJson = json_encode([0,0,0,0,0,0,0,0,0,0,0,0]);
 
             $pageInfo = [
                 'title' => 'PPID Mandailing Natal',
@@ -272,6 +289,96 @@ class BerandaController {
             error_log("Error getting informasi: " . $e->getMessage());
             return null;
         }
+    }
+
+    // Method untuk mendapatkan statistik dokumen
+    public function getStatistikDokumen() {
+        header('Content-Type: application/json');
+
+        try {
+            global $database;
+            if (!$database) {
+                throw new Exception("Database tidak tersedia");
+            }
+            $conn = $database->getConnection();
+
+            // Total dokumen per kategori
+            $query = "SELECT k.nama_kategori, COUNT(d.id_dokumen) as count 
+                     FROM kategori k 
+                     LEFT JOIN dokumen d ON k.id_kategori = d.id_kategori AND d.status = 'publikasi'
+                     GROUP BY k.id_kategori, k.nama_kategori";
+            
+            $stmt = $conn->prepare($query);
+            $stmt->execute();
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $statistik = [
+                'total_dokumen' => 0,
+                'kategori' => []
+            ];
+
+            foreach ($results as $result) {
+                $kategori = strtolower($result['nama_kategori']);
+                $statistik['kategori'][$kategori] = $result['count'];
+                $statistik['total_dokumen'] += $result['count'];
+            }
+
+            echo json_encode([
+                'success' => true,
+                'data' => $statistik
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal memuat statistik dokumen: ' . $e->getMessage()
+            ]);
+        }
+        exit();
+    }
+
+    // Method untuk mendapatkan statistik permohonan
+    public function getStatistikPermohonan() {
+        header('Content-Type: application/json');
+
+        try {
+            global $database;
+            if (!$database) {
+                throw new Exception("Database tidak tersedia");
+            }
+            $conn = $database->getConnection();
+
+            $query = "SELECT COUNT(*) as total FROM permohonan";
+            $stmt = $conn->prepare($query);
+            $stmt->execute();
+            $totalPermohonan = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            $querySelesai = "SELECT COUNT(*) as selesai FROM permohonan WHERE status = 'Selesai'";
+            $stmtSelesai = $conn->prepare($querySelesai);
+            $stmtSelesai->execute();
+            $permohonanSelesai = $stmtSelesai->fetch(PDO::FETCH_ASSOC)['selesai'];
+
+            $queryPemohon = "SELECT COUNT(*) as total FROM users WHERE role = 'masyarakat'";
+            $stmtPemohon = $conn->prepare($queryPemohon);
+            $stmtPemohon->execute();
+            $totalPemohon = $stmtPemohon->fetch(PDO::FETCH_ASSOC)['total'];
+
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'total_permohonan' => $totalPermohonan,
+                    'permohonan_selesai' => $permohonanSelesai,
+                    'total_pemohon' => $totalPemohon
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal memuat statistik permohonan: ' . $e->getMessage()
+            ]);
+        }
+        exit();
     }
 }
 ?>

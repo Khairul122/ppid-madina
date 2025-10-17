@@ -123,16 +123,19 @@ $action_url = $is_edit ? 'update' : 'store';
                         <label for="terbitkan_sebagai" class="form-label fw-bold">
                           Terbitkan Sebagai <span style="color: red;">*</span>
                         </label>
-                        <input type="text"
-                               class="form-control"
-                               id="terbitkan_sebagai"
-                               name="terbitkan_sebagai"
-                               value="<?php echo htmlspecialchars($form_data['terbitkan_sebagai'] ?? ($dokumen['terbitkan_sebagai'] ?? '')); ?>"
-                               placeholder="Contoh: Surat Keputusan, Peraturan, dll"
-                               maxlength="255"
-                               style="padding: 12px; border-radius: 6px;"
-                               required>
-                        <small class="text-muted"><span id="terbitkan_counter">0</span>/255 karakter</small>
+                        <select class="form-select"
+                                id="terbitkan_sebagai"
+                                name="terbitkan_sebagai"
+                                style="padding: 20px; border-radius: 6px;"
+                                required>
+                          <option value="">-- Pilih SKPD --</option>
+                          <?php if (!empty($data['skpd_info']) && isset($data['skpd_info']['nama_skpd'])): ?>
+                            <option value="<?php echo htmlspecialchars($data['skpd_info']['nama_skpd']); ?>"
+                              <?php echo (isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $data['skpd_info']['nama_skpd']) || (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $data['skpd_info']['nama_skpd']) ? 'selected' : ''; ?>>
+                              <?php echo htmlspecialchars($data['skpd_info']['nama_skpd']); ?>
+                            </option>
+                          <?php endif; ?>
+                        </select>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
@@ -293,7 +296,8 @@ $action_url = $is_edit ? 'update' : 'store';
 
       // Initialize character counters
       updateCounter('judul', 'judul_counter', 255);
-      updateCounter('terbitkan_sebagai', 'terbitkan_counter', 255);
+      // Remove character counter for terbitkan_sebagai as it's now a dropdown
+      // updateCounter('terbitkan_sebagai', 'terbitkan_counter', 255);
 
       // Form validation
       const form = document.getElementById('dokumenForm');
