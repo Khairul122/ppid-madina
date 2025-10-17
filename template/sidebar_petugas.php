@@ -24,7 +24,7 @@ function isDropdownActivePetugas($controllers)
     <!-- Dashboard -->
     <li class="nav-item">
       <a class="nav-link <?php echo isActivePetugas('user', 'index') ? 'active' : ''; ?>" href="index.php?controller=user&action=index">
-        <i class="fa fa-home menu-icon fa-sm"></i>
+        <i class="fa fa-dashboard menu-icon fa-sm"></i>
         <span class="menu-title">Dashboard</span>
       </a>
     </li>
@@ -32,7 +32,7 @@ function isDropdownActivePetugas($controllers)
     <!-- Download Panduan -->
     <li class="nav-item">
       <a class="nav-link" href="index.php?controller=download&action=download" target="_blank">
-        <i class="fa fa-download menu-icon fa-sm"></i>
+        <i class="fa fa-file-pdf menu-icon fa-sm"></i>
         <span class="menu-title">Download Panduan</span>
       </a>
     </li>
@@ -40,29 +40,47 @@ function isDropdownActivePetugas($controllers)
     <!-- Permohonan - Meja Layanan Petugas -->
     <li class="nav-item">
       <div class="nav-link <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
-        <i class="fa fa-desktop menu-icon fa-sm"></i>
+        <i class="fa fa-envelope-open menu-icon fa-sm"></i>
         <span class="menu-title">Permohonan</span>
         <i class="menu-arrow"></i>
       </div>
       <div class="collapse <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'show' : ''; ?>" id="mejalayananDropdown">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'mejaLayanan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=mejaLayanan">Meja Layanan</a>
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'mejaLayanan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=mejaLayanan">
+              <i class="fa fa-desk fa-sm me-2"></i>
+              Meja Layanan
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">Permohonan Masuk SKPD</a>
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">
+              <i class="fa fa-inbox fa-sm me-2"></i>
+              Permohonan Masuk SKPD
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'disposisiIndex') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=disposisiIndex">Permohonan Disposisi</a>
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'disposisiIndex') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=disposisiIndex">
+              <i class="fa fa-share-alt fa-sm me-2"></i>
+              Permohonan Disposisi
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'diprosesIndex') || isActivePetugas('permohonanpetugas', 'permohonanDiproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=diprosesIndex">Permohonan Diproses</a>
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'diprosesIndex') || isActivePetugas('permohonanpetugas', 'permohonanDiproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=diprosesIndex">
+              <i class="fa fa-cogs fa-sm me-2"></i>
+              Permohonan Diproses
+            </a>
           </li>
             <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">Permohonan Selesai</a>
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">
+              <i class="fa fa-check-circle fa-sm me-2"></i>
+              Permohonan Selesai
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'layananKepuasanIndex') || isActivePetugas('permohonanpetugas', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=layananKepuasanIndex">Layanan Kepuasan</a>
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'layananKepuasanIndex') || isActivePetugas('permohonanpetugas', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=layananKepuasanIndex">
+              <i class="fa fa-smile fa-sm me-2"></i>
+              Layanan Kepuasan
+            </a>
           </li>
            
         </ul>
@@ -72,23 +90,35 @@ function isDropdownActivePetugas($controllers)
     <!-- Dokumen Informasi Publik Pemda -->
     <li class="nav-item">
       <div class="nav-link <?php echo isDropdownActivePetugas(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#informasiPublikDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'true' : 'false'; ?>" aria-controls="informasiPublikDropdown">
-        <i class="fa fa-file-text-o menu-icon fa-sm"></i>
+        <i class="fa fa-folder-open menu-icon fa-sm"></i>
         <span class="menu-title">Dokumen Informasi<br>Publik Pemda</span>
         <i class="menu-arrow"></i>
       </div>
       <div class="collapse <?php echo isDropdownActivePetugas(['kategoriBerkala', 'kategoriSertaMerta', 'kategoriSetiapSaat']) ? 'show' : ''; ?>" id="informasiPublikDropdown">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('kategoriBerkala') ? 'active' : ''; ?>" href="index.php?controller=kategoriBerkala&action=index">Kategori Berkala</a>
+            <a class="nav-link <?php echo isActivePetugas('kategoriBerkala') ? 'active' : ''; ?>" href="index.php?controller=kategoriBerkala&action=index">
+              <i class="fa fa-calendar-alt fa-sm me-2"></i>
+              Kategori Berkala
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('kategoriSertaMerta') ? 'active' : ''; ?>" href="index.php?controller=kategoriSertaMerta&action=index">Kategori Serta Merta</a>
+            <a class="nav-link <?php echo isActivePetugas('kategoriSertaMerta') ? 'active' : ''; ?>" href="index.php?controller=kategoriSertaMerta&action=index">
+              <i class="fa fa-bolt fa-sm me-2"></i>
+              Kategori Serta Merta
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('kategoriSetiapSaat') ? 'active' : ''; ?>" href="index.php?controller=kategoriSetiapSaat&action=index">Kategori Setiap Saat</a>
+            <a class="nav-link <?php echo isActivePetugas('kategoriSetiapSaat') ? 'active' : ''; ?>" href="index.php?controller=kategoriSetiapSaat&action=index">
+              <i class="fa fa-clock fa-sm me-2"></i>
+              Kategori Setiap Saat
+            </a>
           </li>
           <li class="nav-item">
-              <a class="nav-link <?php echo isActivePetugas('kategoriDikecualikanPetugas') ? 'active' : ''; ?>" href="index.php?controller=kategoriDikecualikanPetugas&action=index">Kategori Dikecualikan</a>
+              <a class="nav-link <?php echo isActivePetugas('kategoriDikecualikanPetugas') ? 'active' : ''; ?>" href="index.php?controller=kategoriDikecualikanPetugas&action=index">
+                <i class="fa fa-ban fa-sm me-2"></i>
+                Kategori Dikecualikan
+              </a>
             </li>
         </ul>
       </div>
@@ -97,7 +127,7 @@ function isDropdownActivePetugas($controllers)
     <!-- Master Jenis Dokumen Pemda -->
     <li class="nav-item">
       <a class="nav-link <?php echo isActivePetugas('dokumenPemda') ? 'active' : ''; ?>" href="index.php?controller=dokumenPemda&action=index">
-        <i class="fa fa-download menu-icon fa-sm"></i>
+        <i class="fa fa-database menu-icon fa-sm"></i>
         <span class="menu-title">Master Jenis<br>Dokumen Pemda</span>
       </a>
     </li>
@@ -105,17 +135,23 @@ function isDropdownActivePetugas($controllers)
     <!-- Berita -->
     <li class="nav-item">
       <div class="nav-link <?php echo isDropdownActivePetugas(['berita']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#beritaDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['berita']) ? 'true' : 'false'; ?>" aria-controls="beritaDropdown">
-        <i class="fa fa-newspaper-o menu-icon fa-sm"></i>
+        <i class="fa fa-newspaper menu-icon fa-sm"></i>
         <span class="menu-title">Berita</span>
         <i class="menu-arrow"></i>
       </div>
       <div class="collapse <?php echo isDropdownActivePetugas(['berita']) ? 'show' : ''; ?>" id="beritaDropdown">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('berita', 'index') ? 'active' : ''; ?>" href="index.php?controller=berita&action=index">List Berita</a>
+            <a class="nav-link <?php echo isActivePetugas('berita', 'index') ? 'active' : ''; ?>" href="index.php?controller=berita&action=index">
+              <i class="fa fa-list fa-sm me-2"></i>
+              List Berita
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('berita', 'create') ? 'active' : ''; ?>" href="index.php?controller=berita&action=create">Tambah Berita</a>
+            <a class="nav-link <?php echo isActivePetugas('berita', 'create') ? 'active' : ''; ?>" href="index.php?controller=berita&action=create">
+              <i class="fa fa-plus-circle fa-sm me-2"></i>
+              Tambah Berita
+            </a>
           </li>
         </ul>
       </div>
