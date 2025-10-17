@@ -64,19 +64,27 @@ class DashboardModel
     {
         $kategori_data = [];
         try {
-            $query = "SELECT k.nama_kategori, COUNT(d.id_dokumen) as jumlah FROM kategori k LEFT JOIN dokumen d ON k.id_kategori = d.id_kategori AND d.status = 'publikasi' GROUP BY k.id_kategori, k.nama_kategori ORDER BY jumlah DESC LIMIT 8";
+            // Query with better handling
+            $query = "SELECT k.nama_kategori, COUNT(d.id_dokumen) as jumlah
+                      FROM kategori k
+                      LEFT JOIN dokumen d ON k.id_kategori = d.id_kategori AND d.status = 'publikasi'
+                      GROUP BY k.id_kategori, k.nama_kategori
+                      ORDER BY jumlah DESC
+                      LIMIT 8";
+
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
+
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $kategori_data[] = [
                     'nama_kategori' => $row['nama_kategori'] ?? 'Tidak Diketahui',
                     'jumlah' => (int)($row['jumlah'] ?? 0)
                 ];
             }
-            error_log("Kategori Data Count: " . count($kategori_data));
+
+            error_log("Kategori Data: " . json_encode($kategori_data));
         } catch (Exception $e) {
             error_log("Dashboard Model Error - getKategoriData: " . $e->getMessage());
-            // Return empty array jika terjadi error
             $kategori_data = [];
         }
 
@@ -88,19 +96,24 @@ class DashboardModel
     {
         $status_data = [];
         try {
-            $query = "SELECT status, COUNT(*) as jumlah FROM permohonan GROUP BY status ORDER BY jumlah DESC";
+            $query = "SELECT status, COUNT(*) as jumlah
+                      FROM permohonan
+                      GROUP BY status
+                      ORDER BY jumlah DESC";
+
             $stmt = $this->conn->prepare($query);
             $stmt->execute();
+
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $status_data[] = [
                     'status' => $row['status'] ?? 'Tidak Diketahui',
                     'jumlah' => (int)($row['jumlah'] ?? 0)
                 ];
             }
-            error_log("Status Data Count: " . count($status_data));
+
+            error_log("Status Data: " . json_encode($status_data));
         } catch (Exception $e) {
             error_log("Dashboard Model Error - getStatusData: " . $e->getMessage());
-            // Return empty array jika terjadi error
             $status_data = [];
         }
 
@@ -161,5 +174,51 @@ class DashboardModel
         }
 
         return $recent_berita;
+    }
+
+    // Mendapatkan statistik permohonan berdasarkan status
+    public function getPermohonanStats()
+    {
+        $stats = [];
+        try {
+            // Permohonan Baru / Diproses
+            $query = "SELECT COUNT(*) as total FROM permohonan WHERE status = 'Diproses'";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stats['permohonan_baru'] = $result ? (int)$result['total'] : 0;
+
+            // Permohonan Dalam Proses / Disposisi
+            $query = "SELECT COUNT(*) as total FROM permohonan WHERE status = 'Disposisi'";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stats['permohonan_proses'] = $result ? (int)$result['total'] : 0;
+
+            // Permohonan Selesai
+            $query = "SELECT COUNT(*) as total FROM permohonan WHERE status = 'Selesai'";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stats['permohonan_selesai'] = $result ? (int)$result['total'] : 0;
+
+            // Permohonan Ditolak
+            $query = "SELECT COUNT(*) as total FROM permohonan WHERE status = 'Ditolak'";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stats['permohonan_ditolak'] = $result ? (int)$result['total'] : 0;
+
+        } catch (Exception $e) {
+            error_log("Dashboard Model Error - getPermohonanStats: " . $e->getMessage());
+            $stats = [
+                'permohonan_baru' => 0,
+                'permohonan_proses' => 0,
+                'permohonan_selesai' => 0,
+                'permohonan_ditolak' => 0
+            ];
+        }
+
+        return $stats;
     }
 }

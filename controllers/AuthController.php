@@ -11,10 +11,14 @@ class AuthController {
     }
 
     public function login() {
-        
+
         // Jika user sudah login, redirect ke dashboard
         if (isset($_SESSION['user_id'])) {
-            header('Location: index.php?controller=user&action=index');
+            if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'petugas') {
+                header('Location: index.php?controller=dashboard&action=index');
+            } else {
+                header('Location: index.php?controller=user&action=index');
+            }
             exit();
         }
 
@@ -35,7 +39,11 @@ class AuthController {
                 $_SESSION['role'] = $user['role'];
 
                 // Redirect berdasarkan role
-                header('Location: index.php?controller=user&action=index');
+                if ($user['role'] === 'admin' || $user['role'] === 'petugas') {
+                    header('Location: index.php?controller=dashboard&action=index');
+                } else {
+                    header('Location: index.php?controller=user&action=index');
+                }
                 exit();
             } else {
                 $error = 'Email atau password salah!';
@@ -54,7 +62,11 @@ class AuthController {
     public function register() {
         // Jika user sudah login, redirect ke dashboard
         if (isset($_SESSION['user_id'])) {
-            header('Location: index.php?controller=user&action=index');
+            if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'petugas') {
+                header('Location: index.php?controller=dashboard&action=index');
+            } else {
+                header('Location: index.php?controller=user&action=index');
+            }
             exit();
         }
 

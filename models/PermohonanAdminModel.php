@@ -971,6 +971,30 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+
+    /**
+     * Get permohonan for ditolak view by ID
+     */
+    public function getPermohonanForDitolakView($id)
+    {
+        $query = "SELECT p.*, u.username, u.email as user_email, u.role,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                  FROM {$this->table_permohonan} p
+                  JOIN {$this->table_users} u ON p.id_user = u.id_user
+                  LEFT JOIN {$this->table_biodata} bp ON u.id_biodata = bp.id_biodata
+                  WHERE p.id_permohonan = :id AND p.status = 'Ditolak'
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     
 
     /**

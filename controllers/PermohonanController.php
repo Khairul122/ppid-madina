@@ -487,7 +487,8 @@ class PermohonanController {
             exit();
         }
 
-        $this->generateBuktiSelesaiTCPDF($permohonan);
+        $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
+        $this->generateBuktiSelesaiTCPDF($permohonan, $skpd_data);
     }
 
     // Generate Bukti Ditolak PDF
@@ -513,12 +514,13 @@ class PermohonanController {
             exit();
         }
 
-        $this->generateBuktiDitolakTCPDF($permohonan);
+        $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
+        $this->generateBuktiDitolakTCPDF($permohonan, $skpd_data);
     }
 
     // ============ PRIVATE PDF GENERATION METHODS ============
 
-    private function generateBuktiPermohonanPDF($data) {
+    private function generateBuktiPermohonanPDF($data, $skpd_data = null) {
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
         $pdf->SetCreator('PPID Mandailing Natal');
@@ -535,7 +537,7 @@ class PermohonanController {
         $pdf->SetFont('times', '', 12);
         $pdf->SetCellHeightRatio(1.15);
 
-        $this->addPDFHeader($pdf, $data);
+        $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addPDFDataSection($pdf, $data);
         $this->addPDFSignature($pdf, $data);
@@ -546,7 +548,7 @@ class PermohonanController {
         exit();
     }
 
-    private function addPDFHeader($pdf, $data) {
+    private function addPDFHeader($pdf, $data, $skpd_data = null) {
         $pdf->SetFont('times', 'B', 16);
         $pdf->SetTextColor(0, 0, 0);
 
@@ -563,28 +565,27 @@ class PermohonanController {
         }
 
         // Nama SKPD dengan ukuran 16 bold
-        $skpd_name = $data['komponen_tujuan'] ?? '';
+        $skpd_name = ($skpd_data && !empty($skpd_data['nama_skpd'])) ? $skpd_data['nama_skpd'] : ($data['komponen_tujuan'] ?? '');
         $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
 
         $pdf->SetFont('times', '', 12);
 
         // Alamat dari tabel SKPD
-        $skpd_info = $this->getSKPDData($data['komponen_tujuan']);
-        $alamat = ($skpd_info && !empty($skpd_info['alamat'])) ? $skpd_info['alamat'] : '';
+        $alamat = ($skpd_data && !empty($skpd_data['alamat'])) ? $skpd_data['alamat'] : '';
         if (!empty($alamat)) {
             $pdf->SetX($text_x);
             $pdf->Cell(0, 5, $alamat, 0, 1, 'L');
         }
 
         // Email dari tabel SKPD
-        $email = ($skpd_info && !empty($skpd_info['email'])) ? 'Email : ' . $skpd_info['email'] : '';
+        $email = ($skpd_data && !empty($skpd_data['email'])) ? 'Email : ' . $skpd_data['email'] : '';
         if (!empty($email)) {
             $pdf->SetX($text_x);
             $pdf->Cell(0, 5, $email, 0, 1, 'L');
         }
 
         // Telp dari tabel SKPD
-        $telp = ($skpd_info && !empty($skpd_info['telepon'])) ? 'Telp : ' . $skpd_info['telepon'] : '';
+        $telp = ($skpd_data && !empty($skpd_data['telepon'])) ? 'Telp : ' . $skpd_data['telepon'] : '';
         if (!empty($telp)) {
             $pdf->SetX($text_x);
             $pdf->Cell(0, 5, $telp, 0, 1, 'L');
@@ -696,7 +697,7 @@ class PermohonanController {
         $pdf->Cell(0, 4, 'Lembaran ini diterbitkan oleh PPID Mandailing Natal dan dicetak pada ' . $this->getIndonesianDate(), 0, 1, 'R');
     }
 
-    private function generateBuktiProsesTCPDF($data) {
+    private function generateBuktiProsesTCPDF($data, $skpd_data = null) {
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
         $pdf->SetCreator('PPID Mandailing Natal');
@@ -713,7 +714,7 @@ class PermohonanController {
         $pdf->SetFont('times', '', 12);
         $pdf->SetCellHeightRatio(1.15);
 
-        $this->addPDFHeader($pdf, $data);
+        $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addBuktiProsesDataSection($pdf, $data);
         $this->addPDFSignature($pdf, $data);
@@ -794,7 +795,7 @@ class PermohonanController {
         $pdf->Ln(10);
     }
 
-    private function generateBuktiSelesaiTCPDF($data) {
+    private function generateBuktiSelesaiTCPDF($data, $skpd_data = null) {
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
         $pdf->SetCreator('PPID Mandailing Natal');
@@ -811,7 +812,7 @@ class PermohonanController {
         $pdf->SetFont('times', '', 12);
         $pdf->SetCellHeightRatio(1.15);
 
-        $this->addPDFHeader($pdf, $data);
+        $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addBuktiSelesaiDataSection($pdf, $data);
         $this->addPDFSignature($pdf, $data);
@@ -892,7 +893,7 @@ class PermohonanController {
         $pdf->Ln(10);
     }
 
-    private function generateBuktiDitolakTCPDF($data) {
+    private function generateBuktiDitolakTCPDF($data, $skpd_data = null) {
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
         $pdf->SetCreator('PPID Mandailing Natal');
@@ -909,7 +910,7 @@ class PermohonanController {
         $pdf->SetFont('times', '', 12);
         $pdf->SetCellHeightRatio(1.15);
 
-        $this->addPDFHeader($pdf, $data);
+        $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addBuktiDitolakDataSection($pdf, $data);
         $this->addPDFSignature($pdf, $data);

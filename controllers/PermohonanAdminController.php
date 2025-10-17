@@ -180,6 +180,36 @@ class PermohonanAdminController
         include 'views/permohonan_admin/selesai/detail.php';
     }
 
+    /**
+     * Tampilkan detail permohonan yang ditolak
+     */
+    public function ditolakDetail()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        $id = intval($_GET['id']);
+        $permohonan = $this->permohonanAdminModel->getPermohonanForDitolakView($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Permohonan yang ditolak tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=ditolakIndex');
+            exit();
+        }
+
+        $skpd_data = $this->getSKPDData($permohonan['komponen_tujuan']);
+
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/ditolak/detail.php';
+    }
+
     // ============ CREATE & STORE ============
 
     /**
