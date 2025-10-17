@@ -130,14 +130,6 @@ function isDropdownActivePetugas($controllers)
       </div>
     </li>
 
-    <!-- Master Jenis Dokumen Pemda -->
-    <li class="nav-item">
-      <a class="nav-link <?php echo isActivePetugas('dokumenPemda') ? 'active' : ''; ?>" href="index.php?controller=dokumenPemda&action=index">
-        <i class="fa fa-database menu-icon fa-sm"></i>
-        <span class="menu-title">Master Jenis<br>Dokumen Pemda</span>
-      </a>
-    </li>
-
     <!-- Berita -->
     <li class="nav-item">
       <div class="nav-link <?php echo isDropdownActivePetugas(['berita']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#beritaDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['berita']) ? 'true' : 'false'; ?>" aria-controls="beritaDropdown">

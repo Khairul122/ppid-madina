@@ -11,8 +11,10 @@
     $greeting = "Selamat Malam";
   }
 
-  $nama = isset($_SESSION['nama_lengkap']) ? $_SESSION['nama_lengkap'] : 'Pengguna';
+  $nama = isset($_SESSION['nama_lengkap']) ? $_SESSION['nama_lengkap'] : (isset($_SESSION['username']) ? $_SESSION['username'] : 'Pengguna');
   $email = isset($_SESSION['email']) ? $_SESSION['email'] : 'email@example.com';
+  $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'masyarakat';
+  $foto_profile = isset($_SESSION['profile_photo']) && !empty($_SESSION['profile_photo']) ? $_SESSION['profile_photo'] : 'favicon.png';
 ?>
 
 <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
@@ -32,13 +34,31 @@
     <ul class="navbar-nav ms-auto">
       <li class="nav-item dropdown d-none d-lg-block user-dropdown">
         <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-          <img class="img-md rounded-circle" src="favicon.png" alt="Profile image" />
+          <img class="img-md rounded-circle" src="<?= $foto_profile ?>" alt="Profile image" />
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
-            <img class="img-md rounded-circle" src="favicon.png" alt="Profile image" />
+            <img class="img-md rounded-circle" src="<?= $foto_profile ?>" alt="Profile image" />
             <p class="mb-1 mt-3 font-weight-semibold"><?= $nama ?></p>
+            <p class="mb-1 text-muted"><?= $email ?></p>
+            <p class="mb-0 text-muted text-small">Role: <span class="text-primary text-capitalize"><?= $role ?></span></p>
           </div>
+          <?php if ($role === 'admin'): ?>
+            <a class="dropdown-item" href="index.php?controller=profileadmin&action=index">
+              <i class="dropdown-item-icon mdi mdi-account text-primary me-2"></i>
+              Kelola Profil
+            </a>
+          <?php elseif ($role === 'petugas'): ?>
+            <a class="dropdown-item" href="index.php?controller=profilepetugas&action=index">
+              <i class="dropdown-item-icon mdi mdi-account text-primary me-2"></i>
+              Kelola Profil
+            </a>
+          <?php else: ?>
+            <a class="dropdown-item" href="index.php?controller=user&action=profile">
+              <i class="dropdown-item-icon mdi mdi-account text-primary me-2"></i>
+              Kelola Profil
+            </a>
+          <?php endif; ?>
           <a class="dropdown-item" href="index.php?controller=Auth&action=logout">
             <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
             Sign Out

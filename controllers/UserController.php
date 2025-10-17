@@ -136,11 +136,11 @@ class UserController {
 
         switch ($role) {
             case 'admin':
-                include 'views/user/profile.php'; // Keep existing admin profile
-                break;
+                header('Location: index.php?controller=profileadmin&action=index');
+                exit();
             case 'petugas':
-                include 'views/user/profile.php'; // Keep existing petugas profile
-                break;
+                header('Location: index.php?controller=profilepetugas&action=index');
+                exit();
             case 'masyarakat':
                 include 'views/profile/masyarakat.php';
                 break;
