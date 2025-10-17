@@ -251,7 +251,6 @@ if (isset($database)) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(30, 58, 138, 0.5) 0%, rgba(30, 58, 138, 0.3) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -269,14 +268,12 @@ if (isset($database)) {
             font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             line-height: 1.2;
         }
 
         .banner-content p {
             font-size: 1.4rem;
             margin-bottom: 30px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
@@ -355,7 +352,6 @@ if (isset($database)) {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.2);
             border: none;
             width: 60px;
             height: 60px;
@@ -367,13 +363,10 @@ if (isset($database)) {
             cursor: pointer;
             z-index: 10;
             transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
         }
 
         .banner-arrow:hover {
-            background: var(--accent-color);
             transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .banner-arrow-prev {
@@ -390,7 +383,6 @@ if (isset($database)) {
             left: 0;
             width: 100%;
             height: 6px;
-            background: rgba(255, 255, 255, 0.2);
             z-index: 10;
         }
 
@@ -406,7 +398,6 @@ if (isset($database)) {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
             color: var(--white);
             text-align: center;
         }
@@ -1082,7 +1073,6 @@ if (isset($database)) {
                         <?php foreach ($data['slider'] as $index => $banner): ?>
                             <div class="banner-slide" data-index="<?= $index ?>">
                                 <img src="<?= $banner['image'] ?>" alt="Banner <?= $index + 1 ?>" class="banner-image">
-                                <div class="banner-overlay"></div>
                                 <?php if ($index === 0): // Only show content on first slide ?>
                              
                                 <?php endif; ?>
@@ -1758,7 +1748,7 @@ if (isset($database)) {
             </div>
 
             <div class="text-center">
-                <a href="index.php?controller=album&action=public&kategori=foto" class="btn btn-primary">Galeri Selengkapnya <i class="fas fa-arrow-right ms-2"></i></a>
+                <a href="index.php?controller=album&action=public&kategori=foto" class="btn btn-outline-primary">Galeri Selengkapnya <i class="fas fa-arrow-right ms-2"></i></a>
             </div>
         </div>
     </section>
@@ -2152,27 +2142,19 @@ if (isset($database)) {
                     name: 'Jumlah',
                     colorByPoint: true,
                     data: [
-                        <?php if(($kategoriCounts['berkala'] ?? 0) > 0): ?>
-                        ,{
-                            name: 'Berkala',
-                            y: <?= $kategoriCounts['berkala'] ?? 0 ?>,
-                            color: '#87CEEB' // biru muda
-                        },
-                        <?php endif; ?>
-                        <?php if(($kategoriCounts['serta merta'] ?? 0) > 0): ?>
-                        ,{
-                            name: 'Serta Merta',
-                            y: <?= $kategoriCounts['serta merta'] ?? 0 ?>,
-                            color: '#90EE90' // hijau
-                        },
-                        <?php endif; ?>
-                        <?php if(($kategoriCounts['setiap saat'] ?? 0) > 0): ?>
-                        ,{
-                            name: 'Setiap Saat',
-                            y: <?= $kategoriCounts['setiap saat'] ?? 0 ?>,
-                            color: '#DDA0DD' // ungu
+                        <?php 
+                        $chartData1 = [];
+                        if(($kategoriCounts['berkala'] ?? 0) > 0) {
+                            $chartData1[] = "{name: 'Berkala', y: " . ($kategoriCounts['berkala'] ?? 0) . ", color: '#87CEEB'}";
                         }
-                        <?php endif; ?>
+                        if(($kategoriCounts['serta merta'] ?? 0) > 0) {
+                            $chartData1[] = "{name: 'Serta Merta', y: " . ($kategoriCounts['serta merta'] ?? 0) . ", color: '#90EE90'}";
+                        }
+                        if(($kategoriCounts['setiap saat'] ?? 0) > 0) {
+                            $chartData1[] = "{name: 'Setiap Saat', y: " . ($kategoriCounts['setiap saat'] ?? 0) . ", color: '#DDA0DD'}";
+                        }
+                        echo implode(",\n                        ", $chartData1);
+                        ?>
                     ]
                 }]
             });
@@ -2204,34 +2186,22 @@ if (isset($database)) {
                     name: 'Jumlah',
                     colorByPoint: true,
                     data: [
-                        <?php if($statusCounts['masuk'] > 0): ?>
-                        ,{
-                            name: 'Masuk',
-                            y: <?= $statusCounts['masuk'] ?>,
-                            color: '#93C5FD' // biru muda
-                        },
-                        <?php endif; ?>
-                        <?php if($statusCounts['disposisi'] > 0): ?>
-                        ,{
-                            name: 'Disposisi',
-                            y: <?= $statusCounts['disposisi'] ?>,
-                            color: '#87CEEB' // biru langit
-                        },
-                        <?php endif; ?>
-                        <?php if($statusCounts['diproses'] > 0): ?>
-                        ,{
-                            name: 'Diproses',
-                            y: <?= $statusCounts['diproses'] ?>,
-                            color: '#F0E68C' // kuning
-                        },
-                        <?php endif; ?>
-                        <?php if($statusCounts['selesai'] > 0): ?>
-                        ,{
-                            name: 'Selesai',
-                            y: <?= $statusCounts['selesai'] ?>,
-                            color: '#90EE90' // hijau
+                        <?php 
+                        $chartData2 = [];
+                        if($statusCounts['masuk'] > 0) {
+                            $chartData2[] = "{name: 'Masuk', y: " . $statusCounts['masuk'] . ", color: '#93C5FD'}";
                         }
-                        <?php endif; ?>
+                        if($statusCounts['disposisi'] > 0) {
+                            $chartData2[] = "{name: 'Disposisi', y: " . $statusCounts['disposisi'] . ", color: '#87CEEB'}";
+                        }
+                        if($statusCounts['diproses'] > 0) {
+                            $chartData2[] = "{name: 'Diproses', y: " . $statusCounts['diproses'] . ", color: '#F0E68C'}";
+                        }
+                        if($statusCounts['selesai'] > 0) {
+                            $chartData2[] = "{name: 'Selesai', y: " . $statusCounts['selesai'] . ", color: '#90EE90'}";
+                        }
+                        echo implode(",\n                        ", $chartData2);
+                        ?>
                     ]
                 }]
             });
