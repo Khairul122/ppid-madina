@@ -12,7 +12,7 @@ class BeritaController {
 
     // Method untuk menampilkan halaman index berita
     public function index() {
-        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'petugas')) {
             header('Location: index.php?controller=auth&action=login');
             exit();
         }
@@ -43,7 +43,7 @@ class BeritaController {
 
     // Method untuk menampilkan form tambah berita
     public function create() {
-        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'petugas')) {
             header('Location: index.php?controller=auth&action=login');
             exit();
         }

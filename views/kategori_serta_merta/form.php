@@ -8,9 +8,12 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
 $form_data = $_SESSION['form_data'] ?? [];
 unset($_SESSION['form_data']);
 
-$page_title = isset($data['dokumen']) ? 'Edit Dokumen Serta Merta' : 'Tambah Dokumen Serta Merta';
-$action_url = isset($data['dokumen']) ? 'update' : 'store';
-$method = 'POST';
+$is_edit = isset($data['dokumen']) && !empty($data['dokumen']);
+$dokumen = $data['dokumen'] ?? [];
+$dokumen_pemda_options = $data['dokumen_pemda_options'] ?? [];
+
+$page_title = $is_edit ? 'Edit Dokumen Serta Merta' : 'Tambah Dokumen Serta Merta';
+$action_url = $is_edit ? 'update' : 'store';
 ?>
 
 <?php include('template/header.php'); ?>
@@ -20,12 +23,17 @@ $method = 'POST';
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php
+      if ($_SESSION['role'] === 'admin') {
+        include 'template/sidebar.php';
+      } else {
+        include 'template/sidebar_petugas.php';
+      }
+      ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">
             <div class="col-sm-12">
-
               <!-- Alert Messages -->
               <?php if (isset($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -33,17 +41,6 @@ $method = 'POST';
                   <?php
                     echo $_SESSION['success'];
                     unset($_SESSION['success']);
-                  ?>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-              <?php endif; ?>
-
-              <?php if (isset($_SESSION['error'])): ?>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                  <i class="mdi mdi-alert-circle me-2"></i>
-                  <?php
-                    echo $_SESSION['error'];
-                    unset($_SESSION['error']);
                   ?>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -60,12 +57,23 @@ $method = 'POST';
                 </a>
               </div>
 
+              <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <i class="mdi mdi-alert-circle me-2"></i>
+                  <?php
+                    echo $_SESSION['error'];
+                    unset($_SESSION['error']);
+                  ?>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              <?php endif; ?>
+
               <!-- Form Card -->
               <div class="card" style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div class="card-body p-4">
-                  <form method="<?php echo $method; ?>" action="index.php?controller=kategorisertamerta&action=<?php echo $action_url; ?><?php if (isset($data['dokumen'])): ?>&id=<?php echo $data['dokumen']['id_dokumen']; ?><?php endif; ?>" id="dokumenForm" enctype="multipart/form-data">
-                    <?php if (isset($data['dokumen'])): ?>
-                      <input type="hidden" name="id" value="<?php echo $data['dokumen']['id_dokumen']; ?>">
+                  <form method="POST" action="index.php?controller=kategorisertamerta&action=<?php echo $action_url; ?>" id="dokumenForm" enctype="multipart/form-data">
+                    <?php if ($is_edit): ?>
+                      <input type="hidden" name="id" value="<?php echo $dokumen['id_dokumen']; ?>">
                     <?php endif; ?>
 
                     <div class="row">
@@ -77,7 +85,7 @@ $method = 'POST';
                                class="form-control"
                                id="judul"
                                name="judul"
-                               value="<?php echo htmlspecialchars($form_data['judul'] ?? ($data['dokumen']['judul'] ?? '')); ?>"
+                               value="<?php echo htmlspecialchars($form_data['judul'] ?? ($dokumen['judul'] ?? '')); ?>"
                                placeholder="Masukkan judul dokumen serta merta"
                                maxlength="255"
                                style="padding: 20px; border-radius: 6px;"
@@ -89,16 +97,14 @@ $method = 'POST';
 
                     <div class="row">
                       <div class="col-md-12 mb-3">
-                        <label for="kandungan_informasi" class="form-label fw-bold">
-                          Kandungan Informasi
-                        </label>
+                        <label for="kandungan_informasi" class="form-label fw-bold">Kandungan Informasi</label>
                         <textarea class="form-control"
                                   id="kandungan_informasi"
                                   name="kandungan_informasi"
-                                  rows="6"
-                                  placeholder="Masukkan kandungan informasi (opsional)"
-                                  style="padding: 20px; border-radius: 6px;"><?php echo htmlspecialchars($form_data['kandungan_informasi'] ?? ($data['dokumen']['kandungan_informasi'] ?? '')); ?></textarea>
-                        <small class="text-muted">Kandungan informasi bersifat opsional</small>
+                                  rows="4"
+                                  placeholder="Masukkan kandungan informasi dokumen (opsional)"
+                                  style="padding: 20px; border-radius: 6px;"><?php echo htmlspecialchars($form_data['kandungan_informasi'] ?? ($dokumen['kandungan_informasi'] ?? '')); ?></textarea>
+                        <small class="text-muted">Deskripsi detail tentang dokumen (opsional)</small>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
@@ -108,18 +114,28 @@ $method = 'POST';
                         <label for="terbitkan_sebagai" class="form-label fw-bold">
                           Terbitkan Sebagai <span style="color: red;">*</span>
                         </label>
-                        <select class="form-control"
+                        <select class="form-select"
                                 id="terbitkan_sebagai"
                                 name="terbitkan_sebagai"
                                 style="padding: 20px; border-radius: 6px;"
                                 required>
                           <option value="">-- Pilih SKPD --</option>
-                          <?php if (!empty($data['skpd_list'])): ?>
+                          <?php if (!empty($data['skpd_list']) && is_array($data['skpd_list'])): ?>
                             <?php foreach ($data['skpd_list'] as $skpd): ?>
+                              <?php if (is_array($skpd) && isset($skpd['nama_skpd'])): ?>
                               <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>"
-                                <?php echo ((isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $skpd['nama_skpd']) || (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $skpd['nama_skpd'])) ? 'selected' : ''; ?>>
+                                <?php
+                                  $selected = false;
+                                  if (isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $skpd['nama_skpd']) {
+                                    $selected = true;
+                                  } elseif (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $skpd['nama_skpd']) {
+                                    $selected = true;
+                                  }
+                                  echo $selected ? 'selected' : '';
+                                ?>>
                                 <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
                               </option>
+                              <?php endif; ?>
                             <?php endforeach; ?>
                           <?php endif; ?>
                         </select>
@@ -129,21 +145,22 @@ $method = 'POST';
 
                     <div class="row">
                       <div class="col-md-12 mb-3">
-                        <label for="id_dokumen_pemda" class="form-label fw-bold">
-                          Dokumen Pemda (Opsional)
-                        </label>
-                        <select class="form-control"
+                        <label for="id_dokumen_pemda" class="form-label fw-bold">Referensi Dokumen Pemda</label>
+                        <select class="form-select"
                                 id="id_dokumen_pemda"
                                 name="id_dokumen_pemda"
                                 style="padding: 20px; border-radius: 6px;">
-                          <option value="">Pilih Dokumen Pemda (Opsional)</option>
-                          <?php foreach ($data['dokumen_pemda_options'] as $dokumen_pemda): ?>
-                            <option value="<?php echo $dokumen_pemda['id_dokumen_pemda']; ?>"
-                              <?php echo (isset($form_data['id_dokumen_pemda']) && $form_data['id_dokumen_pemda'] == $dokumen_pemda['id_dokumen_pemda']) || (isset($data['dokumen']) && $data['dokumen']['id_dokumen_pemda'] == $dokumen_pemda['id_dokumen_pemda']) ? 'selected' : ''; ?>>
-                              <?php echo htmlspecialchars($dokumen_pemda['nama_jenis']); ?>
-                            </option>
-                          <?php endforeach; ?>
+                          <option value="">-- Pilih Dokumen Pemda (Opsional) --</option>
+                          <?php if (!empty($dokumen_pemda_options)): ?>
+                            <?php foreach ($dokumen_pemda_options as $pemda): ?>
+                              <option value="<?php echo $pemda['id_dokumen_pemda']; ?>"
+                                      <?php echo (($form_data['id_dokumen_pemda'] ?? ($dokumen['id_dokumen_pemda'] ?? '')) == $pemda['id_dokumen_pemda']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($pemda['nama_jenis']); ?>
+                              </option>
+                            <?php endforeach; ?>
+                          <?php endif; ?>
                         </select>
+                        <small class="text-muted">Pilih dokumen pemda sebagai referensi (opsional)</small>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
@@ -153,17 +170,27 @@ $method = 'POST';
                         <label for="tipe_file" class="form-label fw-bold">
                           Tipe File <span style="color: red;">*</span>
                         </label>
-                        <select class="form-control"
+                        <select class="form-select"
                                 id="tipe_file"
                                 name="tipe_file"
                                 style="padding: 20px; border-radius: 6px;"
                                 required>
-                          <option value="">Pilih Tipe File</option>
-                          <option value="text" <?php echo (isset($form_data['tipe_file']) && $form_data['tipe_file'] == 'text') || (isset($data['dokumen']) && $data['dokumen']['tipe_file'] == 'text') ? 'selected' : ''; ?>>Text/Dokumen</option>
-                          <option value="audio" <?php echo (isset($form_data['tipe_file']) && $form_data['tipe_file'] == 'audio') || (isset($data['dokumen']) && $data['dokumen']['tipe_file'] == 'audio') ? 'selected' : ''; ?>>Audio</option>
-                          <option value="video" <?php echo (isset($form_data['tipe_file']) && $form_data['tipe_file'] == 'video') || (isset($data['dokumen']) && $data['dokumen']['tipe_file'] == 'video') ? 'selected' : ''; ?>>Video</option>
-                          <option value="gambar" <?php echo (isset($form_data['tipe_file']) && $form_data['tipe_file'] == 'gambar') || (isset($data['dokumen']) && $data['dokumen']['tipe_file'] == 'gambar') ? 'selected' : ''; ?>>Gambar</option>
-                          <option value="lainnya" <?php echo (isset($form_data['tipe_file']) && $form_data['tipe_file'] == 'lainnya') || (isset($data['dokumen']) && $data['dokumen']['tipe_file'] == 'lainnya') ? 'selected' : ''; ?>>Lainnya</option>
+                          <option value="">-- Pilih Tipe File --</option>
+                          <?php
+                          $tipe_files = [
+                              'text' => 'Dokumen Teks (PDF, DOC, TXT)',
+                              'audio' => 'File Audio (MP3, WAV)',
+                              'video' => 'File Video (MP4, AVI)',
+                              'gambar' => 'File Gambar (JPG, PNG)',
+                              'lainnya' => 'File Lainnya'
+                          ];
+                          $selected_tipe = $form_data['tipe_file'] ?? ($dokumen['tipe_file'] ?? '');
+                          foreach ($tipe_files as $value => $label):
+                          ?>
+                            <option value="<?php echo $value; ?>" <?php echo ($selected_tipe == $value) ? 'selected' : ''; ?>>
+                              <?php echo $label; ?>
+                            </option>
+                          <?php endforeach; ?>
                         </select>
                         <div class="invalid-feedback"></div>
                       </div>
@@ -174,39 +201,47 @@ $method = 'POST';
                         <label for="status" class="form-label fw-bold">
                           Status <span style="color: red;">*</span>
                         </label>
-                        <select class="form-control"
+                        <select class="form-select"
                                 id="status"
                                 name="status"
                                 style="padding: 20px; border-radius: 6px;"
                                 required>
-                          <option value="">Pilih Status</option>
-                          <option value="draft" <?php echo (isset($form_data['status']) && $form_data['status'] == 'draft') || (isset($data['dokumen']) && $data['dokumen']['status'] == 'draft') || (!isset($data['dokumen'])) ? 'selected' : ''; ?>>Draft</option>
-                          <option value="publikasi" <?php echo (isset($form_data['status']) && $form_data['status'] == 'publikasi') || (isset($data['dokumen']) && $data['dokumen']['status'] == 'publikasi') ? 'selected' : ''; ?>>Publikasi</option>
+                          <?php $selected_status = $form_data['status'] ?? ($dokumen['status'] ?? 'draft'); ?>
+                          <option value="draft" <?php echo ($selected_status == 'draft') ? 'selected' : ''; ?>>
+                            Draft (Tidak Dipublikasikan)
+                          </option>
+                          <option value="publikasi" <?php echo ($selected_status == 'publikasi') ? 'selected' : ''; ?>>
+                            Publikasi (Dipublikasikan)
+                          </option>
                         </select>
-                        <small class="text-muted">Draft = Tidak terlihat publik, Publikasi = Terlihat publik</small>
+                        <small class="text-muted">Draft: Belum dipublikasi | Publikasi: Dapat diakses publik</small>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
 
                     <div class="row">
                       <div class="col-md-12 mb-3">
-                        <label for="upload_file" class="form-label fw-bold">
-                          Upload File <?php echo isset($data['dokumen']) ? '(Kosongkan jika tidak ingin mengubah file)' : '(Opsional)'; ?>
-                        </label>
+                        <label for="upload_file" class="form-label fw-bold">Upload File</label>
                         <input type="file"
                                class="form-control"
                                id="upload_file"
                                name="upload_file"
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.mp3,.mp4,.avi,.mov"
+                               accept=".pdf,.doc,.docx,.txt,.mp3,.wav,.mp4,.avi,.jpg,.jpeg,.png,.gif"
                                style="padding: 20px; border-radius: 6px;">
-                        <?php if (isset($data['dokumen']) && !empty($data['dokumen']['upload_file'])): ?>
-                          <small class="text-muted">
-                            File saat ini: <a href="<?php echo $data['dokumen']['upload_file']; ?>" target="_blank" class="text-primary">
-                              <?php echo basename($data['dokumen']['upload_file']); ?>
-                            </a>
-                          </small>
+
+                        <?php if ($is_edit && !empty($dokumen['upload_file'])): ?>
+                          <div class="mt-2">
+                            <small class="text-muted">
+                              <i class="mdi mdi-file me-1"></i>
+                              File saat ini: <?php echo basename($dokumen['upload_file']); ?>
+                            </small>
+                          </div>
                         <?php endif; ?>
-                        <small class="text-muted d-block">Format yang didukung: PDF, DOC, XLS, PPT, TXT, JPG, PNG, MP3, MP4, dll.</small>
+
+                        <small class="text-muted">
+                          File maksimal 10MB. Format yang didukung: PDF, DOC, DOCX, TXT, MP3, WAV, MP4, AVI, JPG, PNG, GIF
+                          <?php echo $is_edit ? '<br>Biarkan kosong jika tidak ingin mengubah file' : ''; ?>
+                        </small>
                         <div class="invalid-feedback"></div>
                       </div>
                     </div>
@@ -214,7 +249,7 @@ $method = 'POST';
                     <div class="d-flex gap-2 mt-4">
                       <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">
                         <i class="mdi mdi-content-save me-1"></i>
-                        <?php echo isset($data['dokumen']) ? 'Update Data' : 'Simpan Data'; ?>
+                        <?php echo $is_edit ? 'Update Data' : 'Simpan Data'; ?>
                       </button>
                       <button type="reset" class="btn btn-outline-secondary" style="padding: 10px 20px;">
                         <i class="mdi mdi-refresh me-1"></i>Reset
@@ -226,12 +261,14 @@ $method = 'POST';
                   </form>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
   <?php include 'template/script.php'; ?>
 
   <script>
@@ -269,8 +306,8 @@ $method = 'POST';
       const form = document.getElementById('dokumenForm');
       const judulInput = document.getElementById('judul');
       const terbitkanInput = document.getElementById('terbitkan_sebagai');
-      const tipeFileSelect = document.getElementById('tipe_file');
-      const statusSelect = document.getElementById('status');
+      const tipeFileInput = document.getElementById('tipe_file');
+      const statusInput = document.getElementById('status');
 
       // Real-time validation
       judulInput.addEventListener('input', function() {
@@ -278,14 +315,14 @@ $method = 'POST';
       });
 
       terbitkanInput.addEventListener('change', function() {
-        validateTerbitkanSebagai();
+        validateTerbitkan();
       });
 
-      tipeFileSelect.addEventListener('change', function() {
+      tipeFileInput.addEventListener('change', function() {
         validateTipeFile();
       });
 
-      statusSelect.addEventListener('change', function() {
+      statusInput.addEventListener('change', function() {
         validateStatus();
       });
 
@@ -304,7 +341,7 @@ $method = 'POST';
         }
       }
 
-      function validateTerbitkanSebagai() {
+      function validateTerbitkan() {
         const value = terbitkanInput.value.trim();
         if (value === '') {
           setInvalid(terbitkanInput, 'Terbitkan sebagai wajib dipilih');
@@ -316,23 +353,23 @@ $method = 'POST';
       }
 
       function validateTipeFile() {
-        const value = tipeFileSelect.value;
+        const value = tipeFileInput.value;
         if (value === '') {
-          setInvalid(tipeFileSelect, 'Tipe file wajib dipilih');
+          setInvalid(tipeFileInput, 'Tipe file wajib dipilih');
           return false;
         } else {
-          setValid(tipeFileSelect);
+          setValid(tipeFileInput);
           return true;
         }
       }
 
       function validateStatus() {
-        const value = statusSelect.value;
+        const value = statusInput.value;
         if (value === '') {
-          setInvalid(statusSelect, 'Status wajib dipilih');
+          setInvalid(statusInput, 'Status wajib dipilih');
           return false;
         } else {
-          setValid(statusSelect);
+          setValid(statusInput);
           return true;
         }
       }
@@ -340,11 +377,8 @@ $method = 'POST';
       function setInvalid(input, message) {
         input.classList.remove('is-valid');
         input.classList.add('is-invalid');
-        const feedback = input.nextElementSibling;
-        while (feedback && !feedback.classList.contains('invalid-feedback')) {
-          feedback = feedback.nextElementSibling;
-        }
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
+        const feedback = input.parentElement.querySelector('.invalid-feedback');
+        if (feedback) {
           feedback.textContent = message;
         }
       }
@@ -359,7 +393,7 @@ $method = 'POST';
         let isValid = true;
 
         isValid &= validateJudul();
-        isValid &= validateTerbitkanSebagai();
+        isValid &= validateTerbitkan();
         isValid &= validateTipeFile();
         isValid &= validateStatus();
 
@@ -391,7 +425,7 @@ $method = 'POST';
       const resetBtn = document.querySelector('button[type="reset"]');
       resetBtn.addEventListener('click', function() {
         // Clear validation classes
-        const inputs = form.querySelectorAll('.form-control');
+        const inputs = form.querySelectorAll('.form-control, .form-select');
         inputs.forEach(function(input) {
           input.classList.remove('is-valid', 'is-invalid');
         });
@@ -412,5 +446,7 @@ $method = 'POST';
       });
     }, 5000);
   </script>
+
+</body>
 
 </html>

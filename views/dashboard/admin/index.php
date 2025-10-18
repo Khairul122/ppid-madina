@@ -283,11 +283,6 @@
                 <h2>Selamat Datang, <?= isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin' ?> 👋</h2>
                 <p>Dashboard PPID Kabupaten Mandailing Natal - Sistem Informasi Publik</p>
               </div>
-              <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <button class="quick-action-btn">
-                  <i class="mdi mdi-download me-2"></i> Export Laporan
-                </button>
-              </div>
             </div>
           </div>
 

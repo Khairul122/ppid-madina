@@ -336,11 +336,6 @@ if (!isset($_SESSION['user_id'])) {
                 <h2>Selamat Datang, <?= isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Petugas' ?> 👋</h2>
                 <p>Dashboard Petugas - Kelola Permohonan Informasi Publik dengan Efisien</p>
               </div>
-              <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <a href="index.php?controller=permohonan_petugas&action=index" class="btn btn-light">
-                  <i class="mdi mdi-file-document me-2"></i> Lihat Semua Permohonan
-                </a>
-              </div>
             </div>
           </div>
 

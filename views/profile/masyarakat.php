@@ -13,15 +13,21 @@ $profile_photo = isset($_SESSION['profile_photo']) ? $_SESSION['profile_photo'] 
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Profil Pengguna - PPID Mandailing Natal</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -39,10 +45,28 @@ $profile_photo = isset($_SESSION['profile_photo']) ? $_SESSION['profile_photo'] 
             background-color: var(--light-bg);
             color: var(--text-color);
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .profile-wrapper {
             padding: 40px 0;
+            flex: 1;
+        }
+
+        .footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 14px;
         }
 
         .page-header {
@@ -650,5 +674,13 @@ $profile_photo = isset($_SESSION['profile_photo']) ? $_SESSION['profile_photo'] 
             }
         }
     </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 PPID Kemendagri ALL Rights Reserved</p>
+        </div>
+    </footer>
 </body>
+
 </html>

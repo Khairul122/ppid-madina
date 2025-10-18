@@ -1,5 +1,5 @@
 <?php
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'petugas')) {
     header('Location: index.php?controller=auth&action=login');
     exit();
 }
@@ -12,7 +12,7 @@ $is_edit = isset($data['dokumen']) && !empty($data['dokumen']);
 $dokumen = $data['dokumen'] ?? [];
 $dokumen_pemda_options = $data['dokumen_pemda_options'] ?? [];
 
-$page_title = $is_edit ? 'Edit Dokumen Dikecualikan' : 'Tambah Dokumen Dikecualikan';
+$page_title = $is_edit ? 'Edit Dokumen Setiap Saat' : 'Tambah Dokumen Setiap Saat';
 $action_url = $is_edit ? 'update' : 'store';
 ?>
 
@@ -23,7 +23,13 @@ $action_url = $is_edit ? 'update' : 'store';
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php
+      if ($_SESSION['role'] === 'admin') {
+        include 'template/sidebar.php';
+      } else {
+        include 'template/sidebar_petugas.php';
+      }
+      ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">
@@ -43,10 +49,10 @@ $action_url = $is_edit ? 'update' : 'store';
               <!-- Header Section -->
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <div class="d-flex align-items-center">
-                  <i class="mdi mdi-folder-lock me-2" style="font-size: 24px;"></i>
+                  <i class="mdi mdi-clock-fast me-2" style="font-size: 24px;"></i>
                   <span style="font-size: 18px; font-weight: 500;"><?php echo $page_title; ?></span>
                 </div>
-                <a href="index.php?controller=kategoridikecualikanadmin&action=index" class="btn btn-outline-secondary">
+                <a href="index.php?controller=kategorisetiapsaat&action=index" class="btn btn-outline-secondary">
                   <i class="mdi mdi-arrow-left me-1"></i> Kembali ke Daftar
                 </a>
               </div>
@@ -65,7 +71,7 @@ $action_url = $is_edit ? 'update' : 'store';
               <!-- Form Card -->
               <div class="card" style="border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div class="card-body p-4">
-                  <form method="POST" action="index.php?controller=kategoridikecualikanadmin&action=<?php echo $action_url; ?>" id="dokumenForm" enctype="multipart/form-data">
+                  <form method="POST" action="index.php?controller=kategorisetiapsaat&action=<?php echo $action_url; ?>" id="dokumenForm" enctype="multipart/form-data">
                     <?php if ($is_edit): ?>
                       <input type="hidden" name="id" value="<?php echo $dokumen['id_dokumen']; ?>">
                     <?php endif; ?>
@@ -113,16 +119,24 @@ $action_url = $is_edit ? 'update' : 'store';
                                 name="terbitkan_sebagai"
                                 style="padding: 20px; border-radius: 6px;"
                                 required>
-                              <option value="                          <option value="">-- Pilih SKPD --</option>"
-                                <?php 
+                          <option value="">-- Pilih SKPD --</option>
+                          <?php if (!empty($data['skpd_list']) && is_array($data['skpd_list'])): ?>
+                            <?php foreach ($data['skpd_list'] as $skpd): ?>
+                              <?php if (is_array($skpd) && isset($skpd['nama_skpd'])): ?>
+                              <option value="<?php echo htmlspecialchars($skpd['nama_skpd']); ?>"
+                                <?php
                                   $selected = false;
-                                  if (isset($form_data["terbitkan_sebagai"]) && $form_data["terbitkan_sebagai"] == $skpd["nama_skpd"]) {
+                                  if (isset($form_data['terbitkan_sebagai']) && $form_data['terbitkan_sebagai'] == $skpd['nama_skpd']) {
                                     $selected = true;
-                                  } elseif (isset($dokumen["terbitkan_sebagai"]) && $dokumen["terbitkan_sebagai"] == $skpd["nama_skpd"]) {
+                                  } elseif (isset($dokumen['terbitkan_sebagai']) && $dokumen['terbitkan_sebagai'] == $skpd['nama_skpd']) {
                                     $selected = true;
                                   }
-                                  echo $selected ? "selected" : "";
+                                  echo $selected ? 'selected' : '';
                                 ?>>
+                                <?php echo htmlspecialchars($skpd['nama_skpd']); ?>
+                              </option>
+                              <?php endif; ?>
+                            <?php endforeach; ?>
                           <?php endif; ?>
                         </select>
                         <div class="invalid-feedback"></div>
@@ -240,7 +254,7 @@ $action_url = $is_edit ? 'update' : 'store';
                       <button type="reset" class="btn btn-outline-secondary" style="padding: 10px 20px;">
                         <i class="mdi mdi-refresh me-1"></i>Reset
                       </button>
-                      <a href="index.php?controller=kategoridikecualikanadmin&action=index" class="btn btn-outline-danger" style="padding: 10px 20px;">
+                      <a href="index.php?controller=kategorisetiapsaat&action=index" class="btn btn-outline-danger" style="padding: 10px 20px;">
                         <i class="mdi mdi-close me-1"></i>Batal
                       </a>
                     </div>
@@ -294,7 +308,6 @@ $action_url = $is_edit ? 'update' : 'store';
       const terbitkanInput = document.getElementById('terbitkan_sebagai');
       const tipeFileInput = document.getElementById('tipe_file');
       const statusInput = document.getElementById('status');
-      const fileInput = document.getElementById('upload_file');
 
       // Real-time validation
       judulInput.addEventListener('input', function() {
@@ -311,10 +324,6 @@ $action_url = $is_edit ? 'update' : 'store';
 
       statusInput.addEventListener('change', function() {
         validateStatus();
-      });
-
-      fileInput.addEventListener('change', function() {
-        validateFile();
       });
 
       // Validation functions
@@ -365,22 +374,6 @@ $action_url = $is_edit ? 'update' : 'store';
         }
       }
 
-      function validateFile() {
-        if (fileInput.files.length > 0) {
-          const file = fileInput.files[0];
-          const maxSize = 10 * 1024 * 1024; // 10MB
-
-          if (file.size > maxSize) {
-            setInvalid(fileInput, 'Ukuran file tidak boleh lebih dari 10MB');
-            return false;
-          } else {
-            setValid(fileInput);
-            return true;
-          }
-        }
-        return true;
-      }
-
       function setInvalid(input, message) {
         input.classList.remove('is-valid');
         input.classList.add('is-invalid');
@@ -403,7 +396,6 @@ $action_url = $is_edit ? 'update' : 'store';
         isValid &= validateTerbitkan();
         isValid &= validateTipeFile();
         isValid &= validateStatus();
-        isValid &= validateFile();
 
         if (!isValid) {
           e.preventDefault();

@@ -816,18 +816,6 @@ $facilities = [
   <!-- Main Navigation Header -->
   <?php include 'views/layout/navbar_masyarakat.php'; ?>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb-section">
-    <div class="container">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Dokumen Saya</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
-
   <!-- Main Content -->
   <div class="main-content">
     <div class="container">

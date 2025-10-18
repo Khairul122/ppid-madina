@@ -12,7 +12,13 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION[
     <?php include 'template/navbar.php'; ?>
     <div class="container-fluid page-body-wrapper">
       <?php include 'template/setting_panel.php'; ?>
-      <?php include 'template/sidebar.php'; ?>
+      <?php
+      if ($_SESSION['role'] === 'admin') {
+        include 'template/sidebar.php';
+      } else {
+        include 'template/sidebar_petugas.php';
+      }
+      ?>
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">

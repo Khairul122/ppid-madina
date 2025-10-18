@@ -47,12 +47,6 @@ function isDropdownActivePetugas($controllers)
       <div class="collapse <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'show' : ''; ?>" id="mejalayananDropdown">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'mejaLayanan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=mejaLayanan">
-              <i class="fa fa-desk fa-sm me-2"></i>
-              Meja Layanan
-            </a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">
               <i class="fa fa-inbox fa-sm me-2"></i>
               Permohonan Masuk

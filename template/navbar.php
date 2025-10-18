@@ -34,11 +34,11 @@
     <ul class="navbar-nav ms-auto">
       <li class="nav-item dropdown d-none d-lg-block user-dropdown">
         <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-          <img class="img-md rounded-circle" src="<?= $foto_profile ?>" alt="Profile image" />
+          <img class="img-md rounded-circle" src="ppid_assets/user.png" style="width: 35px;" alt="Profile image" />
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
-            <img class="img-md rounded-circle" src="<?= $foto_profile ?>" alt="Profile image" />
+            <img class="img-md rounded-circle" src="ppid_assets/user.png" style="width: 35px;" alt="Profile image" />
             <p class="mb-1 mt-3 font-weight-semibold"><?= $nama ?></p>
             <p class="mb-1 text-muted"><?= $email ?></p>
             <p class="mb-0 text-muted text-small">Role: <span class="text-primary text-capitalize"><?= $role ?></span></p>

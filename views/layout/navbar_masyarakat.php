@@ -30,10 +30,36 @@
     align-items: center;
   }
 
+  .top-info-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  .top-info-links a {
+    color: var(--muted-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .top-info-links a:hover {
+    color: var(--text-color);
+  }
+
   .top-info-contact {
     display: flex;
     gap: 25px;
     align-items: center;
+  }
+
+  .top-info-contact span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .top-info-contact i {
+    font-size: 12px;
   }
 
   .user-info {

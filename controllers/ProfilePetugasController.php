@@ -22,11 +22,11 @@ class ProfilePetugasController
 
         // Get user data
         $user_id = $_SESSION['user_id'];
-        $user = $this->profileModel->findById($user_id);
+        $user = $this->profileModel->getProfileById($user_id);
 
         $email = $user['email'] ?? '';
         $username = $user['username'] ?? '';
-        $foto_profile = $user['foto_profile'] ?? '';
+        $foto_profile = ''; // Foto profil sudah dihapus, gunakan default
 
         include 'views/profile_petugas/index.php';
     }
@@ -113,41 +113,6 @@ class ProfilePetugasController
 
         // Update password
         $result = $this->profileModel->updatePasswordWithVerification($user_id, $current_password, $new_password);
-
-        if ($result['success']) {
-            $_SESSION['success_message'] = $result['message'];
-        } else {
-            $_SESSION['error_message'] = $result['message'];
-        }
-
-        header('Location: index.php?controller=profilepetugas&action=index');
-        exit();
-    }
-
-    public function updatePhoto()
-    {
-        // Check if user is logged in and has petugas role
-        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
-            header('Location: index.php?controller=auth&action=login');
-            exit();
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?controller=profilepetugas&action=index');
-            exit();
-        }
-
-        $user_id = $_SESSION['user_id'];
-        $file = $_FILES['foto_profile'] ?? null;
-
-        if (!$file || $file['error'] === UPLOAD_ERR_NO_FILE) {
-            $_SESSION['error_message'] = 'Silakan pilih file foto terlebih dahulu';
-            header('Location: index.php?controller=profilepetugas&action=index');
-            exit();
-        }
-
-        // Update photo
-        $result = $this->profileModel->updateProfilePhoto($user_id, $file);
 
         if ($result['success']) {
             $_SESSION['success_message'] = $result['message'];

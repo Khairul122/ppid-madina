@@ -1074,34 +1074,10 @@ $title = 'Ajukan Permohonan - PPID Mandailing';
 </head>
 
 <body>
-  <!-- Top Info Bar -->
-  <div class="top-info-bar">
-    <div class="container">
-      <div class="top-info-links">
-        <a href="#">TENTANG PPID</a>
-        <a href="#">KONTAK PPID</a>
-      </div>
-      <div class="top-info-contact">
-        <span><i class="fas fa-envelope"></i> ppid@mandailingnatal.go.id</span>
-        <span><i class="fas fa-phone"></i> Call Center: +628117905000</span>
-      </div>
-    </div>
-  </div>
 
   <!-- Main Navigation Header -->
   <?php include 'views/layout/navbar_masyarakat.php'; ?>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb-section">
-    <div class="container">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.php?controller=user&action=index">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Ajukan Permohonan</li>
-        </ol>
-      </nav>
-    </div>
-  </div>
 
   <!-- Main Content -->
   <div class="main-content">

@@ -1,7 +1,7 @@
 <?php
 class UserModel {
-    private $conn;
-    private $table_name = "Users";
+    protected $conn;
+    protected $table_name = "Users";
 
     public function __construct($db) {
         $this->conn = $db;
