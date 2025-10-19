@@ -308,13 +308,19 @@ class PermohonanAdminController
         try {
             $this->conn->beginTransaction();
 
+            // Handle foto_profile upload
+            $foto_profile_path = null;
+            if (isset($_FILES['foto_profile']) && $_FILES['foto_profile']['error'] === UPLOAD_ERR_OK) {
+                $foto_profile_path = $this->handleFileUpload($_FILES['foto_profile'], 'profile');
+            }
+
             // 1. Create biodata_pengguna first
             $biodataQuery = "INSERT INTO biodata_pengguna
                             (nama_lengkap, nik, alamat, provinsi, city, no_kontak, email, jenis_kelamin,
-                             usia, pendidikan, pekerjaan, status_pengguna, nama_lembaga)
+                             usia, pendidikan, pekerjaan, status_pengguna, nama_lembaga, foto_profile)
                             VALUES
                             (:nama_lengkap, :nik, :alamat, :provinsi, :city, :no_kontak, :email, :jenis_kelamin,
-                             :usia, :pendidikan, :pekerjaan, :status_pengguna, :nama_lembaga)";
+                             :usia, :pendidikan, :pekerjaan, :status_pengguna, :nama_lembaga, :foto_profile)";
 
             $biodataStmt = $this->conn->prepare($biodataQuery);
             $biodataStmt->bindValue(':nama_lengkap', trim($_POST['nama_lengkap']));
@@ -330,6 +336,7 @@ class PermohonanAdminController
             $biodataStmt->bindValue(':pekerjaan', trim($_POST['pekerjaan'] ?? ''));
             $biodataStmt->bindValue(':status_pengguna', trim($_POST['status_pengguna'] ?? 'pribadi'));
             $biodataStmt->bindValue(':nama_lembaga', trim($_POST['nama_lembaga'] ?? ''));
+            $biodataStmt->bindValue(':foto_profile', $foto_profile_path);
 
             if (!$biodataStmt->execute()) {
                 throw new Exception('Gagal menyimpan data biodata');
@@ -339,7 +346,7 @@ class PermohonanAdminController
 
             // 2. Create user account
             $username = trim($_POST['username'] ?? $_POST['email']);
-            $password = password_hash(trim($_POST['password']), PASSWORD_DEFAULT);
+            $password = md5(trim($_POST['password']));
 
             $userQuery = "INSERT INTO users (username, email, password, role, id_biodata)
                          VALUES (:username, :email, :password, 'masyarakat', :id_biodata)";
@@ -1337,7 +1344,7 @@ class PermohonanAdminController
 
     private function generateNoPermohonan()
     {
-        $prefix = 'PRM';
+        $prefix = 'PMH';
         $date = date('Ymd');
 
         // Get last number for today
@@ -1378,7 +1385,13 @@ class PermohonanAdminController
             return '';
         }
 
-        $upload_dir = 'uploads/';
+        // Tentukan direktori berdasarkan type
+        if ($type === 'profile') {
+            $upload_dir = 'uploads/profiles/';
+        } else {
+            $upload_dir = 'uploads/';
+        }
+
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
         }

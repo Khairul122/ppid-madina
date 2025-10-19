@@ -1840,4 +1840,107 @@ class PermohonanPetugasController
         header('Location: index.php?controller=permohonanpetugas&action=layananKepuasanIndex');
         exit();
     }
+
+    // ============ KEBERATAN ACTIONS ============
+
+    /**
+     * Display keberatan index page
+     */
+    public function keberatanIndex()
+    {
+        // Check if user is logged in and is petugas
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
+            header('Location: index.php?controller=auth&action=login');
+            exit();
+        }
+
+        // Get petugas SKPD
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd) {
+            $_SESSION['error_message'] = 'Data petugas tidak ditemukan';
+            header('Location: index.php?controller=dashboard&action=index');
+            exit();
+        }
+
+        $nama_skpd = $petugas_skpd['nama_skpd'];
+
+        // Get filter parameters
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+
+        // Get permohonan keberatan
+        $permohonan_list = $this->permohonanPetugasModel->getPermohonanKeberatanBySKPD($nama_skpd, $limit, $offset, $search);
+        $total_records = $this->permohonanPetugasModel->countPermohonanKeberatanBySKPD($nama_skpd, $search);
+        $total_pages = ceil($total_records / $limit);
+
+        // Get stats
+        $stats = [
+            'total' => $total_records
+        ];
+
+        // Get messages
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        // Pass data to view
+        $data = compact('permohonan_list', 'stats', 'search', 'page', 'limit', 'offset', 'total_records', 'total_pages', 'success_message', 'error_message');
+        extract($data);
+
+        include 'views/permohonan_petugas/permohonan_keberatan/index.php';
+    }
+
+    /**
+     * Display keberatan view page
+     */
+    public function keberatanView()
+    {
+        // Check if user is logged in and is petugas
+        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
+            header('Location: index.php?controller=auth&action=login');
+            exit();
+        }
+
+        // Get permohonan ID from URL
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+        if ($id <= 0) {
+            $_SESSION['error_message'] = 'ID permohonan tidak valid';
+            header('Location: index.php?controller=permohonanpetugas&action=keberatanIndex');
+            exit();
+        }
+
+        // Get petugas SKPD
+        $user_id = $_SESSION['user_id'];
+        $petugas_skpd = $this->permohonanPetugasModel->getPetugasSKPDByUserId($user_id);
+
+        if (!$petugas_skpd) {
+            $_SESSION['error_message'] = 'Data petugas tidak ditemukan';
+            header('Location: index.php?controller=dashboard&action=index');
+            exit();
+        }
+
+        // Get permohonan data
+        $permohonan = $this->permohonanPetugasModel->getPermohonanById($id);
+
+        if (!$permohonan) {
+            $_SESSION['error_message'] = 'Data permohonan tidak ditemukan';
+            header('Location: index.php?controller=permohonanpetugas&action=keberatanIndex');
+            exit();
+        }
+
+        // Check if permohonan belongs to petugas SKPD and is keberatan
+        if ($permohonan['komponen_tujuan'] !== $petugas_skpd['nama_skpd'] || $permohonan['status'] !== 'Sengketa') {
+            $_SESSION['error_message'] = 'Anda tidak memiliki akses untuk melihat permohonan ini';
+            header('Location: index.php?controller=permohonanpetugas&action=keberatanIndex');
+            exit();
+        }
+
+        include 'views/permohonan_petugas/permohonan_keberatan/view.php';
+    }
 }

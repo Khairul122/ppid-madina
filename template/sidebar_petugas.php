@@ -76,6 +76,12 @@ function isDropdownActivePetugas($controllers)
               Permohonan Ditolak
             </a>
           </li>
+            <li class="nav-item">
+            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'keberatanIndex') || isActivePetugas('permohonanpetugas', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=keberatanIndex">
+             <i class="fa fa-exclamation-triangle fa-sm me-2"></i>
+               Keberatan
+            </a>
+          </li>
           <li class="nav-item">
             <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'layananKepuasanIndex') || isActivePetugas('permohonanpetugas', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=layananKepuasanIndex">
               <i class="fa fa-smile fa-sm me-2"></i>

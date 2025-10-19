@@ -723,4 +723,77 @@ class PermohonanPetugasModel
             return ['total' => 0, 'avg_rating' => 0, 'satisfied' => 0, 'unsatisfied' => 0];
         }
     }
+
+    // ============ KEBERATAN METHODS ============
+
+    /**
+     * Get permohonan keberatan by SKPD
+     */
+    public function getPermohonanKeberatanBySKPD($nama_skpd, $limit = 10, $offset = 0, $search = '')
+    {
+        $whereClause = "WHERE p.status = 'Sengketa' AND p.komponen_tujuan = :nama_skpd";
+        $params = [':nama_skpd' => $nama_skpd];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (p.no_permohonan LIKE :search OR p.judul_dokumen LIKE :search OR
+                             bp.nama_lengkap LIKE :search OR bp.nik LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT p.*, u.username, u.email as user_email, u.role,
+                         bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
+                         bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
+                         bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                  FROM {$this->table_permohonan} p
+                  JOIN {$this->table_users} u ON p.id_user = u.id_user
+                  LEFT JOIN {$this->table_biodata} bp ON u.id_biodata = bp.id_biodata
+                  {$whereClause}
+                  ORDER BY p.created_at DESC
+                  LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Count permohonan keberatan by SKPD
+     */
+    public function countPermohonanKeberatanBySKPD($nama_skpd, $search = '')
+    {
+        $whereClause = "WHERE p.status = 'Sengketa' AND p.komponen_tujuan = :nama_skpd";
+        $params = [':nama_skpd' => $nama_skpd];
+
+        if (!empty($search)) {
+            $whereClause .= " AND (p.no_permohonan LIKE :search OR p.judul_dokumen LIKE :search OR
+                             bp.nama_lengkap LIKE :search OR bp.nik LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $query = "SELECT COUNT(*) as total
+                  FROM {$this->table_permohonan} p
+                  JOIN {$this->table_users} u ON p.id_user = u.id_user
+                  LEFT JOIN {$this->table_biodata} bp ON u.id_biodata = bp.id_biodata
+                  {$whereClause}";
+
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result['total'] ?? 0;
+    }
 }
