@@ -195,6 +195,41 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                       </div>
                     </div>
                   </div>
+
+                  <!-- Informasi Keberatan -->
+                  <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-warning border-bottom">
+                      <h5 class="card-title mb-0 text-dark fw-normal">
+                        <i class="fas fa-exclamation-triangle me-2 text-white"></i>
+                        Informasi Keberatan
+                      </h5>
+                    </div>
+                    <div class="card-body p-4">
+                      <div class="row g-3">
+                        <div class="col-12">
+                          <div class="info-item">
+                            <label class="info-label">Alasan Keberatan</label>
+                            <div class="info-value">
+                              <div class="bg-light p-3 rounded">
+                                <?php echo nl2br(htmlspecialchars($permohonan['alasan_keberatan'] ?? '-')); ?>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-12">
+                          <div class="info-item">
+                            <label class="info-label">Keterangan</label>
+                            <div class="info-value">
+                              <div class="bg-light p-3 rounded">
+                                <?php echo nl2br(htmlspecialchars($permohonan['keterangan'] ?? '-')); ?>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Right Column - Files & Documents -->

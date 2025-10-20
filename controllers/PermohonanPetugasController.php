@@ -1935,7 +1935,7 @@ class PermohonanPetugasController
 
         if ($id <= 0) {
             $_SESSION['error_message'] = 'ID permohonan tidak valid';
-            header('Location: index.php?controller=permohonanpetugas&action=keberatanIndex');
+            header('Location: index.php?controller=permohonanPetugas&action=keberatanIndex');
             exit();
         }
 
@@ -1959,7 +1959,7 @@ class PermohonanPetugasController
         }
 
         // Check if permohonan belongs to petugas SKPD and is keberatan
-        if ($permohonan['komponen_tujuan'] !== $petugas_skpd['nama_skpd'] || $permohonan['status'] !== 'Sengketa') {
+        if ($permohonan['komponen_tujuan'] !== $petugas_skpd['nama_skpd'] || $permohonan['status'] !== 'Keberatan') {
             $_SESSION['error_message'] = 'Anda tidak memiliki akses untuk melihat permohonan ini';
             header('Location: index.php?controller=permohonanpetugas&action=keberatanIndex');
             exit();

@@ -44,10 +44,12 @@ class PermohonanPetugasModel
                          bp.nama_lengkap, bp.nik, bp.alamat, bp.provinsi, bp.city,
                          bp.jenis_kelamin, bp.usia, bp.pendidikan, bp.pekerjaan,
                          bp.no_kontak, bp.email, bp.foto_profile, bp.status_pengguna,
-                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta
+                         bp.nama_lembaga, bp.upload_ktp, bp.upload_akta,
+                         k.alasan_keberatan, k.keterangan
                   FROM {$this->table_permohonan} p
                   JOIN {$this->table_users} u ON p.id_user = u.id_user
                   LEFT JOIN {$this->table_biodata} bp ON u.id_biodata = bp.id_biodata
+                  LEFT JOIN keberatan k ON p.id_permohonan = k.id_permohonan
                   WHERE p.id_permohonan = :id
                   LIMIT 1";
 
@@ -731,7 +733,7 @@ class PermohonanPetugasModel
      */
     public function getPermohonanKeberatanBySKPD($nama_skpd, $limit = 10, $offset = 0, $search = '')
     {
-        $whereClause = "WHERE p.status = 'Sengketa' AND p.komponen_tujuan = :nama_skpd";
+        $whereClause = "WHERE p.status = 'Keberatan' AND p.komponen_tujuan = :nama_skpd";
         $params = [':nama_skpd' => $nama_skpd];
 
         if (!empty($search)) {

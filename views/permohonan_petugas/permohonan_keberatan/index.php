@@ -159,7 +159,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'petugas') {
                               </td>
                               <td>
                                 <div class="btn-group" role="group">
-                                  <a href="index.php?controller=permohonanpetugas&action=keberatanView&id=<?php echo $p['id_permohonan']; ?>"
+                                  <a href="index.php?controller=permohonanPetugas&action=keberatanView&id=<?php echo $p['id_permohonan']; ?>"
                                      class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
