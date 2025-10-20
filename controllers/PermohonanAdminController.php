@@ -1426,6 +1426,18 @@ class PermohonanAdminController
     }
 
     /**
+     * Get SKPD Diskominfo (ID = 5) data untuk header kop surat
+     */
+    private function getSKPDDiskominfo()
+    {
+        $query = "SELECT * FROM skpd WHERE id_skpd = 5 LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Get SKPD data by name
      */
 
@@ -1456,7 +1468,7 @@ class PermohonanAdminController
         $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addPDFDataSection($pdf, $data);
-        $this->addPDFSignature($pdf, $data);
+        $this->addPDFSignature($pdf, $data, $skpd_data);
         $this->addPDFFooter($pdf);
 
         $filename = 'Bukti_Permohonan_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
@@ -1480,8 +1492,8 @@ class PermohonanAdminController
             $pdf->SetXY($logo_x, $logo_y);
         }
 
-        // Nama SKPD dengan ukuran 16 bold
-        $skpd_name = $data['komponen_tujuan'] ?? '';
+        // Nama SKPD dengan ukuran 16 bold - menggunakan SKPD Diskominfo (ID = 5)
+        $skpd_name = ($skpd_data && !empty($skpd_data['nama_skpd'])) ? $skpd_data['nama_skpd'] : '';
         $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
 
         $pdf->SetFont('times', '', 12);
@@ -1570,15 +1582,20 @@ class PermohonanAdminController
         $pdf->Ln(10);
     }
 
-    private function addPDFSignature($pdf, $data)
+    private function addPDFSignature($pdf, $data, $skpd_data = null)
     {
         $y = $pdf->GetY();
+
+        // Ambil nama SKPD dari data
+        $nama_skpd = ($skpd_data && !empty($skpd_data['nama_skpd']))
+            ? strtoupper($skpd_data['nama_skpd'])
+            : strtoupper($data['komponen_tujuan'] ?? 'Pemerintah Kabupaten Mandailing Natal');
 
         $pdf->SetXY(20, $y);
         $pdf->Cell(80, 6, 'Petugas Pelayanan Informasi', 0, 1, 'C');
         $pdf->SetY($y + 26);
         $pdf->SetX(20);
-        $pdf->Cell(80, 6, 'Pemerintah Kabupaten Mandailing Natal', 0, 1, 'C');
+        $pdf->Cell(80, 6, $nama_skpd, 0, 1, 'C');
 
         $pdf->SetXY(120, $y);
         $pdf->Cell(80, 6, 'Pemohon', 0, 1, 'C');
@@ -1694,8 +1711,8 @@ class PermohonanAdminController
             $pdf->SetXY($start_x, $start_y);
         }
 
-        // Nama SKPD dengan ukuran 16 bold
-        $skpd_name = !empty($data['komponen_tujuan']) ? $data['komponen_tujuan'] : '';
+        // Nama SKPD dengan ukuran 16 bold - menggunakan SKPD Diskominfo (ID = 5)
+        $skpd_name = ($skpd_data && !empty($skpd_data['nama_skpd'])) ? $skpd_data['nama_skpd'] : '';
         $pdf->Cell(0, 7, $skpd_name, 0, 1, 'L');
 
         $pdf->SetFont('times', '', 12);
@@ -1758,9 +1775,9 @@ class PermohonanAdminController
             ['Telepon', $data['no_kontak'] ?? ''],
             ['Email', $data['email'] ?? ''],
             ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
-            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
-            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
-            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+            ['Provinsi Tujuan', $data['provinsi'] ?? ''],
+            ['Kab/Kota Tujuan', $data['city'] ?? ''],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? '']
         ];
 
         foreach ($items as $item) {
@@ -1770,7 +1787,7 @@ class PermohonanAdminController
         }
 
         // Kandungan Informasi dengan background
-        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? '';
         $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -1780,7 +1797,7 @@ class PermohonanAdminController
         $pdf->Ln(1);
 
         // Tujuan Penggunaan dengan background
-        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? '';
         $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -1826,9 +1843,11 @@ class PermohonanAdminController
         $pdf->SetFont('times', '', 12);
         $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        // Gunakan MultiCell untuk text wrapping
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+        $pdf->MultiCell(0, 6, $catatan_petugas, 1, 'L', true);
 
         $pdf->SetFillColor(255, 255, 255);
         $pdf->Ln(2);
@@ -1847,7 +1866,7 @@ class PermohonanAdminController
         $pdf->Cell(80, 6, 'Petugas Pelayanan Informasi', 0, 1, 'C');
         $pdf->SetY($y + 6 + $vertical_space);
         $pdf->SetX(20);
-        $pdf->Cell(80, 6, strtoupper($data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA'), 0, 1, 'C');
+        $pdf->Cell(80, 6, strtoupper($data['komponen_tujuan'] ?? ''), 0, 1, 'C');
 
         // Pemohon
         $pdf->SetXY(120, $y);
@@ -1963,9 +1982,9 @@ class PermohonanAdminController
             ['Telepon', $data['no_kontak'] ?? ''],
             ['Email', $data['email'] ?? ''],
             ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
-            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
-            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
-            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+            ['Provinsi Tujuan', $data['provinsi'] ?? ''],
+            ['Kab/Kota Tujuan', $data['city'] ?? ''],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? '']
         ];
 
         foreach ($items as $item) {
@@ -1975,7 +1994,7 @@ class PermohonanAdminController
         }
 
         // Kandungan Informasi dengan background
-        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? '';
         $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -1985,7 +2004,7 @@ class PermohonanAdminController
         $pdf->Ln(1);
 
         // Tujuan Penggunaan dengan background
-        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? '';
         $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -2031,9 +2050,11 @@ class PermohonanAdminController
         $pdf->SetFont('times', '', 12);
         $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        // Gunakan MultiCell untuk text wrapping
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+        $pdf->MultiCell(0, 6, $catatan_petugas, 1, 'L', true);
 
         $pdf->SetFillColor(255, 255, 255);
         $pdf->Ln(2);
@@ -2101,9 +2122,9 @@ class PermohonanAdminController
             ['Telepon', $data['no_kontak'] ?? ''],
             ['Email', $data['email'] ?? ''],
             ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
-            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
-            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
-            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+            ['Provinsi Tujuan', $data['provinsi'] ?? ''],
+            ['Kab/Kota Tujuan', $data['city'] ?? ''],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? '']
         ];
 
         foreach ($items as $item) {
@@ -2113,7 +2134,7 @@ class PermohonanAdminController
         }
 
         // Kandungan Informasi dengan background
-        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? '';
         $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -2123,7 +2144,7 @@ class PermohonanAdminController
         $pdf->Ln(1);
 
         // Tujuan Penggunaan dengan background
-        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? '';
         $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -2160,9 +2181,11 @@ class PermohonanAdminController
         $pdf->SetFont('times', '', 12);
         $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        // Gunakan MultiCell untuk text wrapping
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+        $pdf->MultiCell(0, 6, $catatan_petugas, 1, 'L', true);
 
         $pdf->SetFillColor(255, 255, 255);
 
@@ -2250,9 +2273,9 @@ class PermohonanAdminController
             ['Telepon', $data['no_kontak'] ?? ''],
             ['Email', $data['email'] ?? ''],
             ['Informasi Dimohon', $data['judul_dokumen'] ?? ''],
-            ['Provinsi Tujuan', $data['provinsi'] ?? 'Kabupaten Mandailing Natal'],
-            ['Kab/Kota Tujuan', $data['city'] ?? 'Panyabungan'],
-            ['OPD Tujuan', $data['komponen_tujuan'] ?? 'DINAS KOMUNIKASI DAN INFORMATIKA']
+            ['Provinsi Tujuan', $data['provinsi'] ?? ''],
+            ['Kab/Kota Tujuan', $data['city'] ?? ''],
+            ['OPD Tujuan', $data['komponen_tujuan'] ?? '']
         ];
 
         foreach ($items as $item) {
@@ -2262,7 +2285,7 @@ class PermohonanAdminController
         }
 
         // Kandungan Informasi dengan background
-        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? 'permintaan informasi perbup tentang spbe';
+        $kandungan_info = $data['kandungan_informasi'] ?? $data['tujuan_permohonan'] ?? '';
         $pdf->Cell(50, 6, 'Kandungan Informasi', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -2272,7 +2295,7 @@ class PermohonanAdminController
         $pdf->Ln(1);
 
         // Tujuan Penggunaan dengan background
-        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? 'permintaan informasi perbup tentang spbe';
+        $tujuan_penggunaan = $data['tujuan_penggunaan_informasi'] ?? '';
         $pdf->Cell(50, 6, 'Tujuan Penggunaan', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
         $pdf->SetFillColor(211, 211, 211);
@@ -2309,9 +2332,11 @@ class PermohonanAdminController
         $pdf->SetFont('times', '', 12);
         $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
         $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+        // Gunakan MultiCell untuk text wrapping
         $pdf->SetFillColor(211, 211, 211);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 6, $catatan_petugas, 1, 1, 'L', true);
+        $pdf->MultiCell(0, 6, $catatan_petugas, 1, 'L', true);
 
         $pdf->SetFillColor(255, 255, 255);
 

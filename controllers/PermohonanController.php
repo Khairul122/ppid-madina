@@ -29,6 +29,17 @@ class PermohonanController {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Get SKPD Diskominfo (ID = 5) data untuk header kop surat
+     */
+    private function getSKPDDiskominfo() {
+        $query = "SELECT * FROM skpd WHERE id_skpd = 5 LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     public function index() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: index.php?controller=auth&action=login');
@@ -540,7 +551,7 @@ class PermohonanController {
         $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addPDFDataSection($pdf, $data);
-        $this->addPDFSignature($pdf, $data);
+        $this->addPDFSignature($pdf, $data, $skpd_data);
         $this->addPDFFooter($pdf);
 
         $filename = 'Bukti_Permohonan_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
@@ -652,14 +663,19 @@ class PermohonanController {
         $pdf->Ln(10);
     }
 
-    private function addPDFSignature($pdf, $data) {
+    private function addPDFSignature($pdf, $data, $skpd_data = null) {
         $y = $pdf->GetY();
+
+        // Ambil nama SKPD dari data
+        $nama_skpd = ($skpd_data && !empty($skpd_data['nama_skpd']))
+            ? strtoupper($skpd_data['nama_skpd'])
+            : strtoupper($data['komponen_tujuan'] ?? 'Pemerintah Kabupaten Mandailing Natal');
 
         $pdf->SetXY(20, $y);
         $pdf->Cell(80, 6, 'Petugas Pelayanan Informasi', 0, 1, 'C');
         $pdf->SetY($y + 26);
         $pdf->SetX(20);
-        $pdf->Cell(80, 6, 'Pemerintah Kabupaten Mandailing Natal', 0, 1, 'C');
+        $pdf->Cell(80, 6, $nama_skpd, 0, 1, 'C');
 
         $pdf->SetXY(120, $y);
         $pdf->Cell(80, 6, 'Pemohon', 0, 1, 'C');
@@ -717,7 +733,7 @@ class PermohonanController {
         $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addBuktiProsesDataSection($pdf, $data);
-        $this->addPDFSignature($pdf, $data);
+        $this->addPDFSignature($pdf, $data, $skpd_data);
         $this->addPDFFooter($pdf);
 
         $filename = 'Bukti_Proses_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
@@ -787,8 +803,14 @@ class PermohonanController {
         if (!empty($data['catatan_petugas'])) {
             $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
             $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+            // Simpan posisi Y sebelum MultiCell
+            $current_y = $pdf->GetY();
+            $current_x = $pdf->GetX();
+
+            // Gunakan MultiCell untuk text wrapping
             $pdf->SetFillColor(211, 211, 211);
-            $pdf->Cell(0, 6, $data['catatan_petugas'], 1, 1, 'L', true);
+            $pdf->MultiCell(0, 6, $data['catatan_petugas'], 1, 'L', true);
             $pdf->SetFillColor(255, 255, 255);
         }
 
@@ -815,7 +837,7 @@ class PermohonanController {
         $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addBuktiSelesaiDataSection($pdf, $data);
-        $this->addPDFSignature($pdf, $data);
+        $this->addPDFSignature($pdf, $data, $skpd_data);
         $this->addPDFFooter($pdf);
 
         $filename = 'Bukti_Selesai_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
@@ -885,8 +907,14 @@ class PermohonanController {
         if (!empty($data['catatan_petugas'])) {
             $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
             $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+            // Simpan posisi Y sebelum MultiCell
+            $current_y = $pdf->GetY();
+            $current_x = $pdf->GetX();
+
+            // Gunakan MultiCell untuk text wrapping
             $pdf->SetFillColor(211, 211, 211);
-            $pdf->Cell(0, 6, $data['catatan_petugas'], 1, 1, 'L', true);
+            $pdf->MultiCell(0, 6, $data['catatan_petugas'], 1, 'L', true);
             $pdf->SetFillColor(255, 255, 255);
         }
 
@@ -913,7 +941,7 @@ class PermohonanController {
         $this->addPDFHeader($pdf, $data, $skpd_data);
         $this->addPDFTitle($pdf, $data);
         $this->addBuktiDitolakDataSection($pdf, $data);
-        $this->addPDFSignature($pdf, $data);
+        $this->addPDFSignature($pdf, $data, $skpd_data);
         $this->addPDFFooter($pdf);
 
         $filename = 'Bukti_Ditolak_' . ($data['no_permohonan'] ?? $data['id_permohonan']) . '.pdf';
@@ -977,8 +1005,14 @@ class PermohonanController {
         if (!empty($data['catatan_petugas'])) {
             $pdf->Cell(50, 6, 'Catatan Petugas', 0, 0, 'L');
             $pdf->Cell(5, 6, ':', 0, 0, 'L');
+
+            // Simpan posisi Y sebelum MultiCell
+            $current_y = $pdf->GetY();
+            $current_x = $pdf->GetX();
+
+            // Gunakan MultiCell untuk text wrapping
             $pdf->SetFillColor(211, 211, 211);
-            $pdf->Cell(0, 6, $data['catatan_petugas'], 1, 1, 'L', true);
+            $pdf->MultiCell(0, 6, $data['catatan_petugas'], 1, 'L', true);
             $pdf->SetFillColor(255, 255, 255);
         }
 
