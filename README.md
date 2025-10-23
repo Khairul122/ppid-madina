@@ -363,9 +363,7 @@ Kami menyambut baik kontribusi dari developer untuk meningkatkan sistem PPID ini
 ## 📞 Support & Kontak
 
 ### Tim Pengembang:
-- **Lead Developer**: [Nama Developer]
-- **System Admin**: [Nama Admin]
-- **UI/UX Designer**: [Nama Designer]
+- **Lead Developer**: [Khairul Huda]
 
 ### Kontak PPID Mandailing Natal:
 - **Email**: ppid@mandailingnatalkab.go.id
@@ -424,4 +422,4 @@ Project ini dilisensikan under MIT License - lihat file [LICENSE](LICENSE) untuk
 
 **© 2025 PPID Kabupaten Mandailing Natal. All rights reserved.**
 
-Made with ❤️ for better public information services in Indonesia.
+Made with for better public information services in Indonesia.
