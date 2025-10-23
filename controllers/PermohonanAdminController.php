@@ -765,15 +765,7 @@ class PermohonanAdminController
         }
 
         try {
-            $query = "UPDATE {$this->permohonanAdminModel->table_permohonan}
-                      SET catatan_petugas = :catatan_petugas, updated_at = NOW()
-                      WHERE id_permohonan = :id";
-
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(':catatan_petugas', $catatan_petugas);
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-            if ($stmt->execute()) {
+            if ($this->permohonanAdminModel->updateCatatanPetugas($id, $catatan_petugas)) {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Catatan petugas berhasil diperbarui'

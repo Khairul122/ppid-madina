@@ -252,6 +252,25 @@ class SKPDModel {
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
+    // Method untuk mendapatkan SKPD berdasarkan kategori
+    public function getSKPDByKategori($kategori) {
+        try {
+            $query = "SELECT id_skpd, nama_skpd, kategori, email, telepon, alamat
+                      FROM " . $this->table_name . "
+                      WHERE kategori = :kategori
+                      ORDER BY nama_skpd ASC";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':kategori', $kategori);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error in getSKPDByKategori: " . $e->getMessage());
+            return [];
+        }
+    }
+
     // Method untuk mendapatkan SKPD berdasarkan kategori (untuk disposisi)
     public function getSKPDForDisposisi() {
         $query = "SELECT id_skpd, nama_skpd, kategori FROM " . $this->table_name . "

@@ -281,6 +281,79 @@ class PermohonanPetugasModel
         }
     }
 
+    /**
+     * Delete permohonan by ID
+     * This method handles soft delete by checking if the permohonan can be deleted
+     * based on its current status (only 'Masuk' status can be deleted)
+     *
+     * @param int $id ID permohonan to delete
+     * @return bool Success status
+     */
+    public function deletePermohonan($id)
+    {
+        try {
+            // First check if the permohonan exists and get its status
+            $check_query = "SELECT id_permohonan, status FROM {$this->table_permohonan} WHERE id_permohonan = :id";
+            $check_stmt = $this->conn->prepare($check_query);
+            $check_stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $check_stmt->execute();
+            $permohonan = $check_stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$permohonan) {
+                return false;
+            }
+
+            // Only allow deletion if status is 'Masuk'
+            if ($permohonan['status'] !== 'Masuk') {
+                return false;
+            }
+
+            // Delete the permohonan record
+            $query = "DELETE FROM {$this->table_permohonan} WHERE id_permohonan = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error in deletePermohonan: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update permohonan data for petugas
+     * Used by updatePermohonanMasuk method in controller
+     *
+     * @param array $data Permohonan data to update
+     * @return bool Success status
+     */
+    public function updatePermohonanData($data)
+    {
+        try {
+            $query = "UPDATE {$this->table_permohonan}
+                      SET judul_dokumen = :judul_dokumen,
+                          tujuan_penggunaan_informasi = :tujuan_penggunaan_informasi,
+                          tujuan_permohonan = :tujuan_permohonan,
+                          komponen_tujuan = :komponen_tujuan,
+                          sumber_media = :sumber_media,
+                          updated_at = NOW()
+                      WHERE id_permohonan = :id_permohonan";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':judul_dokumen', $data['judul_dokumen']);
+            $stmt->bindParam(':tujuan_penggunaan_informasi', $data['tujuan_penggunaan_informasi']);
+            $stmt->bindParam(':tujuan_permohonan', $data['tujuan_permohonan']);
+            $stmt->bindParam(':komponen_tujuan', $data['komponen_tujuan']);
+            $stmt->bindParam(':sumber_media', $data['sumber_media']);
+            $stmt->bindParam(':id_permohonan', $data['id_permohonan'], PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error in updatePermohonanData: " . $e->getMessage());
+            return false;
+        }
+    }
+
     // ============ PUBLIC METHODS - RELATED DATA ============
 
     public function getSKPDDataByName($skpd_name)
@@ -297,6 +370,14 @@ class PermohonanPetugasModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Get SKPD by category/kategori
+     * This method retrieves SKPD data based on the specified category
+     *
+     * @param string $kategori The category to filter SKPD by
+     * @return array Array of SKPD data matching the category
+     */
+    
     public function getPetugasSKPDByUserId($user_id)
     {
         $query = "SELECT s.nama_skpd, s.id_skpd, p.nama_petugas

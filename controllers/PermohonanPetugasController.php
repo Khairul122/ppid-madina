@@ -1,5 +1,6 @@
 <?php
 require_once 'models/PermohonanPetugasModel.php';
+require_once 'models/SKPD.php';
 require_once 'models/SKPDModel.php';
 require_once 'vendor/tecnickcom/tcpdf/tcpdf.php';
 
@@ -9,6 +10,7 @@ class PermohonanPetugasController
     private $skpdModel;
     private const ITEMS_PER_PAGE = 10;
     private const ALLOWED_STATUSES = ['all', 'Masuk', 'Diproses', 'Disposisi', 'Selesai', 'Ditolak'];
+
 
     public function __construct()
     {
@@ -185,24 +187,16 @@ class PermohonanPetugasController
         }
 
         // Update data permohonan
-        $query = "UPDATE {$this->permohonanPetugasModel->table_permohonan} 
-                  SET judul_dokumen = :judul_dokumen,
-                      tujuan_penggunaan_informasi = :tujuan_penggunaan_informasi,
-                      tujuan_permohonan = :tujuan_permohonan,
-                      komponen_tujuan = :komponen_tujuan,
-                      sumber_media = :sumber_media,
-                      updated_at = NOW()
-                  WHERE id_permohonan = :id_permohonan";
+        $update_data = [
+            'id_permohonan' => $id,
+            'judul_dokumen' => $judul_dokumen,
+            'tujuan_penggunaan_informasi' => $tujuan_penggunaan_informasi,
+            'tujuan_permohonan' => $tujuan_permohonan,
+            'komponen_tujuan' => $komponen_tujuan,
+            'sumber_media' => $sumber_media
+        ];
 
-        $stmt = $this->permohonanPetugasModel->conn->prepare($query);
-        $stmt->bindParam(':judul_dokumen', $judul_dokumen);
-        $stmt->bindParam(':tujuan_penggunaan_informasi', $tujuan_penggunaan_informasi);
-        $stmt->bindParam(':tujuan_permohonan', $tujuan_permohonan);
-        $stmt->bindParam(':komponen_tujuan', $komponen_tujuan);
-        $stmt->bindParam(':sumber_media', $sumber_media);
-        $stmt->bindParam(':id_permohonan', $id, PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
+        if ($this->permohonanPetugasModel->updatePermohonanData($update_data)) {
             $_SESSION['success_message'] = 'Data permohonan berhasil diperbarui';
         } else {
             $_SESSION['error_message'] = 'Gagal memperbarui data permohonan';

@@ -283,7 +283,32 @@ class PermohonanAdminModel
             ];
         }
     }
-    
+
+    /**
+     * Update catatan petugas only
+     * Used by controller to update only the catatan_petugas field
+     *
+     * @param int $id ID permohonan
+     * @param string $catatan_petugas Catatan from petugas
+     * @return bool Success status
+     */
+    public function updateCatatanPetugas($id, $catatan_petugas)
+    {
+        try {
+            $query = "UPDATE {$this->table_permohonan}
+                      SET catatan_petugas = :catatan_petugas, updated_at = NOW()
+                      WHERE id_permohonan = :id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':catatan_petugas', $catatan_petugas);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error in updateCatatanPetugas: " . $e->getMessage());
+            return false;
+        }
+    }
 
     // ============ PUBLIC METHODS - RELATED DATA ============
 
