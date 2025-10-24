@@ -1,6 +1,5 @@
 <?php
 require_once 'models/PermohonanPetugasModel.php';
-require_once 'models/SKPD.php';
 require_once 'models/SKPDModel.php';
 require_once 'vendor/tecnickcom/tcpdf/tcpdf.php';
 
