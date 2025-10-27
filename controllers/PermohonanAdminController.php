@@ -2355,5 +2355,93 @@ class PermohonanAdminController
 
         $pdf->Ln(10);
     }
+
+    /**
+     * Halaman daftar layanan kepuasan
+     */
+    public function layananKepuasanIndex()
+    {
+        $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+        $rating_filter = isset($_GET['rating']) ? $_GET['rating'] : 'all';
+
+        // Ambil data layanan kepuasan menggunakan model
+        $layanan_list = $this->permohonanAdminModel->getLayananKepuasan($limit, $offset, $rating_filter, $search);
+        $total_records = $this->permohonanAdminModel->countLayananKepuasan($rating_filter, $search);
+        $total_pages = ceil($total_records / $limit);
+
+        // Ambil statistik rating menggunakan model
+        $rating_stats = $this->permohonanAdminModel->getLayananKepuasanStats();
+
+        
+        // Extract session messages
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/layanan_kepuasan/index.php';
+    }
+
+    /**
+     * Lihat detail layanan kepuasan
+     */
+    public function layananKepuasanView()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $id = intval($_GET['id']);
+
+        // Ambil data layanan kepuasan
+        $layanan_kepuasan = $this->permohonanAdminModel->getLayananKepuasanById($id);
+
+        if (!$layanan_kepuasan) {
+            $_SESSION['error_message'] = 'Data layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+            exit();
+        }
+
+        // Extract session messages
+        $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+        $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
+
+        include 'views/permohonan_admin/layanan_kepuasan/view.php';
+    }
+
+    /**
+     * Hapus layanan kepuasan
+     */
+    public function deleteLayananKepuasan()
+    {
+        if (!isset($_GET['id'])) {
+            $_SESSION['error_message'] = 'ID layanan kepuasan tidak ditemukan';
+            header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+            exit();
+        }
+
+        $id = intval($_GET['id']);
+
+        try {
+            // Hapus menggunakan model
+            if ($this->permohonanAdminModel->deleteLayananKepuasan($id)) {
+                $_SESSION['success_message'] = 'Data layanan kepuasan berhasil dihapus';
+            } else {
+                $_SESSION['error_message'] = 'Gagal menghapus data layanan kepuasan';
+            }
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = 'Terjadi kesalahan: ' . $e->getMessage();
+        }
+
+        header('Location: index.php?controller=permohonanadmin&action=layananKepuasanIndex');
+        exit();
+    }
 }
 ?>

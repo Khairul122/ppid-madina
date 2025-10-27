@@ -1107,5 +1107,143 @@ class PermohonanAdminModel
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    // ============ LAYANAN KEPUASAN METHODS ============
+
+    /**
+     * Ambil data layanan kepuasan dengan pagination dan filter
+     */
+    public function getLayananKepuasan($limit = 10, $offset = 0, $rating_filter = 'all', $search = '')
+    {
+        $query = "SELECT lk.*, p.no_permohonan, p.judul_dokumen, p.created_at as tanggal_permohonan,
+                         p.komponen_tujuan, p.status as permohonan_status,
+                         bp.nama_lengkap, bp.email, bp.no_kontak
+                  FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  JOIN users u ON p.id_user = u.id_user
+                  LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
+                  WHERE 1=1";
+
+        $params = [];
+
+        // Filter berdasarkan rating
+        if ($rating_filter !== 'all' && in_array($rating_filter, [1, 2, 3, 4, 5])) {
+            $query .= " AND lk.rating = :rating";
+            $params[':rating'] = $rating_filter;
+        }
+
+        // Search
+        if (!empty($search)) {
+            $query .= " AND (p.nama_lengkap LIKE :search OR p.email LIKE :search OR p.judul_dokumen LIKE :search OR lk.komentar LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+
+        $query .= " ORDER BY lk.created_at DESC LIMIT :limit OFFSET :offset";
+
+        try {
+            $stmt = $this->conn->prepare($query);
+
+            // Bind parameters
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Error getting layanan kepuasan list: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Hitung total layanan kepuasan dengan filter
+     */
+    public function countLayananKepuasan($rating_filter = 'all', $search = '')
+    {
+        $query = "SELECT COUNT(*) as total FROM layanan_kepuasan lk
+                  JOIN permohonan p ON lk.id_permohonan = p.id_permohonan
+                  JOIN users u ON p.id_user = u.id_user
+                  LEFT JOIN biodata_pengguna bp ON u.id_biodata = bp.id_biodata
+                  WHERE 1=1";
+
+        $params = [];
+
+        // Filter berdasarkan rating
+        if ($rating_filter !== 'all' && in_array($rating_filter, [1, 2, 3, 4, 5])) {
+            $query .= " AND lk.rating = :rating";
+            $params[':rating'] = $rating_filter;
+        }
+
+        // Search
+        if (!empty($search)) {
+            $query .= " AND (p.nama_lengkap LIKE :search OR p.email LIKE :search OR p.judul_dokumen LIKE :search OR lk.komentar LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+
+        try {
+            $stmt = $this->conn->prepare($query);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ? (int)$result['total'] : 0;
+        } catch (Exception $e) {
+            error_log("Error counting layanan kepuasan: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Ambil statistik layanan kepuasan
+     */
+    public function getLayananKepuasanStats()
+    {
+        $stats = [
+            'total' => 0,
+            'rating_1' => 0,
+            'rating_2' => 0,
+            'rating_3' => 0,
+            'rating_4' => 0,
+            'rating_5' => 0,
+            'average_rating' => 0
+        ];
+
+        try {
+            $query = "SELECT
+                        COUNT(*) as total,
+                        AVG(rating) as average_rating,
+                        SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as rating_1,
+                        SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as rating_2,
+                        SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as rating_3,
+                        SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as rating_4,
+                        SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as rating_5
+                      FROM layanan_kepuasan";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($result) {
+                $stats['total'] = (int)$result['total'];
+                $stats['average_rating'] = round((float)$result['average_rating'], 1);
+                $stats['rating_1'] = (int)$result['rating_1'];
+                $stats['rating_2'] = (int)$result['rating_2'];
+                $stats['rating_3'] = (int)$result['rating_3'];
+                $stats['rating_4'] = (int)$result['rating_4'];
+                $stats['rating_5'] = (int)$result['rating_5'];
+            }
+        } catch (Exception $e) {
+            error_log("Error getting layanan kepuasan stats: " . $e->getMessage());
+        }
+
+        return $stats;
+    }
 }
 ?>

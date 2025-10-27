@@ -61,7 +61,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
                           <h6 class="text-muted mb-1">Total Penilaian</h6>
-                          <h3 class="mb-0"><?php echo number_format($stats['total'] ?? 0); ?></h3>
+                          <h3 class="mb-0"><?php echo number_format($rating_stats['total'] ?? 0); ?></h3>
                         </div>
                         <div class="icon icon-box-primary">
                           <i class="fas fa-star fa-2x"></i>
@@ -76,7 +76,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
                           <h6 class="text-muted mb-1">Rata-rata Rating</h6>
-                          <h3 class="mb-0"><?php echo number_format($stats['avg_rating'] ?? 0, 1); ?> <small class="text-muted">/5</small></h3>
+                          <h3 class="mb-0"><?php echo number_format($rating_stats['average_rating'] ?? 0, 1); ?> <small class="text-muted">/5</small></h3>
                         </div>
                         <div class="icon icon-box-warning">
                           <i class="fas fa-chart-line fa-2x"></i>
@@ -91,7 +91,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
                           <h6 class="text-muted mb-1">Puas (≥4)</h6>
-                          <h3 class="mb-0"><?php echo number_format($stats['satisfied'] ?? 0); ?></h3>
+                          <h3 class="mb-0"><?php echo number_format($rating_stats['rating_5'] + $rating_stats['rating_4'] ?? 0); ?></h3>
                         </div>
                         <div class="icon icon-box-success">
                           <i class="fas fa-smile fa-2x"></i>
@@ -106,7 +106,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
                           <h6 class="text-muted mb-1">Tidak Puas (≤2)</h6>
-                          <h3 class="mb-0"><?php echo number_format($stats['unsatisfied'] ?? 0); ?></h3>
+                          <h3 class="mb-0"><?php echo number_format($rating_stats['rating_1'] + $rating_stats['rating_2'] ?? 0); ?></h3>
                         </div>
                         <div class="icon icon-box-danger">
                           <i class="fas fa-frown fa-2x"></i>
@@ -155,7 +155,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                   </h5>
                 </div>
                 <div class="card-body">
-                  <?php if (!empty($layanan_kepuasan_list)): ?>
+                  <?php if (!empty($layanan_list)): ?>
                     <div class="table-responsive">
                       <table class="table table-hover">
                         <thead class="table-light">
@@ -173,7 +173,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                         <tbody>
                           <?php
                           $no = $offset + 1;
-                          foreach ($layanan_kepuasan_list as $lk):
+                          foreach ($layanan_list as $lk):
                           ?>
                             <tr>
                               <td><?php echo $no++; ?></td>
@@ -223,11 +223,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                               <td>
                                 <div class="btn-group" role="group">
                                   <a href="index.php?controller=permohonanadmin&action=layananKepuasanView&id=<?php echo $lk['id_layanan_kepuasan']; ?>"
-                                     class="btn btn-primary btn-sm" title="Lihat Detail">
+                                    class="btn btn-primary btn-sm" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>
                                   <button type="button" class="btn btn-danger btn-sm" title="Hapus"
-                                          onclick="confirmDelete(<?php echo $lk['id_layanan_kepuasan']; ?>)">
+                                    onclick="confirmDelete(<?php echo $lk['id_layanan_kepuasan']; ?>)">
                                     <i class="fas fa-trash"></i>
                                   </button>
                                 </div>
