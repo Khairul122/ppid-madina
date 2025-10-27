@@ -104,13 +104,20 @@ function hasRole($allowedRoles)
                 Sengketa
               </a>
             </li>
-             <li class="nav-item">
+            <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'semua') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=semuaIndex">
                 <i class="fa fa-list fa-sm me-2"></i>
                 Semua Permohonan
               </a>
             </li>
-              <li class="nav-item">
+            <li class="nav-item">
+              <a class="nav-link <?php echo isActive('permohonanadmin', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=layananKepuasanIndex">
+                <i class="fa fa-star fa-sm me-2"></i>
+                Layanan Kepuasan
+              </a>
+            </li>
+
+            <li class="nav-item">
               <a class="nav-link <?php echo isActive('permohonanadmin', 'dataPemohon') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=dataPemohonIndex">
                 <i class="fa fa-user-friends fa-sm me-2"></i>
                 Data Pemohon
@@ -148,7 +155,7 @@ function hasRole($allowedRoles)
                 Kategori Setiap Saat
               </a>
             </li>
-             <li class="nav-item">
+            <li class="nav-item">
               <a class="nav-link <?php echo isActive('kategoriDikecualikanAdmin') ? 'active' : ''; ?>" href="index.php?controller=kategoriDikecualikanAdmin&action=index">
                 <i class="fa fa-ban fa-sm me-2"></i>
                 Kategori Dikecualikan
@@ -283,7 +290,7 @@ function hasRole($allowedRoles)
               <a class="nav-link <?php echo isActive('profile') ? 'active' : ''; ?>" href="index.php?controller=layananInformasi&action=index">
                 <i class="fa fa-info-circle menu-icon fa-sm"></i>
                 <span class="menu-title">Layanan Informasi <br>
-                Publik</span>
+                  Publik</span>
               </a>
             </li>
             <li class="nav-item">
