@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer install:*)",
+      "Bash(composer update:*)",
+      "Bash(composer require:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
