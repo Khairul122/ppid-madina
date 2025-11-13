@@ -49,76 +49,76 @@ function hasRole($allowedRoles)
 
     <?php if (hasRole(['admin', 'petugas'])): ?>
       <li class="nav-item">
-        <div class="nav-link <?php echo isDropdownActive(['permohonanadmin']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActive(['permohonanadmin']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
+        <div class="nav-link <?php echo isDropdownActive(['permohonanAdmin']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActive(['permohonanadmin']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
           <i class="fa fa-envelope-open menu-icon fa-sm"></i>
           <span class="menu-title">Permohonan</span>
           <i class="menu-arrow"></i>
         </div>
-        <div class="collapse <?php echo isDropdownActive(['permohonanadmin']) ? 'show' : ''; ?>" id="mejalayananDropdown">
+        <div class="collapse <?php echo isDropdownActive(['permohonanAdmin']) ? 'show' : ''; ?>" id="mejalayananDropdown">
           <ul class="nav flex-column sub-menu">
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'create') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=create">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'create') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=create">
                 <i class="fa fa-desk fa-sm me-2"></i>
                 Meja Layanan
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'index') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=index">
                 <i class="fa fa-inbox fa-sm me-2"></i>
                 Permohonan Masuk
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'disposisi') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=disposisiIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'disposisi') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=disposisiIndex">
                 <i class="fa fa-share-alt fa-sm me-2"></i>
                 Permohonan Disposisi
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'diproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=diprosesIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'diproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=diprosesIndex">
                 <i class="fa fa-cogs fa-sm me-2"></i>
                 Permohonan Diproses
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'selesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=selesaiIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'selesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=selesaiIndex">
                 <i class="fa fa-check-circle fa-sm me-2"></i>
                 Permohonan Selesai
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'ditolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=ditolakIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'ditolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=ditolakIndex">
                 <i class="fa fa-times-circle fa-sm me-2"></i>
                 Permohonan Ditolak
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=keberatanIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=keberatanIndex">
                 <i class="fa fa-exclamation-triangle fa-sm me-2"></i>
                 Keberatan
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'sengketa') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=sengketaIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'sengketa') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=sengketaIndex">
                 <i class="fa fa-gavel fa-sm me-2"></i>
                 Sengketa
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'semua') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=semuaIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'semua') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=semuaIndex">
                 <i class="fa fa-list fa-sm me-2"></i>
                 Semua Permohonan
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=layananKepuasanIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=layananKepuasanIndex">
                 <i class="fa fa-star fa-sm me-2"></i>
                 Layanan Kepuasan
               </a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link <?php echo isActive('permohonanadmin', 'dataPemohon') ? 'active' : ''; ?>" href="index.php?controller=permohonanadmin&action=dataPemohonIndex">
+              <a class="nav-link <?php echo isActive('permohonanAdmin', 'dataPemohon') ? 'active' : ''; ?>" href="index.php?controller=permohonanAdmin&action=dataPemohonIndex">
                 <i class="fa fa-user-friends fa-sm me-2"></i>
                 Data Pemohon
               </a>

@@ -39,51 +39,51 @@ function isDropdownActivePetugas($controllers)
 
     <!-- Permohonan - Meja Layanan Petugas -->
     <li class="nav-item">
-      <div class="nav-link <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
+      <div class="nav-link <?php echo isDropdownActivePetugas(['permohonanPetugas']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#mejalayananDropdown" aria-expanded="<?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'true' : 'false'; ?>" aria-controls="mejalayananDropdown">
         <i class="fa fa-envelope-open menu-icon fa-sm"></i>
         <span class="menu-title">Permohonan</span>
         <i class="menu-arrow"></i>
       </div>
-      <div class="collapse <?php echo isDropdownActivePetugas(['permohonanpetugas']) ? 'show' : ''; ?>" id="mejalayananDropdown">
+      <div class="collapse <?php echo isDropdownActivePetugas(['permohonanPetugas']) ? 'show' : ''; ?>" id="mejalayananDropdown">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'permohonanMasuk') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=permohonanMasuk">
               <i class="fa fa-inbox fa-sm me-2"></i>
               Permohonan Masuk
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'disposisiIndex') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=disposisiIndex">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'disposisiIndex') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=disposisiIndex">
               <i class="fa fa-share-alt fa-sm me-2"></i>
               Permohonan Disposisi
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'diprosesIndex') || isActivePetugas('permohonanpetugas', 'permohonanDiproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=diprosesIndex">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'diprosesIndex') || isActivePetugas('permohonanpetugas', 'permohonanDiproses') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=diprosesIndex">
               <i class="fa fa-cogs fa-sm me-2"></i>
               Permohonan Diproses
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'selesaiIndex') || isActivePetugas('permohonanpetugas', 'permohonanSelesai') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=selesaiIndex">
               <i class="fa fa-check-circle fa-sm me-2"></i>
               Permohonan Selesai
             </a>
           </li>
            <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'ditolakIndex') || isActivePetugas('permohonanpetugas', 'permohonanDitolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=ditolakIndex">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'ditolakIndex') || isActivePetugas('permohonanpetugas', 'permohonanDitolak') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=ditolakIndex">
              <i class="fa fa-times-circle fa-sm me-2"></i>
               Permohonan Ditolak
             </a>
           </li>
             <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'keberatanIndex') || isActivePetugas('permohonanpetugas', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=keberatanIndex">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'keberatanIndex') || isActivePetugas('permohonanpetugas', 'keberatan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=keberatanIndex">
              <i class="fa fa-exclamation-triangle fa-sm me-2"></i>
                Keberatan
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link <?php echo isActivePetugas('permohonanpetugas', 'layananKepuasanIndex') || isActivePetugas('permohonanpetugas', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=layananKepuasanIndex">
+            <a class="nav-link <?php echo isActivePetugas('permohonanPetugas', 'layananKepuasanIndex') || isActivePetugas('permohonanpetugas', 'layananKepuasan') ? 'active' : ''; ?>" href="index.php?controller=permohonanpetugas&action=layananKepuasanIndex">
               <i class="fa fa-smile fa-sm me-2"></i>
               Layanan Kepuasan
             </a>
